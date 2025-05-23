@@ -1,0 +1,65 @@
+# AppVisita - Sistema de Gestão Médica
+# .gitignore
+
+# Google Cloud SDK (não incluir no repositório)
+google-cloud-sdk/
+*.tar.gz
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Arquivos de ambiente
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Arquivos temporários
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Arquivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Arquivos do sistema
+.DS_Store
+*~
+
+# Cache
+.cache/
+*.cache
+
+# Arquivos de build (se houver)
+dist/
+build/
+
+# Dependências (se adicionar Node.js futuramente)
+node_modules/
+
+# Arquivos de backup
+*.backup
+*.bak
+
+# Arquivos sensíveis (nunca commitar)
+config/firebase-private.js
+secrets/
+private/
+
+# Arquivos de desenvolvimento temporário
+test-temp/
+debug-temp/
+
+# Arquivos grandes de teste
+*.large.jpg
+*.large.png
+*.large.pdf 

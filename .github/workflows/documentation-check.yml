@@ -1,0 +1,188 @@
+# 🔍 Verificação de Documentação - AppVisita
+# Workflow para garantir que código e documentação estejam sincronizados
+
+name: 📝 Documentation Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  documentation-check:
+    name: 🔍 Verificar Documentação
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout código
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 2  # Necessário para comparar commits
+    
+    - name: 🔍 Verificar documentação atualizada
+      run: |
+        chmod +x scripts/check-docs.sh
+        ./scripts/check-docs.sh
+      env:
+        CI: true
+        GITHUB_ENV: $GITHUB_ENV
+    
+    - name: 🐍 Setup Python
+      if: always()
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: 🚨 Executar monitor de documentação
+      if: always()
+      run: |
+        python scripts/monitor-docs.py
+      continue-on-error: true
+    
+    - name: 📊 Upload relatório de documentação
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: docs-report
+        path: logs/docs-monitor-*.json
+        retention-days: 30
+    
+    - name: 💬 Comentar no PR (se houver problemas)
+      if: failure() && github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          
+          // Ler logs se existirem
+          let reportContent = '';
+          try {
+            const logFiles = fs.readdirSync('logs').filter(f => f.startsWith('docs-monitor-'));
+            if (logFiles.length > 0) {
+              const latestLog = logFiles.sort().pop();
+              const logData = JSON.parse(fs.readFileSync(`logs/${latestLog}`, 'utf8'));
+              
+              reportContent = `
+## 🚨 Problemas de Documentação Detectados
+
+### Resumo
+- ❌ Erros: ${logData.errors?.length || 0}
+- ⚠️ Warnings: ${logData.warnings?.length || 0}
+
+### Erros Encontrados
+${logData.errors?.map(error => `- ❌ ${error}`).join('\n') || 'Nenhum'}
+
+### Warnings
+${logData.warnings?.map(warning => `- ⚠️ ${warning}`).join('\n') || 'Nenhum'}
+
+### 📝 Ação Necessária
+1. Verifique quais documentos precisam ser atualizados
+2. Consulte \`docs/DOCUMENTATION_UPDATE.md\` para o processo
+3. Atualize a documentação relevante antes do merge
+
+---
+*Verificação automática de documentação*
+              `;
+            }
+          } catch (e) {
+            reportContent = `
+## ⚠️ Verificação de Documentação
+
+A verificação de documentação encontrou problemas. Por favor:
+
+1. 📝 Verifique se a documentação foi atualizada junto com o código
+2. 🔍 Execute \`./scripts/check-docs.sh\` localmente
+3. 📋 Consulte \`docs/DOCUMENTATION_UPDATE.md\` para detalhes
+
+---
+*Para mais informações, verifique os logs do CI/CD*
+            `;
+          }
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: reportContent
+          });
+
+  documentation-monitor:
+    name: 📊 Monitor de Documentação
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'  # Só no main branch
+    
+    steps:
+    - name: 📥 Checkout código
+      uses: actions/checkout@v3
+    
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: 🚨 Executar monitor completo
+      run: |
+        python scripts/monitor-docs.py --send-alerts
+      env:
+        SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+        SMTP_PORT: ${{ secrets.SMTP_PORT }}
+        FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+        FROM_PASSWORD: ${{ secrets.FROM_PASSWORD }}
+        ALERT_EMAILS: ${{ secrets.ALERT_EMAILS }}
+    
+    - name: 📊 Salvar relatório como artifact
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: docs-monitoring-report
+        path: logs/docs-monitor-*.json
+        retention-days: 90
+
+  templates-validation:
+    name: 🧪 Validar Templates
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout código
+      uses: actions/checkout@v3
+    
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: 🔍 Verificar templates existem
+      run: |
+        python scripts/create-docs.py <<EOF
+        5
+        0
+        EOF
+    
+    - name: 📝 Testar criação de documentação
+      run: |
+        # Teste automatizado de criação de docs
+        python scripts/create-docs.py <<EOF
+        1
+        Funcionalidade de Teste CI
+        app-test.js  
+        Bot do CI
+        v1.0.0
+        Teste automatizado de documentação
+        0
+        EOF
+        
+        # Verificar se arquivo foi criado
+        if [ -f "docs/features/FEATURE_funcionalidade_de_teste_ci.md" ]; then
+          echo "✅ Template de funcionalidade funcionando"
+        else
+          echo "❌ Falha no template de funcionalidade"
+          exit 1
+        fi
+    
+    - name: 🧹 Limpar arquivos de teste
+      if: always()
+      run: |
+        rm -f docs/features/FEATURE_funcionalidade_de_teste_ci.md
+        rm -f docs/bugfixes/BUGFIX_*.md
+        rm -f docs/api/API_*.md 

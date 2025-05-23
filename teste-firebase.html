@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Firebase - AppVisita</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #4285f4;
+        }
+        .output {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            margin-top: 10px;
+            height: 300px;
+            overflow-y: auto;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        button {
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #3367d6;
+        }
+    </style>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
+</head>
+<body>
+    <h1>Teste de Inicialização do Firebase</h1>
+    
+    <div class="container">
+        <h2>1. Verificação do Firebase</h2>
+        <div id="firebase-status">Verificando...</div>
+        <div id="output-firebase" class="output"></div>
+        <button id="test-firebase">Testar Firebase</button>
+    </div>
+
+    <div class="container">
+        <h2>2. Testar Arquivos JS</h2>
+        <div id="scripts-status">Verificando...</div>
+        <div id="output-scripts" class="output"></div>
+        <button id="test-scripts">Testar Scripts</button>
+    </div>
+
+    <script>
+        // Função para registrar saída
+        function log(id, message, isError = false) {
+            const output = document.getElementById(id);
+            const now = new Date();
+            const timestamp = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+            const div = document.createElement('div');
+            div.textContent = `[${timestamp}] ${message}`;
+            if (isError) {
+                div.classList.add('error');
+            }
+            output.appendChild(div);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function updateStatus(id, message, isSuccess) {
+            const element = document.getElementById(id);
+            element.innerHTML = message;
+            element.className = isSuccess ? 'success' : 'error';
+        }
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyA8IvktQAQYs_25dS7pRSK1HthcAg0WS00",
+            authDomain: "appvisita-1939a.firebaseapp.com",
+            projectId: "appvisita-1939a",
+            storageBucket: "appvisita-1939a.appspot.com",
+            messagingSenderId: "231699401102",
+            appId: "1:231699401102:web:20947de9c4d6485362bcdf"
+        };
+
+        // Teste do Firebase
+        document.getElementById('test-firebase').addEventListener('click', function() {
+            log('output-firebase', 'Iniciando teste do Firebase...');
+            
+            try {
+                // Verificar se o Firebase já está inicializado
+                if (firebase.apps.length) {
+                    log('output-firebase', 'Firebase já foi inicializado anteriormente.');
+                    firebase.app().delete().then(() => {
+                        log('output-firebase', 'Firebase desligado para reinicialização.');
+                        inicializarFirebase();
+                    });
+                } else {
+                    inicializarFirebase();
+                }
+            } catch (error) {
+                log('output-firebase', `Erro ao verificar Firebase: ${error.message}`, true);
+                updateStatus('firebase-status', '❌ Erro ao verificar Firebase', false);
+            }
+        });
+
+        function inicializarFirebase() {
+            try {
+                log('output-firebase', 'Tentando inicializar Firebase com config:');
+                log('output-firebase', JSON.stringify(firebaseConfig, null, 2));
+                
+                const app = firebase.initializeApp(firebaseConfig);
+                log('output-firebase', '✅ Firebase App inicializado com sucesso');
+                
+                const auth = firebase.auth();
+                log('output-firebase', '✅ Firebase Auth inicializado com sucesso');
+                
+                const db = firebase.firestore();
+                log('output-firebase', '✅ Firebase Firestore inicializado com sucesso');
+                
+                const storage = firebase.storage();
+                log('output-firebase', '✅ Firebase Storage inicializado com sucesso');
+                
+                updateStatus('firebase-status', '✅ Firebase inicializado com sucesso', true);
+                
+                // Verificar versão do Firebase
+                log('output-firebase', `Versão do Firebase: ${firebase.SDK_VERSION}`);
+            } catch (error) {
+                log('output-firebase', `❌ Erro ao inicializar Firebase: ${error.message}`, true);
+                updateStatus('firebase-status', '❌ Erro ao inicializar Firebase', false);
+            }
+        }
+
+        // Testar carregamento dos scripts
+        document.getElementById('test-scripts').addEventListener('click', function() {
+            log('output-scripts', 'Verificando scripts da aplicação...');
+            
+            const scripts = [
+                'script-otimizado.js',
+                'app-ui.js',
+                'app-login.js',
+                'app-pacientes.js',
+                'app-equipes.js',
+                'app-admin.js'
+            ];
+            
+            let loadedCount = 0;
+            
+            scripts.forEach(script => {
+                const scriptElement = document.createElement('script');
+                scriptElement.src = script;
+                
+                scriptElement.onload = function() {
+                    log('output-scripts', `✅ Script ${script} carregado com sucesso`);
+                    loadedCount++;
+                    
+                    if (loadedCount === scripts.length) {
+                        updateStatus('scripts-status', '✅ Todos os scripts carregados com sucesso', true);
+                        verificarObjetosGlobais();
+                    }
+                };
+                
+                scriptElement.onerror = function() {
+                    log('output-scripts', `❌ Erro ao carregar script ${script}`, true);
+                    updateStatus('scripts-status', '❌ Erro ao carregar scripts', false);
+                };
+                
+                document.body.appendChild(scriptElement);
+            });
+        });
+        
+        function verificarObjetosGlobais() {
+            log('output-scripts', 'Verificando objetos globais...');
+            
+            setTimeout(() => {
+                const objetosParaVerificar = [
+                    { nome: 'AppVisita', mensagem: 'Objeto global AppVisita' },
+                    { nome: 'AppModulos', mensagem: 'Objeto global AppModulos' },
+                    { nome: 'AppVisita.Firebase', mensagem: 'Serviço Firebase' },
+                    { nome: 'AppModulos.UI', mensagem: 'Módulo UI' },
+                    { nome: 'AppModulos.Pacientes', mensagem: 'Módulo Pacientes' },
+                    { nome: 'AppModulos.Equipes', mensagem: 'Módulo Equipes' },
+                    { nome: 'AppModulos.Admin', mensagem: 'Módulo Admin' }
+                ];
+                
+                let todosPresentes = true;
+                
+                objetosParaVerificar.forEach(obj => {
+                    let partes = obj.nome.split('.');
+                    let valorAtual = window;
+                    let existe = true;
+                    
+                    for (let parte of partes) {
+                        if (valorAtual && valorAtual[parte] !== undefined) {
+                            valorAtual = valorAtual[parte];
+                        } else {
+                            existe = false;
+                            break;
+                        }
+                    }
+                    
+                    if (existe) {
+                        log('output-scripts', `✅ ${obj.mensagem} está presente`);
+                    } else {
+                        log('output-scripts', `❌ ${obj.mensagem} não está disponível`, true);
+                        todosPresentes = false;
+                    }
+                });
+                
+                if (todosPresentes) {
+                    log('output-scripts', '✅ Todos os objetos globais verificados com sucesso');
+                } else {
+                    log('output-scripts', '❌ Há objetos globais ausentes', true);
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html> 

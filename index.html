@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4285f4">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>AppVisita - Controle de Visitas Médicas</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="estilos-admin.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏥</text></svg>">
+    <!-- Font Awesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    
+    <!-- Firebase SDKs - sem defer para garantir carregamento síncrono -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
+    
+    <!-- Script de configuração e inicialização do Firebase (PRIMEIRO) -->
+    <script src="script-otimizado.js"></script>
+    
+    <!-- Verificador de inicialização do Firebase -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Verificador do DOM carregado, verificando inicialização do Firebase...");
+            
+            // Verificar se a função de verificação existe
+            if (typeof window.verificarFirebaseDisponivel !== 'function') {
+                console.error("Função de verificação do Firebase não encontrada!");
+                const errorMsg = document.createElement('div');
+                errorMsg.style.cssText = 'position:fixed;top:0;left:0;width:100%;padding:10px;background:#f44336;color:white;text-align:center;z-index:9999;';
+                errorMsg.textContent = 'Erro crítico: Função de verificação do Firebase não encontrada. Por favor, recarregue a página.';
+                document.body.appendChild(errorMsg);
+                return;
+            }
+            
+            // Verificar se o Firebase está inicializado
+            if (!window.verificarFirebaseDisponivel()) {
+                console.log("Firebase ainda não está disponível, aguardando evento firebase-ready...");
+                
+                // Configurar listener para evento de inicialização
+                document.addEventListener('firebase-ready', function(event) {
+                    console.log("Firebase inicializado com sucesso via evento.", event?.detail);
+                });
+                
+                // Verificação de timeout como fallback
+                setTimeout(function() {
+                    if (!window.verificarFirebaseDisponivel()) {
+                        console.error("Timeout de inicialização do Firebase atingido!");
+                        const errorMsg = document.createElement('div');
+                        errorMsg.style.cssText = 'position:fixed;top:0;left:0;width:100%;padding:10px;background:#f44336;color:white;text-align:center;z-index:9999;';
+                        errorMsg.textContent = 'Erro crítico: Firebase não foi inicializado após 10 segundos. Por favor, recarregue a página.';
+                        document.body.appendChild(errorMsg);
+                    }
+                }, 10000);
+            } else {
+                console.log("Firebase já está inicializado e disponível");
+            }
+        });
+    </script>
+    
+    <!-- Scripts da aplicação em ordem de dependência -->
+    <script src="app-modulos.js"></script>
+    <script src="app-ui.js"></script>
+</head>
+<body>
+    <!-- Verificação de estados inconsistentes da UI -->
+    <script>
+      (function() {
+        // Verificar se a página foi carregada adequadamente
+        window.addEventListener('load', function() {
+          console.log('Verificando estado da aplicação...');
+          
+          // Definir um timeout para verificar se a UI foi carregada
+          setTimeout(function() {
+            const areaLogin = document.getElementById('area-login');
+            const appContainer = document.getElementById('app-container');
+            const loading = document.getElementById('loading-overlay');
+            
+            // Verificar se os elementos principais estão visíveis
+            if (areaLogin && appContainer) {
+              // Verificar um estado inconsistente - ambos escondidos ou ambos visíveis
+              const areaLoginVisible = areaLogin.style.display !== 'none';
+              const appContainerVisible = appContainer.style.display !== 'none';
+              
+              if ((!areaLoginVisible && !appContainerVisible) || (areaLoginVisible && appContainerVisible)) {
+                console.warn('Estado inconsistente detectado - corrigindo...');
+                
+                // Se o Firebase não foi inicializado em 5 segundos, provavelmente há um problema
+                if (!window.firebase || !window.firebase.auth) {
+                  console.error('Firebase não inicializado corretamente - recarregando a página...');
+                  location.reload();
+                  return;
+                }
+                
+                // Se não temos usuário autenticado, mostrar login
+                const currentUser = window.firebase.auth().currentUser;
+                if (!currentUser) {
+                  console.log('Usuário não autenticado - redirecionando para login');
+                  areaLogin.style.display = 'flex';
+                  appContainer.style.display = 'none';
+                } else {
+                  console.log('Usuário autenticado - redirecionando para dashboard');
+                  areaLogin.style.display = 'none';
+                  appContainer.style.display = 'block';
+                }
+              }
+              
+              // Garantir que o loading não fique visível para sempre
+              if (loading && loading.style.display !== 'none') {
+                console.warn('Loading visível por muito tempo - escondendo...');
+                loading.style.display = 'none';
+              }
+            } else {
+              console.error('Elementos essenciais da UI não encontrados!');
+            }
+          }, 5000); // 5 segundos para carregar
+        });
+      })();
+    </script>
+    
+    <!-- Container de loading -->
+    <div id="loading-overlay" class="loading-overlay">
+      <div class="loading-spinner"></div>
+      <div id="loading-message" class="loading-message">Carregando...</div>
+    </div>
+
+    <section id="area-login" class="login-container">
+        <img src="https://cdn-icons-png.flaticon.com/512/4253/4253264.png" alt="AppVisita Logo" class="logo">
+        <h2>AppVisita</h2>
+        <form id="form-login">
+            <div>
+                <label for="login-email">Email:</label>
+                <input type="email" id="login-email" placeholder="Seu email médico" required>
+            </div>
+            <div>
+                <label for="login-senha">Senha:</label>
+                <input type="password" id="login-senha" placeholder="Sua senha" required>
+            </div>
+            <button type="submit" class="btn-primary">Entrar</button>
+            <p id="login-error-message" class="error-message"></p>
+        </form>
+        <p>Não tem conta? <button id="btn-criar-conta" class="link-button">Crie uma aqui</button></p>
+        <p id="auth-message"></p>
+    </section>
+
+    <div id="app-container" style="display: none;">
+        <!-- Sidebar / Menu lateral -->
+        <div id="sidebar">
+            <div class="sidebar-header">
+                <h3>AppVisita</h3>
+                <button id="close-sidebar" class="btn-icon"><i class="fas fa-times"></i></button>
+            </div>
+            <nav id="menu-principal">
+                <ul>
+                    <li><button id="btn-dashboard" class="menu-btn menu-btn-active"><i class="fas fa-home"></i> Dashboard</button></li>
+                    <li><button id="btn-adicionar-novo" class="menu-btn"><i class="fas fa-user-plus"></i> Adicionar Paciente</button></li>
+                    <li><button id="btn-consultar" class="menu-btn"><i class="fas fa-search"></i> Consultar Paciente</button></li>
+                    <li><button id="btn-logout" class="menu-btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</button></li>
+                </ul>
+            </nav>
+        </div>
+        
+        <!-- Overlay para quando o menu estiver aberto -->
+        <div id="sidebar-overlay"></div>
+
+        <header>
+            <button id="menu-toggle" class="btn-icon"><i class="fas fa-bars"></i></button>
+            <h1>AppVisita</h1>
+        </header>
+        
+        <main>
+            <!-- Dashboard (visível por padrão) -->
+            <section id="dashboard-section" class="app-section active-section">
+                <h2><i class="fas fa-clipboard-list"></i> Visitas Pendentes</h2>
+                <div id="filtros-pendencias">
+                    <label for="ordenar-por">Ordenar por:</label>
+                    <select id="ordenar-por">
+                        <option value="adicao">Ordem de Adição</option>
+                        <option value="nome">Nome (A-Z)</option>
+                    </select>
+                </div>
+                <ul id="lista-pacientes-pendentes">
+                    <!-- Pacientes serão adicionados aqui -->
+                </ul>
+            </section>
+            
+            <!-- Adicionar Paciente (oculto inicialmente) -->
+            <section id="adicionar-paciente-section" class="app-section">
+                <h2><i class="fas fa-user-plus"></i> Adicionar Novo Paciente</h2>
+                <form id="form-adicionar-paciente">
+                    <div class="form-group">
+                        <label for="nome-paciente">Nome do Paciente: <span class="campo-obrigatorio">*</span></label>
+                        <input type="text" id="nome-paciente" required placeholder="Nome completo do paciente">
+                    </div>
+                    <div class="form-group">
+                        <label for="data-nascimento-paciente">Data de Nascimento: <span class="campo-obrigatorio">*</span></label>
+                        <input type="date" id="data-nascimento-paciente" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="id-internacao-paciente">ID da Internação: <span class="campo-obrigatorio">*</span></label>
+                        <input type="text" id="id-internacao-paciente" required placeholder="Número ou ID da internação">
+                    </div>
+                    <div class="form-group">
+                        <label for="local-paciente">Local/Leito: <span class="campo-obrigatorio">*</span></label>
+                        <input type="text" id="local-paciente" required placeholder="Enfermaria, quarto ou leito">
+                    </div>
+                    <div class="form-group" id="equipe-container">
+                        <label for="equipe-paciente">Equipe Médica: <span class="campo-obrigatorio">*</span></label>
+                        <select id="equipe-paciente" name="equipe-paciente" required>
+                            <option value="">Selecione uma equipe</option>
+                            <!-- Será preenchido via JavaScript -->
+                        </select>
+                        <small>Selecione a equipe médica responsável por este paciente.</small>
+                    </div>
+                    <div id="pacientes-sugeridos" class="pacientes-sugeridos"></div>
+                    <div id="msg-paciente-existente" class="alert alert-warning hidden">
+                        <i class="fas fa-exclamation-triangle"></i> Atenção: Este paciente já foi cadastrado anteriormente.
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" id="btn-adicionar-paciente" class="btn-primary">
+                            <i class="fas fa-plus-circle"></i> Adicionar Paciente
+                        </button>
+                    </div>
+                </form>
+            </section>
+            
+            <!-- Consultar Paciente (oculto inicialmente) -->
+            <section id="consultar-paciente-section" class="app-section">
+                <h2><i class="fas fa-search"></i> Consultar Paciente</h2>
+                <div class="consulta-container">
+                    <div class="consulta-form">
+                        <div class="input-group">
+                            <label for="consulta-termo">Buscar por Nome ou ID de Internação:</label>
+                            <div class="search-wrapper">
+                                <input type="text" id="consulta-termo" placeholder="Digite nome ou ID de internação..." required>
+                                <button type="button" id="btn-buscar-paciente"><i class="fas fa-search"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="resultado-consulta" class="resultado-consulta">
+                        <div class="sem-resultados">
+                            <p>Digite um nome ou ID de internação para realizar a consulta.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Seção de Administração (visível apenas para administradores) -->
+            <section id="admin-section" class="app-section">
+                <h2><i class="fas fa-tools"></i> Administração do Sistema</h2>
+                
+                <div class="admin-tabs">
+                    <button id="tab-usuarios" class="admin-tab active">Usuários</button>
+                    <button id="tab-equipes" class="admin-tab">Equipes</button>
+                    <button id="tab-estatisticas" class="admin-tab">Estatísticas</button>
+                </div>
+                
+                <div id="admin-usuarios-container" class="admin-tab-content active">
+                    <div class="admin-card">
+                        <h3>Usuários Pendentes de Aprovação</h3>
+                        <div id="lista-usuarios-pendentes" class="admin-list">
+                            <p class="carregando-info">Carregando usuários pendentes...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-card">
+                        <h3>Todos os Usuários</h3>
+                        <div id="lista-todos-usuarios" class="admin-list">
+                            <p class="carregando-info">Carregando todos os usuários...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="admin-equipes-container" class="admin-tab-content">
+                    <div class="admin-actions">
+                        <button id="btn-nova-equipe" class="btn-primary">
+                            <i class="fas fa-plus-circle"></i> Nova Equipe
+                        </button>
+                    </div>
+                    
+                    <div class="admin-card">
+                        <h3>Equipes Cadastradas</h3>
+                        <div id="lista-equipes" class="admin-list">
+                            <p class="carregando-info">Carregando equipes...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="admin-estatisticas-container" class="admin-tab-content">
+                    <div class="admin-stats-grid">
+                        <div class="admin-stat-card">
+                            <h3>Total de Pacientes</h3>
+                            <div class="stat-number" id="total-pacientes">-</div>
+                        </div>
+                        
+                        <div class="admin-stat-card">
+                            <h3>Médicos Ativos</h3>
+                            <div class="stat-number" id="total-medicos">-</div>
+                        </div>
+                        
+                        <div class="admin-stat-card">
+                            <h3>Equipes</h3>
+                            <div class="stat-number" id="total-equipes">-</div>
+                        </div>
+                        
+                        <div class="admin-stat-card">
+                            <h3>Evoluções/Mês</h3>
+                            <div class="stat-number" id="total-evolucoes">-</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>&copy; 2024 AppVisita | Sistema de Controle de Visitas Médicas</p>
+        </footer>
+    </div> <!-- Fim do app-container -->
+
+    <!-- Modal para Registrar Evolução -->
+    <div id="modal-evolucao" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h3 id="modal-titulo-paciente">Registrar Evolução para Paciente</h3>
+            <form id="form-evolucao">
+                <div>
+                    <label for="texto-evolucao">Evolução do Paciente:</label>
+                    <textarea id="texto-evolucao" rows="6" placeholder="Descreva o estado atual do paciente, exames realizados e conduta..." required></textarea>
+                </div>
+                
+                <!-- Nova seção para anexar imagens -->
+                <div class="upload-imagens-section">
+                    <label>📸 Anexar Imagens (Exames, Resultados, etc.):</label>
+                    <div class="upload-area" id="upload-area">
+                        <div class="upload-placeholder">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Clique para selecionar imagens ou arraste aqui</p>
+                            <small>JPEG, PNG, WebP • Máx. 5MB por imagem • Até 10 imagens</small>
+                        </div>
+                        <input type="file" id="input-imagens" multiple accept="image/jpeg,image/png,image/webp" style="display: none;">
+                    </div>
+                    
+                    <!-- Área de progresso do upload -->
+                    <div id="progress-container" class="progress-container" style="display: none;">
+                        <div class="progress-bar">
+                            <div id="progress-fill" class="progress-fill"></div>
+                        </div>
+                        <span id="progress-text">0%</span>
+                    </div>
+                    
+                    <!-- Preview das imagens selecionadas -->
+                    <div id="preview-imagens" class="preview-imagens"></div>
+                </div>
+                
+                <div>
+                    <label>Status Pós-Visita:</label>
+                    <div>
+                        <input type="radio" id="status-internado" name="status-paciente" value="internado" checked>
+                        <label for="status-internado">Continua Internado</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="status-alta" name="status-paciente" value="alta">
+                        <label for="status-alta">Alta Hospitalar</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="status-obito" name="status-paciente" value="obito">
+                        <label for="status-obito">Óbito</label>
+                    </div>
+                </div>
+                <input type="hidden" id="paciente-id-evolucao">
+                <button type="submit" class="btn-primary">Salvar Evolução</button>
+            </form>
+            <div class="historico-evolucoes-container">
+                <h4>Histórico de Evoluções</h4>
+                <div id="historico-evolucoes-modal">
+                <!-- Evoluções anteriores serão carregadas aqui -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para visualização de imagem ampliada -->
+    <div id="modal-imagem" class="modal modal-imagem">
+        <div class="modal-content-imagem">
+            <span class="close-button">&times;</span>
+            <div class="imagem-container">
+                <img id="imagem-ampliada" src="" alt="Imagem ampliada">
+                <div class="navegacao-imagens">
+                    <button id="btn-anterior" class="nav-btn"><i class="fas fa-chevron-left"></i></button>
+                    <button id="btn-proximo" class="nav-btn"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+            <div class="imagem-info">
+                <span id="contador-imagens">1 / 1</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Criar/Editar Equipe -->
+    <div id="modal-equipe" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2 id="modal-titulo-equipe">Nova Equipe</h2>
+            <form id="form-equipe">
+                <div class="form-group">
+                    <label for="nome-equipe">Nome da Equipe:</label>
+                    <input type="text" id="nome-equipe" required placeholder="Ex: Cardiologia Hospital A">
+                </div>
+                <div class="form-group">
+                    <label for="descricao-equipe">Descrição:</label>
+                    <textarea id="descricao-equipe" placeholder="Breve descrição da equipe"></textarea>
+                </div>
+                <input type="hidden" id="equipe-id" value="">
+                <div class="form-group">
+                    <label>Médicos da Equipe:</label>
+                    <div id="selecao-medicos" class="selecao-medicos">
+                        <p class="carregando-info">Carregando médicos disponíveis...</p>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Salvar Equipe</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts restantes carregados depois do script de inicialização -->
+    <script src="app-login.js"></script>
+    <script src="app-pacientes.js"></script>
+    <script src="app-diagnostico.js"></script>
+    <script src="app-equipes.js"></script>
+    <script src="app-admin.js"></script>
+    
+    <!-- Script de coordenação de carregamento final -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Script de coordenação final carregado");
+            
+            // Aguardar um momento para garantir que todos os scripts foram carregados
+            setTimeout(function() {
+                // Disparar evento de aplicação inicializada
+                console.log("Disparando evento app-ready");
+                document.dispatchEvent(new CustomEvent('app-ready'));
+                
+                // Verificar se o usuário já está autenticado para carregar o dashboard
+                if (window.verificarFirebaseDisponivel() && window.auth && window.auth.currentUser) {
+                    console.log("Usuário já autenticado, carregando dashboard");
+                    // Chamar função de carregamento do dashboard
+                    if (typeof carregarPacientes === 'function') {
+                        setTimeout(() => carregarPacientes(), 500);
+                    }
+                } else {
+                    console.log("Usuário não autenticado, aguardando login");
+                }
+            }, 500);
+        });
+    </script>
+
+    <script>
+        // Script inline para garantir que o menu toggle funcione independentemente dos módulos
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.getElementById('menu-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            const closeSidebarBtn = document.getElementById('close-sidebar');
+            
+            if (menuToggle && sidebar && sidebarOverlay) {
+                menuToggle.addEventListener('click', function() {
+                    console.log('Menu toggle clicado (script inline)');
+                    sidebar.style.left = '0';
+                    sidebarOverlay.style.display = 'block';
+                });
+            }
+            
+            if (closeSidebarBtn && sidebar && sidebarOverlay) {
+                closeSidebarBtn.addEventListener('click', function() {
+                    sidebar.style.left = '-280px';
+                    sidebarOverlay.style.display = 'none';
+                });
+            }
+            
+            if (sidebarOverlay && sidebar) {
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.style.left = '-280px';
+                    sidebarOverlay.style.display = 'none';
+                });
+            }
+        });
+    </script>
+
+    <!-- Script para garantir que a seção de administração exista -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const main = document.querySelector('main');
+        // Verificar se a seção de administração existe e criar se necessário
+        if (main && !document.getElementById('admin-section')) {
+          console.log("Criando seção de administração no DOM");
+          const adminSection = document.createElement('section');
+          adminSection.id = 'admin-section';
+          adminSection.className = 'app-section admin-section';
+          
+          // Estrutura básica do painel administrativo
+          adminSection.innerHTML = `
+            <div class="admin-container">
+              <h2><i class="fas fa-user-shield"></i> Painel Administrativo</h2>
+              
+              <div class="admin-tabs">
+                <button id="tab-dashboard" class="admin-tab active">Dashboard</button>
+                <button id="tab-usuarios" class="admin-tab">Usuários</button>
+                <button id="tab-equipes" class="admin-tab">Equipes</button>
+              </div>
+              
+              <div id="admin-dashboard-container" class="admin-tab-content active">
+                <div class="admin-dashboard-stats">
+                  <div class="stat-card">
+                    <h3>Pacientes</h3>
+                    <div class="stat-number" id="total-pacientes">0</div>
+                  </div>
+                  <div class="stat-card">
+                    <h3>Médicos</h3>
+                    <div class="stat-number" id="total-medicos">0</div>
+                  </div>
+                  <div class="stat-card">
+                    <h3>Equipes</h3>
+                    <div class="stat-number" id="total-equipes">0</div>
+                  </div>
+                  <div class="stat-card">
+                    <h3>Evoluções</h3>
+                    <div class="stat-number" id="total-evolucoes">0</div>
+                  </div>
+                </div>
+                
+                <div class="admin-section-title">
+                  <h3>Usuários Pendentes de Aprovação</h3>
+                </div>
+                
+                <div class="admin-list" id="lista-usuarios-pendentes">
+                  <div class="sem-registros">
+                    <p>Não há usuários pendentes de aprovação.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div id="admin-usuarios-container" class="admin-tab-content">
+                <div class="admin-section-title">
+                  <h3>Todos os Usuários</h3>
+                </div>
+                
+                <div class="admin-list" id="lista-todos-usuarios">
+                  <div class="sem-registros">
+                    <p>Carregando usuários...</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div id="admin-equipes-container" class="admin-tab-content">
+                <div class="admin-section-title">
+                  <h3>Gerenciar Equipes</h3>
+                  <button id="btn-nova-equipe" class="btn-outline">
+                    <i class="fas fa-plus"></i> Nova Equipe
+                  </button>
+                </div>
+                
+                <div class="admin-list" id="lista-equipes">
+                  <div class="sem-registros">
+                    <p>Carregando equipes...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          
+          main.appendChild(adminSection);
+          console.log("Seção de administração criada com sucesso");
+        }
+      });
+    </script>
+    
+    <!-- Script de fixação de navegação -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log("Configurando navegação manual...");
+        
+        // Botões de navegação
+        const btnDashboard = document.getElementById('btn-dashboard');
+        const btnAdicionarNovo = document.getElementById('btn-adicionar-novo');
+        const btnConsultar = document.getElementById('btn-consultar');
+        const btnAdmin = document.getElementById('btn-admin');
+        
+        // Seções
+        const dashboardSection = document.getElementById('dashboard-section');
+        const adicionarPacienteSection = document.getElementById('adicionar-paciente-section');
+        const consultarPacienteSection = document.getElementById('consultar-paciente-section');
+        const adminSection = document.getElementById('admin-section');
+        
+        // Função independente para alternar seções
+        function alternarSecao(secao, botao) {
+          console.log("Alterando para seção:", secao.id);
+          
+          // Esconder todas as seções
+          const todasSecoes = document.querySelectorAll('.app-section');
+          todasSecoes.forEach(s => {
+            s.style.display = 'none';
+            s.classList.remove('active-section');
+          });
+          
+          // Remover classe ativa de todos os botões
+          document.querySelectorAll('.menu-btn').forEach(b => {
+            b.classList.remove('menu-btn-active');
+          });
+          
+          // Mostrar a seção selecionada
+          secao.style.display = 'block';
+          secao.classList.add('active-section');
+          
+          // Ativar o botão selecionado
+          if (botao) {
+            botao.classList.add('menu-btn-active');
+          }
+          
+          // Fechar o sidebar em dispositivos móveis
+          const sidebar = document.getElementById('sidebar');
+          const sidebarOverlay = document.getElementById('sidebar-overlay');
+          
+          if (window.innerWidth <= 768 && sidebar && sidebarOverlay) {
+            sidebar.style.left = '-280px';
+            sidebarOverlay.style.display = 'none';
+          }
+        }
+        
+        // Adicionar eventos aos botões
+        if (btnDashboard && dashboardSection) {
+          btnDashboard.addEventListener('click', function() {
+            alternarSecao(dashboardSection, btnDashboard);
+          });
+        }
+        
+        if (btnAdicionarNovo && adicionarPacienteSection) {
+          btnAdicionarNovo.addEventListener('click', function() {
+            alternarSecao(adicionarPacienteSection, btnAdicionarNovo);
+          });
+        }
+        
+        if (btnConsultar && consultarPacienteSection) {
+          btnConsultar.addEventListener('click', function() {
+            alternarSecao(consultarPacienteSection, btnConsultar);
+          });
+        }
+        
+        if (btnAdmin && adminSection) {
+          btnAdmin.addEventListener('click', function() {
+            alternarSecao(adminSection, btnAdmin);
+          });
+        }
+        
+        console.log("Navegação manual configurada");
+      });
+    </script>
+</body>
+</html> 

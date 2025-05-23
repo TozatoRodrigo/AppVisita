@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste do Firebase</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        button {
+            padding: 10px;
+            margin: 5px;
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            min-height: 100px;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Teste de Configuração do Firebase</h1>
+    
+    <div>
+        <h2>1. Verificar Inicialização</h2>
+        <button id="btn-check-init">Verificar Inicialização do Firebase</button>
+        <div id="init-result" class="result"></div>
+    </div>
+    
+    <div>
+        <h2>2. Testar Autenticação</h2>
+        <div>
+            <input type="email" id="email" placeholder="E-mail">
+            <input type="password" id="password" placeholder="Senha">
+            <button id="btn-login">Fazer Login</button>
+            <button id="btn-logout">Fazer Logout</button>
+        </div>
+        <div id="auth-result" class="result"></div>
+    </div>
+    
+    <div>
+        <h2>3. Status da Autenticação</h2>
+        <button id="btn-auth-status">Verificar Status</button>
+        <div id="status-result" class="result"></div>
+    </div>
+    
+    <script>
+        // Firebase Config - Usar o mesmo do script.js
+        const firebaseConfig = {
+          apiKey: "AIzaSyA8IvktQAQYs_25dS7pRSK1HthcAg0WS00",
+          authDomain: "appvisita-1939a.firebaseapp.com",
+          projectId: "appvisita-1939a",
+          storageBucket: "appvisita-1939a.appspot.com",
+          messagingSenderId: "231699401102",
+          appId: "1:231699401102:web:20947de9c4d6485362bcdf"
+        };
+        
+        // Elementos de UI
+        const btnCheckInit = document.getElementById('btn-check-init');
+        const initResult = document.getElementById('init-result');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const btnLogin = document.getElementById('btn-login');
+        const btnLogout = document.getElementById('btn-logout');
+        const authResult = document.getElementById('auth-result');
+        const btnAuthStatus = document.getElementById('btn-auth-status');
+        const statusResult = document.getElementById('status-result');
+        
+        // Variáveis globais
+        let app, auth, db, firestore;
+        
+        // Evento de verificação da inicialização
+        btnCheckInit.addEventListener('click', () => {
+            try {
+                initResult.innerHTML = '';
+                
+                // Tentativa de inicialização
+                initResult.innerHTML += '<p>Tentando inicializar Firebase...</p>';
+                app = firebase.initializeApp(firebaseConfig);
+                initResult.innerHTML += '<p style="color:green">✓ Firebase App inicializado com sucesso!</p>';
+                
+                // Tentativa de inicializar Auth
+                initResult.innerHTML += '<p>Tentando inicializar Authentication...</p>';
+                auth = firebase.auth();
+                initResult.innerHTML += '<p style="color:green">✓ Firebase Auth inicializado com sucesso!</p>';
+                
+                // Tentativa de inicializar Firestore
+                initResult.innerHTML += '<p>Tentando inicializar Firestore...</p>';
+                db = firebase.firestore();
+                initResult.innerHTML += '<p style="color:green">✓ Firebase Firestore inicializado com sucesso!</p>';
+                
+                // Tentativa de inicializar Storage
+                initResult.innerHTML += '<p>Tentando inicializar Storage...</p>';
+                storage = firebase.storage();
+                initResult.innerHTML += '<p style="color:green">✓ Firebase Storage inicializado com sucesso!</p>';
+                
+                initResult.innerHTML += '<p style="color:green; font-weight:bold">Todas as APIs inicializadas com sucesso!</p>';
+            } catch (error) {
+                initResult.innerHTML += `<p style="color:red">✗ Erro na inicialização: ${error.message}</p>`;
+                console.error("Erro na inicialização:", error);
+            }
+        });
+        
+        // Evento de login
+        btnLogin.addEventListener('click', () => {
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            
+            if (!email || !password) {
+                authResult.innerHTML = '<p style="color:orange">Por favor, preencha email e senha.</p>';
+                return;
+            }
+            
+            if (!auth) {
+                authResult.innerHTML = '<p style="color:red">Firebase Auth não inicializado! Clique em "Verificar Inicialização" primeiro.</p>';
+                return;
+            }
+            
+            authResult.innerHTML = '<p>Tentando fazer login...</p>';
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .then(userCredential => {
+                    authResult.innerHTML = `
+                        <p style="color:green">✓ Login realizado com sucesso!</p>
+                        <p>Email: ${userCredential.user.email}</p>
+                        <p>UID: ${userCredential.user.uid}</p>
+                    `;
+                })
+                .catch(error => {
+                    authResult.innerHTML = `
+                        <p style="color:red">✗ Erro no login: ${error.code}</p>
+                        <p>${error.message}</p>
+                    `;
+                    console.error("Erro no login:", error);
+                });
+        });
+        
+        // Evento de logout
+        btnLogout.addEventListener('click', () => {
+            if (!auth) {
+                authResult.innerHTML = '<p style="color:red">Firebase Auth não inicializado! Clique em "Verificar Inicialização" primeiro.</p>';
+                return;
+            }
+            
+            authResult.innerHTML = '<p>Tentando fazer logout...</p>';
+            
+            auth.signOut()
+                .then(() => {
+                    authResult.innerHTML = '<p style="color:green">✓ Logout realizado com sucesso!</p>';
+                })
+                .catch(error => {
+                    authResult.innerHTML = `<p style="color:red">✗ Erro no logout: ${error.message}</p>`;
+                    console.error("Erro no logout:", error);
+                });
+        });
+        
+        // Verificar status
+        btnAuthStatus.addEventListener('click', () => {
+            if (!auth) {
+                statusResult.innerHTML = '<p style="color:red">Firebase Auth não inicializado! Clique em "Verificar Inicialização" primeiro.</p>';
+                return;
+            }
+            
+            const user = auth.currentUser;
+            
+            if (user) {
+                statusResult.innerHTML = `
+                    <p style="color:green">✓ Usuário autenticado!</p>
+                    <p>Email: ${user.email}</p>
+                    <p>UID: ${user.uid}</p>
+                    <p>Email verificado: ${user.emailVerified ? 'Sim' : 'Não'}</p>
+                `;
+            } else {
+                statusResult.innerHTML = '<p>Nenhum usuário autenticado no momento.</p>';
+            }
+        });
+        
+        // Listener de mudança de estado de autenticação
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                // Inicialização automática
+                app = firebase.initializeApp(firebaseConfig);
+                auth = firebase.auth();
+                db = firebase.firestore();
+                storage = firebase.storage();
+                
+                auth.onAuthStateChanged(user => {
+                    if (user) {
+                        statusResult.innerHTML = `
+                            <p style="color:green">✓ Usuário autenticado automaticamente!</p>
+                            <p>Email: ${user.email}</p>
+                            <p>UID: ${user.uid}</p>
+                        `;
+                    } else {
+                        statusResult.innerHTML = '<p>Nenhum usuário autenticado no momento.</p>';
+                    }
+                });
+            } catch (error) {
+                console.error("Erro na inicialização automática:", error);
+                statusResult.innerHTML = `<p style="color:red">✗ Erro na inicialização automática: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html> 
