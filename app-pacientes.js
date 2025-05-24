@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const ordenarPorSelect = document.getElementById('ordenar-por');
   const modalEvolucao = document.getElementById('modal-evolucao');
   const formEvolucao = document.getElementById('form-evolucao');
-  const historicoEvolucoes = document.getElementById('historico-evolucoes-modal');
+  const historicoEvolucoes = document.getElementById('historico-evolucoes');
   
   // Verifica se os elementos foram encontrados
   if (!listaPacientesPendentes) {
@@ -218,10 +218,10 @@ document.addEventListener('DOMContentLoaded', function() {
           
           const pacienteId = document.getElementById('paciente-id-evolucao').value;
           const textoEvolucao = document.getElementById('texto-evolucao').value.trim();
-          const statusPaciente = document.querySelector('input[name="status-paciente"]:checked').value;
+          const statusPaciente = document.getElementById('status-paciente').value;
           
-          if (!pacienteId || !textoEvolucao) {
-            AppModulos.UI.mostrarNotificacao('Preencha a evolução do paciente', 'aviso');
+          if (!pacienteId || !textoEvolucao || !statusPaciente) {
+            AppModulos.UI.mostrarNotificacao('Preencha todos os campos obrigatórios', 'aviso');
             return;
           }
           
@@ -233,15 +233,24 @@ document.addEventListener('DOMContentLoaded', function() {
           
           // Fazer upload das imagens se houver
           let imagensData = { urls: [], metadados: [] };
+          console.log("🖼️ Verificando se há imagens para upload...");
+          console.log("🖼️ imagensSelecionadas.length:", imagensSelecionadas.length);
+          console.log("🖼️ typeof window.uploadImagensParaStorage:", typeof window.uploadImagensParaStorage);
+          
           if (typeof window.uploadImagensParaStorage === 'function') {
+            console.log("🖼️ Função uploadImagensParaStorage encontrada, iniciando upload...");
             try {
               imagensData = await window.uploadImagensParaStorage(pacienteId, evolucaoId);
+              console.log("🖼️ Upload concluído. URLs:", imagensData.urls);
             } catch (error) {
-              console.error('Erro no upload das imagens:', error);
+              console.error('🖼️ Erro no upload das imagens:', error);
               esconderLoading();
               AppModulos.UI.mostrarNotificacao('Erro ao fazer upload das imagens. Verifique sua conexão e tente novamente.', 'erro');
               return;
             }
+          } else {
+            console.warn("🖼️ Função uploadImagensParaStorage NÃO encontrada!");
+            console.log("🖼️ window.uploadImagensParaStorage:", window.uploadImagensParaStorage);
           }
           
           // Preparar dados da evolução com imagens
@@ -258,6 +267,11 @@ document.addEventListener('DOMContentLoaded', function() {
           if (imagensData.urls.length > 0) {
             evolucaoData.imagens = imagensData.urls;
             evolucaoData.metadadosImagens = imagensData.metadados;
+            console.log("🖼️ SALVANDO EVOLUÇÃO COM IMAGENS:");
+            console.log("🖼️ URLs das imagens:", imagensData.urls);
+            console.log("🖼️ Metadados:", imagensData.metadados);
+          } else {
+            console.log("🖼️ Salvando evolução SEM imagens");
           }
           
           // Adicionar evolução ao paciente
@@ -536,11 +550,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     try {
-      // Limpar imagens da sessão anterior
-      if (typeof window.limparImagensSelecionadas === 'function') {
-        window.limparImagensSelecionadas();
-      }
-      
       // Definir título do modal
       const tituloModal = document.getElementById('modal-titulo-paciente');
       if (tituloModal) {
@@ -553,53 +562,60 @@ document.addEventListener('DOMContentLoaded', function() {
         idInput.value = pacienteId;
       }
       
+      // Limpar formulário de evolução
+      const formEvolucao = document.getElementById('form-evolucao');
+      if (formEvolucao) {
+        formEvolucao.reset();
+        // Restaurar o ID do paciente após o reset
+        if (idInput) {
+          idInput.value = pacienteId;
+        }
+      }
+      
       // Carregar histórico de evoluções
       carregarHistoricoEvolucoes(pacienteId);
       
       // Exibir modal
       modalEvolucao.style.display = 'block';
+      modalEvolucao.style.zIndex = '1000';
       
-      // 🔥 FORÇAR INICIALIZAÇÃO DO UPLOAD QUANDO MODAL ABRE
-      console.log("🔥 MODAL DE EVOLUÇÃO ABERTO - Verificando upload de imagens");
+      // Garantir que o modal esteja visível (forçar estilo)
+      modalEvolucao.classList.remove('hidden');
+      modalEvolucao.style.visibility = 'visible';
+      modalEvolucao.style.opacity = '1';
+      
+      // Scroll para o topo da página
+      window.scrollTo(0, 0);
+      
+      // Debug: verificar se o modal está realmente visível
+      console.log("🔥 Modal exibido. Display:", modalEvolucao.style.display);
+      console.log("🔥 Modal computedStyle.display:", window.getComputedStyle(modalEvolucao).display);
+      console.log("🔥 Modal offsetHeight:", modalEvolucao.offsetHeight);
+      console.log("🔥 Modal offsetWidth:", modalEvolucao.offsetWidth);
+      
+      // Aguardar um momento para o modal estar completamente visível
       setTimeout(() => {
-        console.log("🔥 Forçando verificação de inicialização do upload...");
+        console.log("🔥 MODAL DE EVOLUÇÃO ABERTO - Inicializando funcionalidades");
         
-        const uploadArea = document.getElementById('upload-area');
-        const inputImagens = document.getElementById('input-imagens');
-        const previewContainer = document.getElementById('preview-imagens');
+        // Garantir que o modal de imagem está inicializado
+        inicializarModalImagem();
         
-        console.log("🔥 Elementos após abrir modal:");
-        console.log("🔥 - uploadArea:", !!uploadArea);
-        console.log("🔥 - inputImagens:", !!inputImagens);
-        console.log("🔥 - previewContainer:", !!previewContainer);
-        
-        if (uploadArea && inputImagens && previewContainer) {
-          console.log("🔥 Elementos encontrados, verificando se eventos estão configurados...");
-          
-          // Verificar se já tem event listeners
-          const temEventos = uploadArea.onclick !== null || uploadArea.ondragover !== null;
-          console.log("🔥 Upload area já tem eventos?", temEventos);
-          
-          if (!temEventos) {
-            console.log("🔥 EVENTOS NÃO CONFIGURADOS! Inicializando agora...");
-            inicializarUploadImagens();
-          } else {
-            console.log("🔥 Eventos já configurados, testando click...");
-            // Testar se o click funciona
-            uploadArea.addEventListener('click', () => {
-              console.log("🔥 TESTE: Click detectado na área de upload!");
-            }, { once: true });
+        // Limpar imagens da sessão anterior
+        if (typeof limparImagensSelecionadas === 'function') {
+          try {
+            limparImagensSelecionadas();
+          } catch (error) {
+            console.warn("Erro ao limpar imagens:", error);
           }
-        } else {
-          console.error("🔥 ERRO: Elementos ainda não encontrados após abrir modal");
-          console.log("🔥 Tentando novamente em 1 segundo...");
-          setTimeout(() => {
-            console.log("🔥 Segunda tentativa após modal aberto...");
-            inicializarUploadImagens();
-          }, 1000);
         }
-      }, 500);
-      
+        
+        // Inicializar upload de imagens
+        try {
+          inicializarUploadImagens();
+        } catch (error) {
+          console.error("Erro ao inicializar upload:", error);
+        }
+      }, 300);
     } catch (error) {
       console.error("Erro ao abrir modal de evolução:", error);
       AppModulos.UI.mostrarNotificacao('Erro ao abrir formulário de evolução. Tente novamente.', 'erro');
@@ -650,6 +666,13 @@ document.addEventListener('DOMContentLoaded', function() {
       let historicoHTML = '';
       
       evolucoes.forEach(evolucao => {
+        console.log("🖼️ DEBUG - Evolução:", {
+          id: evolucao.id,
+          temImagens: !!evolucao.imagens,
+          quantidadeImagens: evolucao.imagens ? evolucao.imagens.length : 0,
+          imagens: evolucao.imagens
+        });
+        
         const dataFormatada = AppVisita.Utils.formatarDataHora(evolucao.dataRegistro);
         const statusText = evolucao.status === 'internado' ? 'Continua Internado' : 
                           evolucao.status === 'alta' ? 'Alta Hospitalar' : 'Óbito';
@@ -658,9 +681,40 @@ document.addEventListener('DOMContentLoaded', function() {
                            evolucao.status === 'alta' ? 'status-alta' : 'status-obito';
         
         // Renderizar galeria de imagens se houver
-        const galeriaImagens = (typeof window.renderizarGaleriaImagens === 'function' && evolucao.imagens) 
-          ? window.renderizarGaleriaImagens(evolucao.imagens) 
-          : '';
+        let galeriaImagens = '';
+        if (evolucao.imagens && evolucao.imagens.length > 0) {
+          console.log("🖼️ Renderizando galeria para evolução com", evolucao.imagens.length, "imagens");
+          
+          // Tentar usar a função global primeiro
+          if (typeof window.renderizarGaleriaImagens === 'function') {
+            galeriaImagens = window.renderizarGaleriaImagens(evolucao.imagens);
+            console.log("🖼️ HTML da galeria gerado:", galeriaImagens.substring(0, 100));
+          } 
+          // Fallback: usar a função local
+          else if (typeof renderizarGaleriaImagens === 'function') {
+            galeriaImagens = renderizarGaleriaImagens(evolucao.imagens);
+            console.log("🖼️ HTML da galeria gerado (local):", galeriaImagens.substring(0, 100));
+          } 
+          // Fallback final: criar HTML manualmente
+          else {
+            console.warn("🖼️ Função renderizarGaleriaImagens não encontrada, criando HTML manualmente");
+            galeriaImagens = `
+              <div class="evolucao-galeria">
+                <h5>📸 Imagens Anexadas (${evolucao.imagens.length})</h5>
+                <div class="galeria-imagens">
+                  ${evolucao.imagens.map((url, index) => `
+                    <div class="galeria-item" onclick="window.abrirImagemModal(${JSON.stringify(evolucao.imagens).replace(/"/g, '&quot;')}, ${index})">
+                      <img src="${url}" alt="Imagem ${index + 1}" loading="lazy" style="max-width: 100px; max-height: 100px; object-fit: cover; border-radius: 4px; cursor: pointer;">
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+            console.log("🖼️ HTML manual criado:", galeriaImagens.substring(0, 100));
+          }
+        } else {
+          console.log("🖼️ Nenhuma imagem encontrada para esta evolução");
+        }
         
         historicoHTML += `
           <div class="evolucao-item">
@@ -764,7 +818,11 @@ document.addEventListener('DOMContentLoaded', function() {
               dataNascimento = paciente.dataNascimento;
             }
           } 
-          // Caso contrário, tenta converter para string
+          // Verificar se é um objeto Date
+          else if (paciente.dataNascimento instanceof Date) {
+            dataNascimento = paciente.dataNascimento.toLocaleDateString('pt-BR');
+          }
+          // Caso seja outro formato, tentar converter para string
           else {
             dataNascimento = String(paciente.dataNascimento);
           }
@@ -1352,15 +1410,46 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Atualizar estado da interface de upload
   function atualizarEstadoUpload() {
-    const uploadArea = document.getElementById('upload-area');
-    const placeholder = uploadArea.querySelector('.upload-placeholder p');
+    console.log("🔥 DEBUG: atualizarEstadoUpload chamada");
     
-    if (imagensSelecionadas.length > 0) {
-      placeholder.textContent = `${imagensSelecionadas.length} imagem(ns) selecionada(s)`;
-      uploadArea.classList.add('upload-success');
-    } else {
-      placeholder.textContent = 'Clique para selecionar imagens ou arraste aqui';
-      uploadArea.classList.remove('upload-success');
+    try {
+      const uploadArea = document.getElementById('upload-area');
+      
+      // Verificar se o upload area existe
+      if (!uploadArea) {
+        console.warn('🔥 Upload area não encontrada (ID: upload-area)');
+        return;
+      }
+      
+      console.log("🔥 Upload area encontrada, procurando por .upload-text");
+      const placeholder = uploadArea.querySelector('.upload-text');
+      
+      // Verificar se o placeholder existe
+      if (!placeholder) {
+        console.warn('🔥 Upload text placeholder não encontrado (.upload-text)');
+        console.log('🔥 Conteúdo da uploadArea:', uploadArea.innerHTML.substring(0, 200));
+        // Tentar buscar qualquer elemento com texto
+        const todosOsPs = uploadArea.querySelectorAll('p');
+        console.log('🔥 Elementos p encontrados:', todosOsPs.length);
+        todosOsPs.forEach((p, i) => {
+          console.log(`🔥 P[${i}]: ${p.className} - ${p.textContent.substring(0, 50)}`);
+        });
+        return;
+      }
+      
+      console.log("🔥 Upload text encontrado, atualizando estado");
+      
+      if (imagensSelecionadas && imagensSelecionadas.length > 0) {
+        placeholder.textContent = `${imagensSelecionadas.length} imagem(ns) selecionada(s)`;
+        uploadArea.classList.add('upload-success');
+      } else {
+        placeholder.textContent = 'Clique aqui ou arraste imagens para anexar';
+        uploadArea.classList.remove('upload-success');
+      }
+      
+      console.log("🔥 Estado de upload atualizado com sucesso");
+    } catch (error) {
+      console.error("🔥 ERRO em atualizarEstadoUpload:", error);
     }
   }
 
@@ -1472,31 +1561,46 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Mostrar barra de progresso
   function mostrarProgressoUpload() {
-    const progressContainer = document.getElementById('progress-container');
+    const progressContainer = document.getElementById('progress-upload');
     const uploadArea = document.getElementById('upload-area');
     
-    progressContainer.style.display = 'flex';
-    uploadArea.classList.add('upload-loading');
+    if (progressContainer) {
+      progressContainer.style.display = 'block';
+    }
+    
+    if (uploadArea) {
+      uploadArea.classList.add('upload-loading');
+    }
     
     atualizarProgressoUpload(0);
   }
 
   // Atualizar progresso do upload
   function atualizarProgressoUpload(porcentagem) {
-    const progressFill = document.getElementById('progress-fill');
+    const progressFill = document.getElementById('progress-bar-fill');
     const progressText = document.getElementById('progress-text');
     
-    progressFill.style.width = `${porcentagem}%`;
-    progressText.textContent = `${Math.round(porcentagem)}%`;
+    if (progressFill) {
+      progressFill.style.width = `${porcentagem}%`;
+    }
+    
+    if (progressText) {
+      progressText.textContent = `Fazendo upload... ${Math.round(porcentagem)}%`;
+    }
   }
 
   // Esconder barra de progresso
   function esconderProgressoUpload() {
-    const progressContainer = document.getElementById('progress-container');
+    const progressContainer = document.getElementById('progress-upload');
     const uploadArea = document.getElementById('upload-area');
     
-    progressContainer.style.display = 'none';
-    uploadArea.classList.remove('upload-loading');
+    if (progressContainer) {
+      progressContainer.style.display = 'none';
+    }
+    
+    if (uploadArea) {
+      uploadArea.classList.remove('upload-loading');
+    }
   }
 
   // Limpar seleção de imagens
@@ -1526,86 +1630,325 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Renderizar galeria de imagens na evolução
   function renderizarGaleriaImagens(imagens) {
+    console.log("🖼️ renderizarGaleriaImagens chamada com", imagens.length, "imagens");
+    
     if (!imagens || imagens.length === 0) return '';
     
-    return `
+    const html = `
       <div class="evolucao-galeria">
         <h5>📸 Imagens Anexadas (${imagens.length})</h5>
         <div class="galeria-imagens">
           ${imagens.map((url, index) => `
-            <div class="galeria-item" onclick="abrirImagemModal(${JSON.stringify(imagens).replace(/"/g, '&quot;')}, ${index})">
+            <div class="galeria-item" onclick="window.abrirImagemModal(${JSON.stringify(imagens).replace(/"/g, '&quot;')}, ${index})">
               <img src="${url}" alt="Imagem ${index + 1}" loading="lazy">
             </div>
           `).join('')}
         </div>
       </div>
     `;
+    
+    console.log("🖼️ HTML da galeria gerado:", html.substring(0, 200));
+    return html;
   }
 
   // Inicializar modal de visualização de imagem
   function inicializarModalImagem() {
-    const modalImagem = document.getElementById('modal-imagem');
-    const closeBtn = modalImagem.querySelector('.close-button');
-    const btnAnterior = document.getElementById('btn-anterior');
-    const btnProximo = document.getElementById('btn-proximo');
+    console.log("🖼️ Inicializando modal de imagem...");
     
-    // Fechar modal
-    closeBtn.addEventListener('click', () => {
-      modalImagem.style.display = 'none';
+    const modalImagem = document.getElementById('modal-imagem');
+    
+    if (!modalImagem) {
+      console.warn('🖼️ Modal de imagem não encontrado no DOM');
+      return;
+    }
+    
+    console.log("🖼️ Modal de imagem encontrado no DOM");
+    
+    const closeBtn = modalImagem.querySelector('.modal-imagem-close');
+    const btnAnterior = modalImagem.querySelector('.modal-imagem-prev');
+    const btnProximo = modalImagem.querySelector('.modal-imagem-next');
+    
+    console.log("🖼️ Elementos do modal:", {
+      closeBtn: !!closeBtn,
+      btnAnterior: !!btnAnterior,
+      btnProximo: !!btnProximo
     });
+    
+    // Verificar se os elementos existem antes de adicionar eventos
+    if (closeBtn) {
+      console.log("🖼️ Adicionando evento de fechar ao botão X");
+      // Fechar modal
+      closeBtn.addEventListener('click', () => {
+        console.log("🖼️ Botão X clicado, fechando modal");
+        modalImagem.style.display = 'none';
+      });
+    }
     
     // Fechar ao clicar fora da imagem
     modalImagem.addEventListener('click', (e) => {
       if (e.target === modalImagem) {
+        console.log("🖼️ Clique fora da imagem, fechando modal");
         modalImagem.style.display = 'none';
       }
     });
     
-    // Navegação entre imagens
-    btnAnterior.addEventListener('click', () => navegarImagem(-1));
-    btnProximo.addEventListener('click', () => navegarImagem(1));
+    // Navegação entre imagens (se os botões existirem)
+    if (btnAnterior) {
+      btnAnterior.addEventListener('click', () => {
+        console.log("🖼️ Botão anterior clicado");
+        navegarImagem(-1);
+      });
+    }
+    
+    if (btnProximo) {
+      btnProximo.addEventListener('click', () => {
+        console.log("🖼️ Botão próximo clicado");
+        navegarImagem(1);
+      });
+    }
     
     // Navegação por teclado
     document.addEventListener('keydown', (e) => {
       if (modalImagem.style.display === 'block') {
-        if (e.key === 'ArrowLeft') navegarImagem(-1);
-        if (e.key === 'ArrowRight') navegarImagem(1);
-        if (e.key === 'Escape') modalImagem.style.display = 'none';
+        if (e.key === 'ArrowLeft') {
+          console.log("🖼️ Tecla seta esquerda pressionada");
+          navegarImagem(-1);
+        }
+        if (e.key === 'ArrowRight') {
+          console.log("🖼️ Tecla seta direita pressionada");
+          navegarImagem(1);
+        }
+        if (e.key === 'Escape') {
+          console.log("🖼️ Tecla ESC pressionada, fechando modal");
+          modalImagem.style.display = 'none';
+        }
       }
     });
+    
+    console.log("🖼️ Modal de imagem inicializado com sucesso!");
   }
 
   // Abrir modal de visualização de imagem
   function abrirImagemModal(imagens, indiceInicial = 0) {
-    imagensParaVisualizar = imagens;
-    indiceImagemAtual = indiceInicial;
+    console.log("🖼️ abrirImagemModal chamada - CRIANDO MODAL DO ZERO!");
+    console.log("🖼️ Imagens recebidas:", imagens);
+    console.log("🖼️ Índice inicial:", indiceInicial);
     
-    const modalImagem = document.getElementById('modal-imagem');
-    modalImagem.style.display = 'block';
+    // Remover modal existente se houver
+    const modalExistente = document.getElementById('modal-imagem-dinamico');
+    if (modalExistente) {
+      modalExistente.remove();
+    }
     
-    atualizarImagemModal();
-  }
-
-  // Atualizar imagem no modal
-  function atualizarImagemModal() {
-    const imagemAmpliada = document.getElementById('imagem-ampliada');
-    const contadorImagens = document.getElementById('contador-imagens');
-    const btnAnterior = document.getElementById('btn-anterior');
-    const btnProximo = document.getElementById('btn-proximo');
+    // Criar modal completamente novo
+    const modal = document.createElement('div');
+    modal.id = 'modal-imagem-dinamico';
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.9);
+      z-index: 999999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    `;
     
-    // Atualizar imagem
-    imagemAmpliada.src = imagensParaVisualizar[indiceImagemAtual];
+    // Criar container da imagem
+    const container = document.createElement('div');
+    container.style.cssText = `
+      position: relative;
+      max-width: 90%;
+      max-height: 90%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    `;
     
-    // Atualizar contador
-    contadorImagens.textContent = `${indiceImagemAtual + 1} / ${imagensParaVisualizar.length}`;
+    // Criar imagem
+    const img = document.createElement('img');
+    img.src = imagens[indiceInicial];
+    img.style.cssText = `
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    `;
     
-    // Atualizar botões de navegação
-    btnAnterior.disabled = indiceImagemAtual === 0;
-    btnProximo.disabled = indiceImagemAtual === imagensParaVisualizar.length - 1;
+    // Criar botão de fechar
+    const btnFechar = document.createElement('button');
+    btnFechar.innerHTML = '&times;';
+    btnFechar.style.cssText = `
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      background: rgba(255, 255, 255, 0.9);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 24px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #333;
+      z-index: 1000000;
+    `;
     
-    // Esconder navegação se só houver uma imagem
-    const navegacao = document.querySelector('.navegacao-imagens');
-    navegacao.style.display = imagensParaVisualizar.length > 1 ? 'flex' : 'none';
+    // Criar contador
+    const contador = document.createElement('div');
+    contador.textContent = `${indiceInicial + 1} / ${imagens.length}`;
+    contador.style.cssText = `
+      position: absolute;
+      bottom: -40px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.9);
+      padding: 8px 16px;
+      border-radius: 20px;
+      color: #333;
+      font-weight: bold;
+      z-index: 1000000;
+    `;
+    
+    // Criar botões de navegação (se houver mais de uma imagem)
+    let btnAnterior, btnProximo;
+    if (imagens.length > 1) {
+      btnAnterior = document.createElement('button');
+      btnAnterior.innerHTML = '&#8249;';
+      btnAnterior.style.cssText = `
+        position: absolute;
+        left: -60px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        font-size: 30px;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #333;
+        z-index: 1000000;
+      `;
+      
+      btnProximo = document.createElement('button');
+      btnProximo.innerHTML = '&#8250;';
+      btnProximo.style.cssText = `
+        position: absolute;
+        right: -60px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        font-size: 30px;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #333;
+        z-index: 1000000;
+      `;
+    }
+    
+    // Montar o modal
+    container.appendChild(img);
+    container.appendChild(btnFechar);
+    container.appendChild(contador);
+    if (btnAnterior) container.appendChild(btnAnterior);
+    if (btnProximo) container.appendChild(btnProximo);
+    modal.appendChild(container);
+    
+    // Adicionar ao body
+    document.body.appendChild(modal);
+    
+    // Variáveis para navegação
+    let indiceAtual = indiceInicial;
+    
+    // Função para atualizar imagem
+    function atualizarImagem() {
+      img.src = imagens[indiceAtual];
+      contador.textContent = `${indiceAtual + 1} / ${imagens.length}`;
+      
+      if (btnAnterior) {
+        btnAnterior.style.display = indiceAtual === 0 ? 'none' : 'flex';
+      }
+      if (btnProximo) {
+        btnProximo.style.display = indiceAtual === imagens.length - 1 ? 'none' : 'flex';
+      }
+    }
+    
+    // Eventos
+    btnFechar.addEventListener('click', () => {
+      console.log("🖼️ Fechando modal via botão X");
+      modal.remove();
+    });
+    
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        console.log("🖼️ Fechando modal via clique fora");
+        modal.remove();
+      }
+    });
+    
+    if (btnAnterior) {
+      btnAnterior.addEventListener('click', () => {
+        if (indiceAtual > 0) {
+          indiceAtual--;
+          atualizarImagem();
+          console.log("🖼️ Navegando para imagem anterior:", indiceAtual);
+        }
+      });
+    }
+    
+    if (btnProximo) {
+      btnProximo.addEventListener('click', () => {
+        if (indiceAtual < imagens.length - 1) {
+          indiceAtual++;
+          atualizarImagem();
+          console.log("🖼️ Navegando para próxima imagem:", indiceAtual);
+        }
+      });
+    }
+    
+    // Navegação por teclado
+    document.addEventListener('keydown', function modalKeyHandler(e) {
+      if (document.getElementById('modal-imagem-dinamico')) {
+        if (e.key === 'Escape') {
+          console.log("🖼️ Fechando modal via ESC");
+          modal.remove();
+          document.removeEventListener('keydown', modalKeyHandler);
+        } else if (e.key === 'ArrowLeft' && indiceAtual > 0) {
+          indiceAtual--;
+          atualizarImagem();
+          console.log("🖼️ Navegando via seta esquerda para:", indiceAtual);
+        } else if (e.key === 'ArrowRight' && indiceAtual < imagens.length - 1) {
+          indiceAtual++;
+          atualizarImagem();
+          console.log("🖼️ Navegando via seta direita para:", indiceAtual);
+        }
+      }
+    });
+    
+    // Atualizar estado inicial
+    atualizarImagem();
+    
+    console.log("🖼️ Modal dinâmico criado e exibido com sucesso!");
+    console.log("🖼️ URL da imagem:", imagens[indiceAtual]);
   }
 
   // Navegar entre imagens
@@ -1618,98 +1961,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // Expor função globalmente para usar nos templates
+  // Expor função globalmente para compatibilidade
+  window.carregarPacientes = carregarPacientes;
+  window.limparImagensSelecionadas = limparImagensSelecionadas;
+  window.renderizarGaleriaImagens = renderizarGaleriaImagens;
   window.abrirImagemModal = abrirImagemModal;
   window.removerImagem = removerImagem;
-
-  // Inicializar quando o DOM estiver pronto
-  document.addEventListener('DOMContentLoaded', () => {
-    console.log("🔥 DOM pronto para inicialização de upload");
-    // Aguardar um pouco para garantir que outros elementos foram inicializados
-    setTimeout(() => {
-      console.log("🔥 Primeira tentativa de inicialização do upload de imagens");
-      inicializarUploadImagens();
-    }, 1000);
-    
-    // Segunda tentativa após um tempo maior para garantir que funcione
-    setTimeout(() => {
-      console.log("🔥 Segunda tentativa de inicialização do upload de imagens");
-      const uploadArea = document.getElementById('upload-area');
-      if (!uploadArea) {
-        console.error("🔥 Ainda não encontrou upload-area, tentando novamente em 2s...");
-        setTimeout(() => {
-          console.log("🔥 Terceira tentativa de inicialização do upload de imagens");
-          inicializarUploadImagens();
-        }, 2000);
-      } else {
-        console.log("🔥 Upload-area encontrado na segunda tentativa");
-      }
-    }, 2000);
-  });
-
-  // Função utilitária para garantir que o upload está inicializado
-  function garantirUploadInicializado() {
-    console.log("🔥 GARANTIR UPLOAD INICIALIZADO - Verificando...");
-    
-    const uploadArea = document.getElementById('upload-area');
-    if (!uploadArea) {
-      console.log("🔥 Upload area não encontrada, não é possível inicializar");
-      return false;
-    }
-    
-    if (uploadArea.dataset.uploadInicializado !== 'true') {
-      console.log("🔥 Upload não foi inicializado, inicializando agora...");
-      inicializarUploadImagens();
-      return true;
-    } else {
-      console.log("🔥 Upload já está inicializado");
-      return true;
-    }
-  }
-
-  // 🔥 FUNÇÃO DE TESTE ESPECÍFICA PARA DEBUG
-  function testarUploadImagens() {
-    console.log("🔥 === TESTE COMPLETO DE UPLOAD ===");
-    
-    const uploadArea = document.getElementById('upload-area');
-    const inputImagens = document.getElementById('input-imagens');
-    const previewContainer = document.getElementById('preview-imagens');
-    
-    console.log("🔥 TESTE - Elementos:");
-    console.log("🔥 - uploadArea exists:", !!uploadArea);
-    console.log("🔥 - inputImagens exists:", !!inputImagens);
-    console.log("🔥 - previewContainer exists:", !!previewContainer);
-    
-    if (!uploadArea || !inputImagens || !previewContainer) {
-      console.error("🔥 TESTE FALHOU - Elementos não encontrados");
-      return false;
-    }
-    
-    console.log("🔥 TESTE - Propriedades do input:");
-    console.log("🔥 - disabled:", inputImagens.disabled);
-    console.log("🔥 - type:", inputImagens.type);
-    console.log("🔥 - accept:", inputImagens.accept);
-    console.log("🔥 - multiple:", inputImagens.multiple);
-    console.log("🔥 - style.display:", inputImagens.style.display);
-    
-    console.log("🔥 TESTE - Upload inicializado?", uploadArea.dataset.uploadInicializado);
-    
-    console.log("🔥 TESTE - Testando click programático...");
-    try {
-      inputImagens.click();
-      console.log("🔥 TESTE - Click executado sem erro");
-      return true;
-    } catch (error) {
-      console.error("🔥 TESTE - Erro no click:", error);
-      return false;
-    }
-  }
-
-  // Expor funções necessárias globalmente
   window.uploadImagensParaStorage = uploadImagensParaStorage;
-  window.renderizarGaleriaImagens = renderizarGaleriaImagens;
-  window.limparImagensSelecionadas = limparImagensSelecionadas;
-  window.garantirUploadInicializado = garantirUploadInicializado;
-  window.inicializarUploadImagens = inicializarUploadImagens;
-  window.testarUploadImagens = testarUploadImagens;
+  
+  // Garantir que as funções necessárias estejam disponíveis globalmente
+  if (typeof window.AppModulos === 'undefined') {
+    window.AppModulos = {};
+  }
+  if (typeof window.AppModulos.Pacientes === 'undefined') {
+    window.AppModulos.Pacientes = {};
+  }
+  
+  // Expor funções principais do módulo
+  window.AppModulos.Pacientes = {
+    carregarPacientes,
+    inicializarModuloPacientes,
+    buscarPacientes,
+    abrirModalEvolucao,
+    limparImagensSelecionadas,
+    inicializarUploadImagens
+  };
 }); 

@@ -23,10 +23,41 @@ O **AppVisita** é um sistema web desenvolvido para facilitar o gerenciamento de
 - 👥 **Gestão de equipes médicas** e usuários
 - 🏥 **Cadastro e gerenciamento de pacientes**
 - 📝 **Registro de evoluções médicas** com histórico completo
-- 📸 **Anexo de imagens** em evoluções (exames, procedimentos)
+- 📸 **Sistema completo de upload de imagens** com drag & drop
+- 🖼️ **Visualizador profissional de imagens** com navegação por teclado
 - 🔍 **Sistema de busca** avançado de pacientes
 - 📊 **Dashboard administrativo** com estatísticas
 - 📱 **Interface responsiva** para desktop e mobile
+- 🏥 **Status do paciente** (Internado, Alta, Óbito)
+
+## 📸 Sistema de Imagens Médicas
+
+### 🚀 Upload Avançado
+- **Upload múltiplo**: Até 10 imagens por evolução
+- **Drag & Drop**: Interface intuitiva para arrastar arquivos
+- **Preview instantâneo**: Visualização antes do upload
+- **Compressão automática**: Otimização sem perda de qualidade
+- **Validação rigorosa**: Tipos permitidos (JPEG, PNG, WebP)
+- **Limite de tamanho**: Máximo 5MB por arquivo
+- **Barra de progresso**: Feedback visual em tempo real
+- **Remoção individual**: Gerenciar imagens antes do envio
+
+### 🖼️ Visualização Profissional
+- **Modal em tela cheia**: Visualização ampliada das imagens
+- **Navegação por setas**: Percorrer múltiplas imagens facilmente
+- **Controles de teclado**: ESC para fechar, setas para navegar
+- **Contador de posição**: Indicador "1/3", "2/3", etc.
+- **Design responsivo**: Adaptado para mobile e desktop
+- **Fundo escuro**: Melhor contraste para visualização médica
+- **Criação dinâmica**: Modal criado via JavaScript para máxima compatibilidade
+
+### 🔒 Segurança e Performance
+- **URLs seguros**: Links temporários via Firebase Storage
+- **Isolamento por paciente**: Organização segura no Storage
+- **Metadados completos**: Nome, tamanho, data de upload
+- **IDs únicos**: Identificação exclusiva por evolução
+- **Carregamento lazy**: Otimização para histórico extenso
+- **Error handling**: Tratamento robusto de falhas
 
 ## 🚀 Demonstração
 
@@ -187,17 +218,37 @@ O **AppVisita** é um sistema web desenvolvido para facilitar o gerenciamento de
 1. **Adicionar Paciente**:
    - Preencher dados completos
    - Associar à equipe médica
-   - Sistema detecta reinternações
+   - Sistema detecta reinternações automaticamente
 
-2. **Registrar Evolução**:
-   - Escrever texto da evolução
-   - Anexar imagens (opcional)
-   - Definir status do paciente
+2. **Registrar Evolução Completa**:
+   - **Texto da evolução**: Descrever quadro clínico
+   - **Status do paciente**: Internado / Alta Hospitalar / Óbito
+   - **Anexar imagens**: Upload múltiplo com drag & drop
+   - **Preview**: Visualizar imagens antes de salvar
+   - **Remoção**: Excluir imagens específicas se necessário
 
-3. **Consultar Histórico**:
-   - Buscar por nome ou ID
-   - Visualizar timeline completa
-   - Acessar imagens anexadas
+3. **Upload de Imagens**:
+   - **Arrastar e soltar**: Simplesmente arraste arquivos para a área
+   - **Clique para selecionar**: Botão tradicional de seleção
+   - **Múltiplas imagens**: Até 10 imagens por evolução
+   - **Formatos suportados**: JPEG, PNG, WebP (máx. 5MB cada)
+   - **Compressão automática**: Sistema otimiza automaticamente
+
+4. **Visualizar Histórico**:
+   - **Buscar por nome ou ID**: Sistema de busca inteligente
+   - **Timeline completa**: Histórico cronológico de evoluções
+   - **Galeria de imagens**: Miniaturas clicáveis no histórico
+   - **Visualização ampliada**: Modal profissional para imagens
+   - **Navegação**: Use setas do teclado ou botões na tela
+
+5. **Navegação nas Imagens**:
+   - **Clique na miniatura**: Abre visualização em tamanho grande
+   - **Teclas de atalho**: 
+     - `ESC` para fechar
+     - `←` seta esquerda para imagem anterior
+     - `→` seta direita para próxima imagem
+   - **Botões visuais**: Setas na tela para navegação
+   - **Contador**: Indicação da posição atual (ex: "2/5")
 
 ## 🏗️ Estrutura do Projeto
 

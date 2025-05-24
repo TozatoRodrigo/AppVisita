@@ -5,9 +5,10 @@
 2. [Primeiros Passos](#primeiros-passos)
 3. [Módulo de Pacientes](#módulo-de-pacientes)
 4. [Sistema de Evoluções](#sistema-de-evoluções)
-5. [Gestão de Equipes](#gestão-de-equipes)
-6. [Painel Administrativo](#painel-administrativo)
-7. [Dicas e Boas Práticas](#dicas-e-boas-práticas)
+5. [Sistema de Imagens Médicas](#sistema-de-imagens-médicas)
+6. [Gestão de Equipes](#gestão-de-equipes)
+7. [Painel Administrativo](#painel-administrativo)
+8. [Dicas e Boas Práticas](#dicas-e-boas-práticas)
 
 ## 🌟 Introdução
 
@@ -16,6 +17,9 @@ O **AppVisita** é um sistema completo de gerenciamento médico que permite o ac
 ### 🎯 Principais Funcionalidades
 - ✅ Cadastro e busca de pacientes
 - ✅ Registro de evoluções médicas detalhadas
+- ✅ Upload e visualização de imagens médicas
+- ✅ Sistema de drag & drop para anexos
+- ✅ Galeria profissional com navegação por teclado
 - ✅ Organização em equipes médicas
 - ✅ Dashboard administrativo com estatísticas
 - ✅ Sistema de aprovação de usuários
@@ -156,6 +160,154 @@ O **AppVisita** é um sistema completo de gerenciamento médico que permite o ac
    - PDF (recomendado)
    - Texto simples
 4. **Define período** se necessário
+
+## 📸 Sistema de Imagens Médicas
+
+### 🚀 Upload de Imagens
+
+#### Como Anexar Imagens a uma Evolução
+
+1. **Abra o formulário de evolução**
+2. **Localize a seção "Anexar Imagens"**
+3. **Escolha uma das opções**:
+
+##### Opção A: Drag & Drop (Recomendado)
+1. **Arraste os arquivos** da sua pasta para a área indicada
+2. **Solte os arquivos** na zona de upload
+3. **Aguarde o processamento** automático
+
+##### Opção B: Seleção Manual
+1. **Clique na área de upload** 📤
+2. **Selecione os arquivos** no explorador
+3. **Confirme a seleção**
+
+#### Especificações Técnicas
+- **Limite**: Até **10 imagens** por evolução
+- **Formatos aceitos**: JPEG, PNG, WebP
+- **Tamanho máximo**: **5MB por arquivo**
+- **Compressão**: Automática para otimização
+
+#### Sistema de Preview
+```
+┌─────────────────────────────────────┐
+│ 📤 Área de Upload                   │
+│ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐    │
+│ │ ❌ │ │ ❌ │ │ ❌ │ │ ❌ │    │
+│ │IMG1│ │IMG2│ │IMG3│ │IMG4│    │
+│ │120K│ │245K│ │180K│ │89K │    │
+│ └─────┘ └─────┘ └─────┘ └─────┘    │
+│                                     │
+│ ✅ 4 imagens prontas para upload    │
+└─────────────────────────────────────┘
+```
+
+#### Gerenciando Imagens Antes do Upload
+- **❌ Remover**: Clique no X para excluir uma imagem
+- **👁️ Visualizar**: Clique na miniatura para ampliar
+- **📊 Info**: Veja o tamanho de cada arquivo
+
+### 🖼️ Visualizador Profissional
+
+#### Visualização no Histórico
+1. **Acesse o histórico** de evoluções do paciente
+2. **Localize evoluções com imagens** (ícone 📸)
+3. **Veja a galeria** de miniaturas
+
+#### Modal de Visualização Ampliada
+```
+┌─────────────────────────────────────┐
+│                               ❌    │
+│                                     │
+│        ┌─────────────────┐          │
+│      ◀ │                 │ ▶        │
+│        │   IMAGEM AMPLA  │          │
+│        │                 │          │
+│        └─────────────────┘          │
+│                                     │
+│              📊 2 / 5               │
+└─────────────────────────────────────┘
+```
+
+#### Controles de Navegação
+
+##### Teclado (Recomendado)
+- **ESC**: Fechar visualizador
+- **← Seta Esquerda**: Imagem anterior
+- **→ Seta Direita**: Próxima imagem
+
+##### Mouse/Touch
+- **❌ Botão Fechar**: Canto superior direito
+- **◀ ▶ Setas**: Laterais da imagem
+- **Clique fora**: Fecha o visualizador
+
+##### Recursos Visuais
+- **Contador**: Mostra posição atual (ex: "3/7")
+- **Fundo escuro**: Melhor contraste para análise
+- **Zoom responsivo**: Adapta ao tamanho da tela
+
+### 🔒 Segurança e Organização
+
+#### Organização no Servidor
+```
+Firebase Storage/
+├── evolucoes/
+│   ├── paciente_123/
+│   │   ├── evolucao_001/
+│   │   │   ├── imagem1.jpg
+│   │   │   └── imagem2.png
+│   │   └── evolucao_002/
+│   │       └── exame_raioX.jpg
+│   └── paciente_456/
+│       └── evolucao_001/
+│           └── resultado_lab.png
+```
+
+#### Recursos de Segurança
+- **URLs temporárias**: Links seguros com expiração
+- **Isolamento**: Imagens separadas por paciente
+- **Metadados**: Rastreamento completo de uploads
+- **Backup automático**: Firebase garante redundância
+
+### 📋 Boas Práticas para Imagens
+
+#### ✅ O que Anexar
+- **Exames complementares**: Raio-X, tomografia, ressonância
+- **Resultados laboratoriais**: Laudos e gráficos
+- **Feridas e lesões**: Evolução do tratamento
+- **Prescrições**: Medicamentos e orientações
+- **Documentos relevantes**: Atestados e relatórios
+
+#### ❌ O que Evitar
+- **Imagens pessoais** não relacionadas ao tratamento
+- **Documentos confidenciais** de outros pacientes
+- **Arquivos muito grandes** (acima de 5MB)
+- **Formatos não suportados** (GIF, TIFF, BMP)
+
+#### 💡 Dicas de Qualidade
+- **Boa iluminação**: Garante legibilidade
+- **Foco adequado**: Evite imagens desfocadas
+- **Orientação correta**: Mantenha documentos na posição certa
+- **Resolução suficiente**: Para permitir análise detalhada
+
+### 🚨 Resolução de Problemas
+
+#### Upload Falhando
+1. **Verifique a conexão** com a internet
+2. **Confirme o formato** do arquivo (JPEG, PNG, WebP)
+3. **Reduza o tamanho** se maior que 5MB
+4. **Tente novamente** após alguns segundos
+
+#### Imagens Não Aparecem
+1. **Aguarde alguns segundos** para carregamento
+2. **Recarregue a página** (F5)
+3. **Verifique sua conexão** com a internet
+4. **Entre em contato** com o suporte se persistir
+
+#### Modal Não Abre
+1. **Clique diretamente** na miniatura da imagem
+2. **Tente um navegador diferente** (Chrome recomendado)
+3. **Desabilite bloqueadores** de popup temporariamente
+4. **Limpe o cache** do navegador
 
 ## 🏥 Gestão de Equipes
 

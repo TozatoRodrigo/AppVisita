@@ -6,8 +6,9 @@
 3. [Estrutura de Arquivos](#estrutura-de-arquivos)
 4. [Fluxo de Dados](#fluxo-de-dados)
 5. [Módulos e Componentes](#módulos-e-componentes)
-6. [Integrações Externas](#integrações-externas)
-7. [Padrões Arquiteturais](#padrões-arquiteturais)
+6. [Sistema de Imagens Médicas](#sistema-de-imagens-médicas)
+7. [Integrações Externas](#integrações-externas)
+8. [Padrões Arquiteturais](#padrões-arquiteturais)
 
 ## 🎯 Visão Geral da Arquitetura
 
@@ -19,13 +20,15 @@ graph TB
     B --> C[Firebase Services]
     C --> D[Firebase Auth]
     C --> E[Firestore Database]
-    C --> F[Firebase Hosting]
+    C --> F[Firebase Storage]
+    C --> G[Firebase Hosting]
     
-    B --> G[Módulo Pacientes]
-    B --> H[Módulo Admin]
-    B --> I[Módulo Equipes]
-    B --> J[Módulo UI]
-    B --> K[Módulo Login]
+    B --> H[Módulo Pacientes]
+    B --> I[Módulo Admin]
+    B --> J[Módulo Equipes]
+    B --> K[Módulo UI]
+    B --> L[Módulo Login]
+    B --> M[Sistema de Imagens]
 ```
 
 ## 🏗️ Camadas do Sistema
@@ -217,6 +220,7 @@ AppModulos.Admin.aprovarUsuario()
 |---------|------------|--------------|
 | **Firebase Auth** | Autenticação de usuários | Email/senha, verificação |
 | **Firestore** | Banco de dados NoSQL | Collections: usuarios, pacientes, equipes |
+| **Firebase Storage** | Armazenamento de arquivos | Opcional, para armazenamento de imagens |
 | **Firebase Hosting** | Deploy de produção | Opcional, para hosting estático |
 
 ### CDNs Externas
@@ -353,6 +357,111 @@ Notification
 - **Firestore Rules**: Acesso baseado em usuário autenticado
 - **HTTPS Only**: Obrigatório em produção
 - **Domain Whitelisting**: Apenas domínios autorizados
+
+## 📸 Sistema de Imagens Médicas
+
+### Arquitetura do Upload e Visualização
+
+```mermaid
+graph LR
+    A[Interface Upload] --> B[Validação Client-side]
+    B --> C[Redimensionamento]
+    C --> D[Firebase Storage]
+    D --> E[URL de Download]
+    E --> F[Firestore Metadata]
+    F --> G[Galeria/Visualização]
+```
+
+### Componentes do Sistema de Imagens
+
+#### 1. Upload Component
+```javascript
+// Responsabilidades:
+- Drag & Drop interface
+- Validação de arquivos (tipo, tamanho)
+- Preview das imagens
+- Compressão automática
+- Upload para Firebase Storage
+- Barra de progresso
+
+// APIs Principais:
+window.uploadImagensParaStorage()
+window.inicializarUploadImagens()
+window.processarArquivosImagem()
+```
+
+#### 2. Image Viewer Component
+```javascript
+// Responsabilidades:
+- Modal de visualização profissional
+- Navegação entre múltiplas imagens
+- Controles por teclado
+- Interface responsiva
+- Criação dinâmica via JavaScript
+
+// APIs Principais:
+window.abrirImagemModal()
+window.renderizarGaleriaImagens()
+window.inicializarModalImagem()
+```
+
+#### 3. Storage Organization
+```
+Firebase Storage Structure:
+/evolucoes/
+  /{pacienteId}/
+    /{evolucaoId}/
+      /{timestamp}_{index}_{filename}
+```
+
+### Fluxo de Upload de Imagens
+
+```mermaid
+sequenceDiagram
+    participant U as Usuário
+    participant UI as Upload Interface
+    participant V as Validator
+    participant C as Compressor
+    participant S as Firebase Storage
+    participant DB as Firestore
+    
+    U->>UI: Seleciona/Arrasta imagens
+    UI->>V: Valida arquivos
+    V->>C: Redimensiona imagens
+    C->>S: Upload para Storage
+    S->>UI: URLs de download
+    UI->>DB: Salva metadados na evolução
+    DB->>UI: Confirmação
+    UI->>U: Sucesso + Preview
+```
+
+### Especificações Técnicas
+
+#### Validação de Arquivos
+```javascript
+const CONFIGURACAO_UPLOAD = {
+  tiposPermitidos: ['image/jpeg', 'image/png', 'image/webp'],
+  tamanhoMaximo: 5 * 1024 * 1024, // 5MB
+  limiteQuantidade: 10,
+  dimensoesMaximas: {
+    width: 1200,
+    height: 1200
+  },
+  qualidadeCompressao: 0.8
+};
+```
+
+#### Estrutura de Metadados
+```javascript
+const metadadosImagem = {
+  nomeOriginal: 'exame_resultado.jpg',
+  tamanho: 1234567,
+  tipo: 'image/jpeg',
+  dataUpload: new Date(),
+  url: 'https://storage.googleapis.com/...',
+  dimensoes: { width: 800, height: 600 }
+};
+```
 
 ---
 
