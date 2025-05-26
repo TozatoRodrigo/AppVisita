@@ -1076,168 +1076,521 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!document.querySelector('.sugestoes-container')) {
       const sugestoesContainer = document.createElement('div');
       sugestoesContainer.className = 'sugestoes-container';
+      sugestoesContainer.style.cssText = `
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        max-height: 300px;
+        overflow-y: auto;
+        display: none;
+      `;
       
-      // Inserir após o input
-      nomePacienteInput.parentNode.insertBefore(sugestoesContainer, nomePacienteInput.nextSibling);
+      // Fazer o container do input relativo para posicionamento
+      const formGroup = nomePacienteInput.closest('.form-group');
+      if (formGroup) {
+        formGroup.style.position = 'relative';
+        formGroup.appendChild(sugestoesContainer);
+      } else {
+        nomePacienteInput.parentNode.style.position = 'relative';
+        nomePacienteInput.parentNode.appendChild(sugestoesContainer);
+      }
     }
     
     const sugestoesContainer = document.querySelector('.sugestoes-container');
+    let timeoutBusca = null;
     
     // Adicionar evento para buscar sugestões ao digitar
     nomePacienteInput.addEventListener('input', async function() {
-      const termo = this.value.trim().toLowerCase();
+      const termo = this.value.trim();
+      
+      // Limpar timeout anterior
+      if (timeoutBusca) {
+        clearTimeout(timeoutBusca);
+      }
       
       // Só buscar com pelo menos 3 caracteres
       if (termo.length < 3) {
         sugestoesContainer.style.display = 'none';
+        limparMensagemReinternacao();
         return;
       }
       
-      try {
-        // Verificar se o Firebase está disponível
-        if (!window.verificarFirebaseDisponivel()) {
-          throw new Error("Firebase não está disponível");
-        }
-        
-        // Buscar TODOS os pacientes, incluindo aqueles com alta
-        const pacientesSnapshot = await window.db.collection('pacientes')
-          .where('nome', '>=', termo)
-          .where('nome', '<=', termo + '\uf8ff')
-          .limit(5)
-          .get();
-        
-        // Se não encontrou resultados
-        if (pacientesSnapshot.empty) {
-          sugestoesContainer.style.display = 'none';
-          return;
-        }
-        
-        // Limpar sugestões anteriores
-        sugestoesContainer.innerHTML = '';
-        
-        // Adicionar novos resultados
-        pacientesSnapshot.forEach(doc => {
-          const paciente = { id: doc.id, ...doc.data() };
-          
-          // Criar elemento de sugestão
-          const sugestaoItem = document.createElement('div');
-          sugestaoItem.className = 'sugestao-item';
-          
-          // Formatar data de nascimento
-          let dataNascimento = 'Não informada';
-          if (paciente.dataNascimento) {
-            try {
-              if (typeof paciente.dataNascimento === 'object' && 'seconds' in paciente.dataNascimento) {
-                const data = new Date(paciente.dataNascimento.seconds * 1000);
-                dataNascimento = data.toLocaleDateString('pt-BR');
-              } else if (typeof paciente.dataNascimento === 'string') {
-                const partes = paciente.dataNascimento.split('-');
-                if (partes.length === 3) {
-                  const data = new Date(partes[0], partes[1] - 1, partes[2]);
-                  dataNascimento = data.toLocaleDateString('pt-BR');
-                } else {
-                  dataNascimento = paciente.dataNascimento;
-                }
-              }
-            } catch (error) {
-              console.error("Erro ao formatar data:", error);
-              dataNascimento = 'Erro na data';
-            }
-          }
-          
-          // Status formatado
-          const statusText = paciente.status === 'internado' ? 'Internado' : 
-                           paciente.status === 'alta' ? 'Alta' : 
-                           paciente.status === 'obito' ? 'Óbito' : 'Desconhecido';
-                           
-          const statusClass = paciente.status === 'internado' ? 'status-internado' : 
-                           paciente.status === 'alta' ? 'status-alta' : 
-                           paciente.status === 'obito' ? 'status-obito' : '';
-          
-          // Conteúdo da sugestão
-          sugestaoItem.innerHTML = `
-            <div class="sugestao-info">
-              <span class="sugestao-nome">${paciente.nome}</span>
-              <span class="sugestao-detalhes">
-                <span class="sugestao-status ${statusClass}">${statusText}</span>
-                ID: ${paciente.idInternacao || 'N/A'} | Nasc: ${dataNascimento}
-              </span>
-            </div>
-          `;
-          
-          // Adicionar evento de clique para selecionar o paciente
-          sugestaoItem.addEventListener('click', function() {
-            // Preencher o nome do paciente
-            nomePacienteInput.value = paciente.nome;
-            
-            // Preencher outros campos se possível
-            const dataNascimentoInput = document.getElementById('data-nascimento-paciente');
-            if (dataNascimentoInput && paciente.dataNascimento) {
-              // Se for timestamp ou objeto date, converter para formato YYYY-MM-DD
-              if (typeof paciente.dataNascimento === 'object') {
-                if ('seconds' in paciente.dataNascimento) {
-                  const data = new Date(paciente.dataNascimento.seconds * 1000);
-                  dataNascimentoInput.value = data.toISOString().split('T')[0];
-                } else if (paciente.dataNascimento instanceof Date) {
-                  dataNascimentoInput.value = paciente.dataNascimento.toISOString().split('T')[0];
-                }
-              } else if (typeof paciente.dataNascimento === 'string' && paciente.dataNascimento.includes('-')) {
-                dataNascimentoInput.value = paciente.dataNascimento;
-              }
-            }
-            
-            // Mostrar mensagem informando que este é um paciente reinternado
-            const msgElement = document.getElementById('msg-paciente-existente');
-            if (msgElement) {
-              msgElement.classList.remove('hidden');
-              msgElement.innerHTML = `
-                <i class="fas fa-info-circle"></i> Paciente ${paciente.nome} será <strong>reinternado</strong>. 
-                ${paciente.status === 'alta' ? 'Status anterior: Alta' : 
-                  paciente.status === 'obito' ? 'Status anterior: Óbito (verifique se não é um homônimo)' : 
-                  'Status anterior: ' + statusText}
-              `;
-              
-              // Adicionar ID oculto para referência ao paciente original
-              const pacienteIdInput = document.createElement('input');
-              pacienteIdInput.type = 'hidden';
-              pacienteIdInput.id = 'paciente-reinternado-id';
-              pacienteIdInput.value = paciente.id;
-              
-              if (!document.getElementById('paciente-reinternado-id')) {
-                formAdicionarPaciente.appendChild(pacienteIdInput);
-              } else {
-                document.getElementById('paciente-reinternado-id').value = paciente.id;
-              }
-            }
-            
-            // Ocultar sugestões
-            sugestoesContainer.style.display = 'none';
-          });
-          
-          // Adicionar ao container
-          sugestoesContainer.appendChild(sugestaoItem);
-        });
-        
-        // Mostrar sugestões
-        if (sugestoesContainer.childElementCount > 0) {
-          sugestoesContainer.style.display = 'block';
-        } else {
-          sugestoesContainer.style.display = 'none';
-        }
-        
-      } catch (error) {
-        console.error("Erro ao buscar sugestões de pacientes:", error);
+      // Adicionar debounce para evitar muitas requisições
+      timeoutBusca = setTimeout(async () => {
+        await buscarPacientesParaSugestao(termo, sugestoesContainer);
+      }, 300);
+    });
+    
+    // Melhorar o evento de clique fora
+    document.addEventListener('click', function(e) {
+      if (!sugestoesContainer.contains(e.target) && 
+          e.target !== nomePacienteInput &&
+          !nomePacienteInput.contains(e.target)) {
         sugestoesContainer.style.display = 'none';
       }
     });
     
-    // Ocultar sugestões ao clicar fora
-    document.addEventListener('click', function(e) {
-      if (!sugestoesContainer.contains(e.target) && e.target !== nomePacienteInput) {
-        sugestoesContainer.style.display = 'none';
+    // Adicionar navegação por teclado
+    nomePacienteInput.addEventListener('keydown', function(e) {
+      const items = sugestoesContainer.querySelectorAll('.sugestao-item');
+      let selectedIndex = Array.from(items).findIndex(item => item.classList.contains('selected'));
+      
+      switch(e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          if (selectedIndex < items.length - 1) {
+            if (selectedIndex >= 0) items[selectedIndex].classList.remove('selected');
+            selectedIndex++;
+            items[selectedIndex].classList.add('selected');
+            items[selectedIndex].scrollIntoView({ block: 'nearest' });
+          }
+          break;
+          
+        case 'ArrowUp':
+          e.preventDefault();
+          if (selectedIndex > 0) {
+            items[selectedIndex].classList.remove('selected');
+            selectedIndex--;
+            items[selectedIndex].classList.add('selected');
+            items[selectedIndex].scrollIntoView({ block: 'nearest' });
+          }
+          break;
+          
+        case 'Enter':
+          e.preventDefault();
+          if (selectedIndex >= 0) {
+            items[selectedIndex].click();
+          }
+          break;
+          
+        case 'Escape':
+          sugestoesContainer.style.display = 'none';
+          break;
       }
     });
   }
+  
+  // Função para buscar pacientes para sugestão
+  async function buscarPacientesParaSugestao(termo, container) {
+    try {
+      // Verificar se o Firebase está disponível
+      if (!window.verificarFirebaseDisponivel()) {
+        throw new Error("Firebase não está disponível");
+      }
+      
+      // Mostrar indicador de carregamento
+      container.innerHTML = `
+        <div class="sugestao-loading">
+          <i class="fas fa-spinner fa-spin"></i> Buscando pacientes...
+        </div>
+      `;
+      container.style.display = 'block';
+      
+      // Buscar por nome (case insensitive)
+      const termoLower = termo.toLowerCase();
+      
+      // Busca mais inteligente: buscar todos os pacientes e filtrar no cliente
+      // para permitir busca case-insensitive
+      const pacientesSnapshot = await window.db.collection('pacientes')
+        .orderBy('nome')
+        .limit(50) // Limitar para performance
+        .get();
+      
+      // Filtrar no cliente para busca mais flexível
+      const pacientesFiltrados = [];
+      pacientesSnapshot.forEach(doc => {
+        const paciente = { id: doc.id, ...doc.data() };
+        const nomeNormalizado = paciente.nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const termoNormalizado = termoLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        
+        if (nomeNormalizado.includes(termoNormalizado)) {
+          pacientesFiltrados.push(paciente);
+        }
+      });
+      
+      // Ordenar por relevância (começa com o termo primeiro)
+      pacientesFiltrados.sort((a, b) => {
+        const nomeA = a.nome.toLowerCase();
+        const nomeB = b.nome.toLowerCase();
+        const startA = nomeA.startsWith(termoLower);
+        const startB = nomeB.startsWith(termoLower);
+        
+        if (startA && !startB) return -1;
+        if (!startA && startB) return 1;
+        return nomeA.localeCompare(nomeB);
+      });
+      
+      // Limitar a 8 resultados
+      const resultados = pacientesFiltrados.slice(0, 8);
+      
+      // Se não encontrou resultados
+      if (resultados.length === 0) {
+        container.innerHTML = `
+          <div class="sugestao-sem-resultados">
+            <i class="fas fa-search"></i>
+            <p>Nenhum paciente encontrado com "${termo}"</p>
+            <small>Verifique a grafia ou digite mais caracteres</small>
+          </div>
+        `;
+        return;
+      }
+      
+      // Renderizar resultados
+      await renderizarSugestoesPacientes(resultados, container, termo);
+      
+    } catch (error) {
+      console.error("Erro ao buscar sugestões de pacientes:", error);
+      container.innerHTML = `
+        <div class="sugestao-erro">
+          <i class="fas fa-exclamation-triangle"></i>
+          <p>Erro ao buscar pacientes</p>
+          <small>Tente novamente em alguns instantes</small>
+        </div>
+      `;
+    }
+  }
+  
+  // Função para renderizar sugestões de pacientes
+  async function renderizarSugestoesPacientes(pacientes, container, termo) {
+    container.innerHTML = '';
+    
+    // Adicionar cabeçalho se houver resultados
+    if (pacientes.length > 0) {
+      const header = document.createElement('div');
+      header.className = 'sugestoes-header';
+      header.innerHTML = `
+        <div class="sugestoes-titulo">
+          <i class="fas fa-users"></i>
+          Pacientes encontrados (${pacientes.length})
+        </div>
+        <div class="sugestoes-hint">
+          <i class="fas fa-info-circle"></i>
+          Use ↑↓ para navegar, Enter para selecionar
+        </div>
+      `;
+      container.appendChild(header);
+    }
+    
+    // Renderizar cada paciente
+    for (const paciente of pacientes) {
+      const sugestaoItem = await criarItemSugestao(paciente, termo);
+      container.appendChild(sugestaoItem);
+    }
+    
+    container.style.display = 'block';
+  }
+  
+  // Função para criar item de sugestão
+  async function criarItemSugestao(paciente, termo) {
+    const sugestaoItem = document.createElement('div');
+    sugestaoItem.className = 'sugestao-item';
+    
+    // Formatar data de nascimento
+    let dataNascimento = 'Não informada';
+    let dataNascimentoFormatada = '';
+    
+    if (paciente.dataNascimento) {
+      try {
+        let dataObj;
+        if (typeof paciente.dataNascimento === 'object' && 'seconds' in paciente.dataNascimento) {
+          dataObj = new Date(paciente.dataNascimento.seconds * 1000);
+        } else if (typeof paciente.dataNascimento === 'string') {
+          const partes = paciente.dataNascimento.split('-');
+          if (partes.length === 3) {
+            dataObj = new Date(partes[0], partes[1] - 1, partes[2]);
+          } else {
+            dataObj = new Date(paciente.dataNascimento);
+          }
+        } else if (paciente.dataNascimento instanceof Date) {
+          dataObj = paciente.dataNascimento;
+        }
+        
+        if (dataObj && !isNaN(dataObj)) {
+          dataNascimento = dataObj.toLocaleDateString('pt-BR');
+          dataNascimentoFormatada = dataObj.toISOString().split('T')[0];
+        }
+      } catch (error) {
+        console.error("Erro ao formatar data:", error);
+        dataNascimento = 'Erro na data';
+      }
+    }
+    
+    // Status formatado com mais detalhes
+    let statusInfo = '';
+    let statusClass = '';
+    let statusIcon = '';
+    
+    switch(paciente.status) {
+      case 'internado':
+        statusInfo = 'Atualmente Internado';
+        statusClass = 'status-internado';
+        statusIcon = 'fa-procedures';
+        break;
+      case 'alta':
+        statusInfo = 'Recebeu Alta';
+        statusClass = 'status-alta';
+        statusIcon = 'fa-walking';
+        break;
+      case 'obito':
+        statusInfo = 'Óbito Registrado';
+        statusClass = 'status-obito';
+        statusIcon = 'fa-cross';
+        break;
+      default:
+        statusInfo = 'Status Desconhecido';
+        statusClass = 'status-unknown';
+        statusIcon = 'fa-question';
+    }
+    
+    // Obter informações da última internação
+    let ultimaInternacao = '';
+    if (paciente.evolucoes && paciente.evolucoes.length > 0) {
+      const ultimaEvolucao = paciente.evolucoes[paciente.evolucoes.length - 1];
+      if (ultimaEvolucao.dataRegistro) {
+        try {
+          let dataUltima;
+          if (ultimaEvolucao.dataRegistro.seconds) {
+            dataUltima = new Date(ultimaEvolucao.dataRegistro.seconds * 1000);
+          } else {
+            dataUltima = new Date(ultimaEvolucao.dataRegistro);
+          }
+          ultimaInternacao = `Última evolução: ${dataUltima.toLocaleDateString('pt-BR')}`;
+        } catch (error) {
+          ultimaInternacao = 'Data da última evolução: indisponível';
+        }
+      }
+    } else {
+      ultimaInternacao = 'Nenhuma evolução registrada';
+    }
+    
+    // Destacar termo da busca no nome
+    const nomeDestacado = paciente.nome.replace(
+      new RegExp(`(${termo})`, 'gi'),
+      '<mark>$1</mark>'
+    );
+    
+    // Verificar se pode ser reinternado
+    const podeReinternacao = paciente.status === 'alta';
+    const avisoObito = paciente.status === 'obito';
+    
+    // Conteúdo da sugestão
+    sugestaoItem.innerHTML = `
+      <div class="sugestao-paciente">
+        <div class="sugestao-principal">
+          <div class="sugestao-nome-container">
+            <span class="sugestao-nome">${nomeDestacado}</span>
+            <div class="sugestao-status ${statusClass}">
+              <i class="fas ${statusIcon}"></i>
+              ${statusInfo}
+            </div>
+          </div>
+          <div class="sugestao-detalhes">
+            <div class="detalhe-item">
+              <i class="fas fa-birthday-cake"></i>
+              <span>Nascimento: ${dataNascimento}</span>
+            </div>
+            <div class="detalhe-item">
+              <i class="fas fa-id-card"></i>
+              <span>ID: ${paciente.idInternacao || 'N/A'}</span>
+            </div>
+            <div class="detalhe-item">
+              <i class="fas fa-clock"></i>
+              <span>${ultimaInternacao}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="sugestao-acoes">
+          ${podeReinternacao ? `
+            <div class="acao-reinternacao">
+              <i class="fas fa-redo"></i>
+              <span>Reinternação</span>
+            </div>
+          ` : avisoObito ? `
+            <div class="acao-aviso">
+              <i class="fas fa-exclamation-triangle"></i>
+              <span>Verificar identidade</span>
+            </div>
+          ` : `
+            <div class="acao-atencao">
+              <i class="fas fa-info-circle"></i>
+              <span>Já internado</span>
+            </div>
+          `}
+        </div>
+      </div>
+    `;
+    
+    // Adicionar dados como atributos para facilitar acesso
+    sugestaoItem.dataset.pacienteId = paciente.id;
+    sugestaoItem.dataset.pacienteNome = paciente.nome;
+    sugestaoItem.dataset.pacienteStatus = paciente.status;
+    sugestaoItem.dataset.dataNascimento = dataNascimentoFormatada;
+    
+    // Adicionar evento de clique
+    sugestaoItem.addEventListener('click', function() {
+      selecionarPacienteParaReinternacao(paciente, dataNascimentoFormatada);
+    });
+    
+    // Adicionar hover para seleção com teclado
+    sugestaoItem.addEventListener('mouseenter', function() {
+      // Remover seleção de outros itens
+      const container = this.parentNode;
+      container.querySelectorAll('.sugestao-item').forEach(item => {
+        item.classList.remove('selected');
+      });
+      this.classList.add('selected');
+    });
+    
+    return sugestaoItem;
+  }
+  
+  // Função para selecionar paciente para reinternação
+  function selecionarPacienteParaReinternacao(paciente, dataNascimentoFormatada) {
+    const nomePacienteInput = document.getElementById('nome-paciente');
+    const dataNascimentoInput = document.getElementById('data-nascimento-paciente');
+    const sugestoesContainer = document.querySelector('.sugestoes-container');
+    
+    // Preencher campos
+    nomePacienteInput.value = paciente.nome;
+    
+    if (dataNascimentoInput && dataNascimentoFormatada) {
+      dataNascimentoInput.value = dataNascimentoFormatada;
+    }
+    
+    // Mostrar mensagem de reinternação
+    mostrarMensagemReinternacao(paciente);
+    
+    // Adicionar ID oculto para referência
+    adicionarReferenciaPacienteOriginal(paciente.id);
+    
+    // Ocultar sugestões
+    sugestoesContainer.style.display = 'none';
+    
+    // Focar no próximo campo
+    const proximoCampo = document.getElementById('id-internacao-paciente');
+    if (proximoCampo) {
+      setTimeout(() => proximoCampo.focus(), 100);
+    }
+  }
+  
+  // Função para mostrar mensagem de reinternação
+  function mostrarMensagemReinternacao(paciente) {
+    const msgElement = document.getElementById('msg-paciente-existente');
+    if (!msgElement) return;
+    
+    let mensagemTipo = '';
+    let iconeTipo = '';
+    let corTipo = '';
+    
+    switch(paciente.status) {
+      case 'alta':
+        mensagemTipo = 'Nova Internação';
+        iconeTipo = 'fa-redo';
+        corTipo = 'success';
+        break;
+      case 'obito':
+        mensagemTipo = 'Atenção: Óbito Registrado';
+        iconeTipo = 'fa-exclamation-triangle';
+        corTipo = 'danger';
+        break;
+      case 'internado':
+        mensagemTipo = 'Paciente Já Internado';
+        iconeTipo = 'fa-info-circle';
+        corTipo = 'warning';
+        break;
+      default:
+        mensagemTipo = 'Paciente Selecionado';
+        iconeTipo = 'fa-user';
+        corTipo = 'info';
+    }
+    
+    msgElement.className = `alert alert--${corTipo}`;
+    msgElement.style.display = 'block';
+    msgElement.innerHTML = `
+      <div class="alert-content">
+        <div class="alert-header">
+          <i class="fas ${iconeTipo}"></i>
+          <strong>${mensagemTipo}</strong>
+        </div>
+        <div class="alert-body">
+          <p><strong>Paciente:</strong> ${paciente.nome}</p>
+          <p><strong>Status anterior:</strong> ${
+            paciente.status === 'alta' ? 'Alta Hospitalar' :
+            paciente.status === 'obito' ? 'Óbito' :
+            paciente.status === 'internado' ? 'Internado' : 'Desconhecido'
+          }</p>
+          ${paciente.status === 'obito' ? 
+            '<p class="alert-warning"><i class="fas fa-exclamation-triangle"></i> <strong>Verifique se não é um homônimo antes de prosseguir!</strong></p>' : 
+            ''
+          }
+          ${paciente.status === 'internado' ? 
+            '<p class="alert-info"><i class="fas fa-info-circle"></i> Este paciente já está internado no sistema.</p>' : 
+            ''
+          }
+        </div>
+        <div class="alert-actions">
+          <button type="button" class="btn btn--ghost btn--sm" onclick="limparMensagemReinternacao()">
+            <i class="fas fa-times"></i> Cancelar Seleção
+          </button>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Função para limpar mensagem de reinternação
+  function limparMensagemReinternacao() {
+    const msgElement = document.getElementById('msg-paciente-existente');
+    if (msgElement) {
+      msgElement.style.display = 'none';
+      msgElement.innerHTML = '';
+    }
+    
+    // Remover referência do paciente original
+    const pacienteIdInput = document.getElementById('paciente-reinternado-id');
+    if (pacienteIdInput) {
+      pacienteIdInput.remove();
+    }
+    
+    // Limpar campos
+    const nomePacienteInput = document.getElementById('nome-paciente');
+    const dataNascimentoInput = document.getElementById('data-nascimento-paciente');
+    
+    if (nomePacienteInput) nomePacienteInput.value = '';
+    if (dataNascimentoInput) dataNascimentoInput.value = '';
+    
+    // Focar no campo nome
+    if (nomePacienteInput) nomePacienteInput.focus();
+  }
+  
+  // Função para adicionar referência ao paciente original
+  function adicionarReferenciaPacienteOriginal(pacienteId) {
+    const formAdicionarPaciente = document.getElementById('form-adicionar-paciente');
+    if (!formAdicionarPaciente) return;
+    
+    // Remover input anterior se existir
+    const inputAnterior = document.getElementById('paciente-reinternado-id');
+    if (inputAnterior) {
+      inputAnterior.remove();
+    }
+    
+    // Criar novo input oculto
+    const pacienteIdInput = document.createElement('input');
+    pacienteIdInput.type = 'hidden';
+    pacienteIdInput.id = 'paciente-reinternado-id';
+    pacienteIdInput.value = pacienteId;
+    
+    formAdicionarPaciente.appendChild(pacienteIdInput);
+  }
+  
+  // Expor função globalmente
+  window.limparMensagemReinternacao = limparMensagemReinternacao;
 
   // ========================================
   // Upload de Imagens na Evolução

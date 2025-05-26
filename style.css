@@ -797,334 +797,351 @@ footer {
 }
 
 .sugestoes-container {
-    position: absolute;
-    width: 100%;
-    max-height: 250px;
-    overflow-y: auto;
-    background-color: var(--background-color);
-    border: 1px solid var(--border-color);
-    border-radius: 0 0 var(--border-radius) var(--border-radius);
-    z-index: 10;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    display: none;
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: white !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 0 0 var(--border-radius) var(--border-radius) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    z-index: 1000 !important;
+    max-height: 400px !important;
+    overflow-y: auto !important;
+    display: none !important;
+}
+
+.sugestoes-header {
+    padding: 12px 16px;
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-color) 100%);
+    color: white;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.sugestoes-titulo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.sugestoes-hint {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    opacity: 0.9;
 }
 
 .sugestao-item {
-    padding: 10px 15px;
+    padding: 0;
     cursor: pointer;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid #f0f0f0;
     transition: all 0.2s ease;
+    position: relative;
 }
 
-.sugestao-item:hover {
-    background-color: var(--primary-light);
-    padding-left: 20px;
+.sugestao-item:hover,
+.sugestao-item.selected {
+    background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);
+    transform: translateX(2px);
 }
 
 .sugestao-item:last-child {
     border-bottom: none;
 }
 
-.sugestao-info {
+.sugestao-paciente {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+    gap: 16px;
+}
+
+.sugestao-principal {
+    flex: 1;
+    min-width: 0;
+}
+
+.sugestao-nome-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    gap: 12px;
 }
 
 .sugestao-nome {
-    font-weight: 500;
-    color: var(--primary-color);
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-color);
+    flex-shrink: 0;
 }
 
-.sugestao-detalhes {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    margin-top: 4px;
+.sugestao-nome mark {
+    background: #ffeb3b;
+    color: #333;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: 700;
 }
 
 .sugestao-status {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     font-size: 0.75rem;
-    padding: 2px 6px;
-    border-radius: 20px;
-    margin-right: 5px;
+    padding: 4px 8px;
+    border-radius: 12px;
     font-weight: 500;
+    white-space: nowrap;
 }
 
-.status-alta {
-    background-color: #e0f2f1;
-    color: #00897b;
+.sugestao-detalhes {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
-.status-obito {
-    background-color: #ffebee;
-    color: #c62828;
+.detalhe-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
 }
 
-.status-internado {
-    background-color: #e3f2fd;
+.detalhe-item i {
+    width: 14px;
+    color: var(--primary-color);
+    opacity: 0.7;
+}
+
+.sugestao-acoes {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 120px;
+    justify-content: center;
+}
+
+.acao-reinternacao {
+    background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+    color: #2e7d32;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.acao-aviso {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffcc80 100%);
+    color: #f57c00;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.acao-atencao {
+    background: linear-gradient(135deg, #e3f2fd 0%, #90caf9 100%);
+    color: #1976d2;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sugestao-loading,
+.sugestao-erro,
+.sugestao-sem-resultados {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.sugestao-loading {
+    background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+}
+
+.sugestao-loading i {
+    margin-right: 8px;
     color: var(--primary-color);
 }
 
-.hidden {
-    display: none;
+.sugestao-erro {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+    color: #c62828;
 }
 
-#msg-paciente-existente {
-    background-color: #fff9c4;
-    border-left: 4px solid var(--warning-color);
-    padding: 12px 15px;
-    margin-bottom: 15px;
-    font-size: 0.9rem;
-    border-radius: var(--border-radius);
+.sugestao-sem-resultados {
+    background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+    color: #7b1fa2;
 }
 
-/* Estilos para a tela de consulta de pacientes */
-.consulta-container {
-    width: 100%;
-    max-width: 1000px;
-    margin: 0 auto;
-}
-
-.consulta-form {
-    background-color: var(--card-color);
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.search-wrapper {
-    display: flex;
-    gap: 10px;
-}
-
-.search-wrapper input {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    font-size: 16px;
-}
-
-.search-wrapper button {
-    padding: 10px 15px;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.search-wrapper button:hover {
-    background-color: var(--primary-dark);
-}
-
-.resultado-consulta {
-    margin-top: 20px;
-}
-
-.sem-resultados {
-    text-align: center;
-    padding: 30px;
-    background-color: var(--card-color);
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.resultados-container {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.resultado-paciente {
-    background-color: var(--card-color);
-    border-radius: 8px;
-    padding: 15px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.resultado-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.resultado-header h3 {
-    margin: 0;
-    color: var(--text-color);
-}
-
-.resultado-id {
-    background-color: var(--accent-color);
-    color: white;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-size: 14px;
-}
-
-.resultado-info {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    margin-bottom: 15px;
-}
-
-.info-coluna {
-    flex: 1;
-    min-width: 250px;
-}
-
-.info-coluna p {
-    margin: 5px 0;
-}
-
-.resultado-acoes {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-}
-
-.btn-ver-evolucoes, .btn-registrar-evolucao {
-    padding: 8px 15px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+.sugestao-erro p,
+.sugestao-sem-resultados p {
+    margin: 8px 0 4px 0;
     font-weight: 500;
-    transition: background-color 0.3s;
+}
+
+.sugestao-erro small,
+.sugestao-sem-resultados small {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+.alert {
+    border-radius: var(--border-radius);
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 16px;
+}
+
+.alert--success {
+    background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+    border-left: 4px solid #4caf50;
+}
+
+.alert--warning {
+    background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+    border-left: 4px solid #ff9800;
+}
+
+.alert--danger {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+    border-left: 4px solid #f44336;
+}
+
+.alert--info {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border-left: 4px solid #2196f3;
+}
+
+.alert-content {
+    padding: 16px;
+}
+
+.alert-header {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-weight: 600;
 }
 
-.btn-ver-evolucoes {
-    background-color: var(--secondary-color);
-    color: white;
-}
-
-.btn-registrar-evolucao {
-    background-color: var(--primary-color);
-    color: white;
-}
-
-.btn-ver-evolucoes:hover {
-    background-color: var(--secondary-dark);
-}
-
-.btn-registrar-evolucao:hover {
-    background-color: var(--primary-dark);
-}
-
-.status-internado {
-    color: var(--info-color);
-}
-
-.status-alta {
-    color: var(--success-color);
-}
-
-.status-obito {
-    color: var(--danger-color);
-}
-
-/* Estilos para mensagens de erro */
-.erro-card {
-    background-color: #fff8f8;
-    border-left: 4px solid var(--danger-color);
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: var(--border-radius);
-    box-shadow: var(--card-shadow);
-}
-
-.erro-titulo {
-    color: var(--danger-color);
-    font-weight: 500;
+.alert-header i {
     font-size: 1.1rem;
-    margin-bottom: 8px;
 }
 
-.erro-detalhe {
-    color: var(--text-secondary);
+.alert-body p {
+    margin: 6px 0;
     font-size: 0.9rem;
 }
 
-.erro-historico, .erro-evoluções {
-    background-color: var(--background-secondary);
-    padding: 12px;
-    border-radius: var(--border-radius);
-    margin: 10px 0;
-    color: var(--text-secondary);
-    font-style: italic;
-    text-align: center;
-    border-left: 3px solid var(--danger-color);
+.alert-warning {
+    background: #fff3cd;
+    border: 1px solid #ffeeba;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin-top: 8px;
+    color: #856404;
 }
 
-/* Responsividade */
+.alert-info {
+    background: #d1ecf1;
+    border: 1px solid #bee5eb;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin-top: 8px;
+    color: #0c5460;
+}
+
+.alert-actions {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.btn--sm {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+}
+
+/* Responsividade para sugestões */
 @media (max-width: 768px) {
-    .modal-content {
-        width: 90%;
-        margin: 10% auto;
-        padding: 15px;
+    .sugestoes-container {
+        max-height: 300px !important;
     }
     
-    .paciente-header {
+    .sugestao-paciente {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+        gap: 12px;
     }
     
-    .paciente-nome {
-        margin-bottom: 10px;
-    }
-    
-    .internacao-header {
+    .sugestao-nome-container {
         flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
     }
     
-    .internacao-id {
-        margin-bottom: 5px;
+    .sugestao-detalhes {
+        gap: 6px;
     }
     
-    .form-actions {
+    .detalhe-item {
+        font-size: 0.75rem;
+    }
+    
+    .sugestao-acoes {
+        min-width: auto;
+        padding: 6px 10px;
+    }
+    
+    .sugestoes-header {
         flex-direction: column;
-        gap: 10px;
+        gap: 4px;
+        text-align: center;
     }
     
-    .form-actions button {
-        width: 100%;
+    .alert-content {
+        padding: 12px;
     }
     
-    #sidebar {
-        width: 85%;
-        max-width: 300px;
-        left: -100%;
+    .alert-header {
+        font-size: 0.9rem;
+    }
+    
+    .alert-body p {
+        font-size: 0.8rem;
     }
 }
 
 @media (max-width: 480px) {
-    header h1 {
-        font-size: 1.2rem;
+    .sugestao-item {
+        padding: 0;
     }
     
-    .paciente-info {
-        flex-direction: column;
+    .sugestao-paciente {
+        padding: 12px;
     }
     
-    .info-item {
-        width: 100%;
+    .sugestao-nome {
+        font-size: 0.9rem;
     }
     
-    .status-visita {
-        font-size: 0.75rem;
-        padding: 3px 8px;
+    .detalhe-item {
+        font-size: 0.7rem;
     }
     
-    .nome-clicavel {
-        font-size: 1rem;
+    .sugestao-status {
+        font-size: 0.7rem;
+        padding: 3px 6px;
     }
 }
 
