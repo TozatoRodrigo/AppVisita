@@ -136,14 +136,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (equipeId) {
           console.log("Filtrando pacientes da equipe:", equipeId);
           const pacientesFiltrados = todosPacientes.filter(p => 
-            p.status === 'internado' && p.equipeId === equipeId
+            p.equipeId === equipeId
           );
           
           console.log(`${pacientesFiltrados.length} pacientes encontrados para a equipe ${equipeId}`);
           AppModulos.Pacientes.renderizarPacientes(pacientesFiltrados);
         } else {
-          // Mostrar todos os pacientes internados
-          console.log("Mostrando todos os pacientes internados");
+          // Mostrar todos os pacientes
+          console.log("Mostrando todos os pacientes");
           AppModulos.Pacientes.renderizarPacientes();
         }
         

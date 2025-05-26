@@ -595,7 +595,8 @@ if (typeof firebaseConfig !== 'undefined' && firebaseConfig.apiKey && firebaseCo
             if (equipeId) {
                 console.log("Filtrando pacientes da equipe:", equipeId);
                 const pacientesFiltrados = todosPacientes.filter(p => {
-                    const resultado = p.status === 'internado' && p.equipeId === equipeId;
+                    // Incluir todos os status, mas a filtragem será feita na renderização
+                    const resultado = p.equipeId === equipeId;
                     
                     // Debug para entender se os pacientes têm o equipeId correto
                     console.log(`Paciente ${p.nome} (${p.id}): status=${p.status}, equipeId=${p.equipeId}, match=${resultado}`);
@@ -606,8 +607,8 @@ if (typeof firebaseConfig !== 'undefined' && firebaseConfig.apiKey && firebaseCo
                 console.log(`${pacientesFiltrados.length} pacientes encontrados para a equipe ${equipeId}`);
                 renderizarPacientes(pacientesFiltrados);
             } else {
-                // Mostrar todos os pacientes internados
-                console.log("Mostrando todos os pacientes internados");
+                // Mostrar todos os pacientes (filtragem será feita na renderização)
+                console.log("Mostrando todos os pacientes");
                 renderizarPacientes();
             }
         });
@@ -663,9 +664,9 @@ if (typeof firebaseConfig !== 'undefined' && firebaseConfig.apiKey && firebaseCo
                 
                 console.log(`${todosPacientes.length} pacientes carregados (equipe + médico)`);
                 
-                // Filtrar apenas pacientes internados para a lista local
-                pacientesLocal = todosPacientes.filter(p => p.status === 'internado');
-                console.log(`${pacientesLocal.length} pacientes internados`);
+                // Agora carregamos todos os pacientes, a filtragem será feita na renderização
+                pacientesLocal = todosPacientes; // Remover filtro de apenas internados
+                console.log(`${pacientesLocal.length} pacientes totais`);
                 
                 // Ordenar por data de adição (mais recentes primeiro)
                 pacientesLocal.sort((a, b) => {
@@ -694,9 +695,9 @@ if (typeof firebaseConfig !== 'undefined' && firebaseConfig.apiKey && firebaseCo
             
             console.log(`${todosPacientes.length} pacientes carregados`);
             
-            // Filtrar apenas pacientes internados para a lista local
-            pacientesLocal = todosPacientes.filter(p => p.status === 'internado');
-            console.log(`${pacientesLocal.length} pacientes internados`);
+            // Agora carregamos todos os pacientes, a filtragem será feita na renderização
+            pacientesLocal = todosPacientes; // Remover filtro de apenas internados
+            console.log(`${pacientesLocal.length} pacientes totais`);
             
             // Ordenar por data de adição (mais recentes primeiro)
             pacientesLocal.sort((a, b) => {
@@ -734,9 +735,6 @@ if (typeof firebaseConfig !== 'undefined' && firebaseConfig.apiKey && firebaseCo
             if (typeof window.AppModulos?.Pacientes?.renderizarPacientesSecionados === 'function') {
                 console.log("Usando função do módulo app-pacientes.js");
                 
-                // Filtrar apenas pacientes internados
-                const pacientesInternados = pacientesParaRenderizar.filter(p => p.status === 'internado');
-                
                 // Separar pacientes entre pendentes e visitados
                 const hoje = new Date();
                 hoje.setHours(0, 0, 0, 0);
@@ -744,14 +742,31 @@ if (typeof firebaseConfig !== 'undefined' && firebaseConfig.apiKey && firebaseCo
                 const pacientesPendentes = [];
                 const pacientesVisitados = [];
                 
-                pacientesInternados.forEach(paciente => {
+                pacientesParaRenderizar.forEach(paciente => {
+                    // Verificar se foi visitado hoje
                     const foiVisitadoHoje = verificarSeVisitadoHoje(paciente, hoje);
                     
-                    if (foiVisitadoHoje) {
-                        pacientesVisitados.push(paciente);
-                    } else {
-                        pacientesPendentes.push(paciente);
+                    // Nova lógica para alta e óbito
+                    if (paciente.status === 'alta' || paciente.status === 'obito') {
+                        // Se tem alta/óbito e foi visitado hoje, aparece como visitado
+                        if (foiVisitadoHoje) {
+                            console.log(`Paciente ${paciente.nome} com ${paciente.status} visitado hoje - aparece como visitado`);
+                            pacientesVisitados.push(paciente);
+                        }
+                        // Se tem alta/óbito mas não foi visitado hoje, não aparece em lugar nenhum
+                        else {
+                            console.log(`Paciente ${paciente.nome} com ${paciente.status} não visitado hoje - não aparece`);
+                        }
                     }
+                    // Pacientes internados seguem a lógica original
+                    else if (paciente.status === 'internado') {
+                        if (foiVisitadoHoje) {
+                            pacientesVisitados.push(paciente);
+                        } else {
+                            pacientesPendentes.push(paciente);
+                        }
+                    }
+                    // Outros status (se houver) não aparecem
                 });
                 
                 // Ordenar conforme critério selecionado

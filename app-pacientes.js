@@ -408,10 +408,6 @@ document.addEventListener('DOMContentLoaded', function() {
   function ordenarEExibirPacientes(pacientes, metodo = 'adicao') {
     console.log(`Ordenando ${pacientes.length} pacientes por ${metodo}`);
     
-    // Filtrar apenas pacientes internados
-    const pacientesInternados = pacientes.filter(p => p.status === 'internado');
-    console.log(`Pacientes internados: ${pacientesInternados.length}`);
-    
     // Separar pacientes entre pendentes e visitados hoje
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0); // Início do dia de hoje
@@ -419,14 +415,32 @@ document.addEventListener('DOMContentLoaded', function() {
     const pacientesPendentes = [];
     const pacientesVisitados = [];
     
-    pacientesInternados.forEach(paciente => {
+    pacientes.forEach(paciente => {
+      // Verificar se foi visitado hoje
       const foiVisitadoHoje = verificarSeVisitadoHoje(paciente, hoje);
       
-      if (foiVisitadoHoje) {
-        pacientesVisitados.push(paciente);
-      } else {
-        pacientesPendentes.push(paciente);
+      // Nova lógica para alta e óbito
+      if (paciente.status === 'alta' || paciente.status === 'obito') {
+        // Se tem alta/óbito e foi visitado hoje, aparece como visitado
+        if (foiVisitadoHoje) {
+          console.log(`Paciente ${paciente.nome} com ${paciente.status} visitado hoje - aparece como visitado`);
+          pacientesVisitados.push(paciente);
+        }
+        // Se tem alta/óbito mas não foi visitado hoje, não aparece em lugar nenhum 
+        // (a partir de amanhã não aparecerá mais)
+        else {
+          console.log(`Paciente ${paciente.nome} com ${paciente.status} não visitado hoje - não aparece`);
+        }
       }
+      // Pacientes internados seguem a lógica original
+      else if (paciente.status === 'internado') {
+        if (foiVisitadoHoje) {
+          pacientesVisitados.push(paciente);
+        } else {
+          pacientesPendentes.push(paciente);
+        }
+      }
+      // Outros status (se houver) não aparecem
     });
     
     console.log(`Pacientes pendentes: ${pacientesPendentes.length}, Visitados hoje: ${pacientesVisitados.length}`);
