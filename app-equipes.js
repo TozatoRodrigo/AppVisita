@@ -37,15 +37,15 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       
       formGroup.innerHTML = `
-        <label for="equipe-paciente">Equipe Médica: <span class="campo-obrigatorio">*</span></label>
-        <select id="equipe-paciente" name="equipe-paciente" required>
+        <label for="equipe-paciente" class="form-label form-label--required">Equipe Médica</label>
+        <select id="equipe-paciente" name="equipe-paciente" class="form-control" required>
           ${optionsHtml}
         </select>
-        <small>Selecione a equipe médica responsável por este paciente.</small>
+        <div class="form-help-text">Selecione a equipe médica responsável por este paciente</div>
       `;
       
       // Adicionar antes do botão de adicionar
-      const formActions = document.querySelector('#form-adicionar-paciente .form-actions');
+      const formActions = document.querySelector('#form-adicionar-paciente .card__actions');
       const formAdicionarPaciente = document.getElementById('form-adicionar-paciente');
       
       if (formActions && formAdicionarPaciente) {
@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
       } else {
         console.error("🔥 ERRO: Não foi possível encontrar os elementos necessários no formulário");
-        console.log("🔥 formActions encontrado:", !!formActions);
+        console.log("🔥 formActions (.card__actions) encontrado:", !!formActions);
         console.log("🔥 formAdicionarPaciente encontrado:", !!formAdicionarPaciente);
         return false;
       }
