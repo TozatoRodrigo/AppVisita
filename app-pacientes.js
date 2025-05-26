@@ -58,7 +58,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Inicializar sistema de sugestão de pacientes
-    inicializarSugestoesPacientes(); // REATIVADO APÓS CORREÇÃO DOS EVENT LISTENERS
+    inicializarSugestoesPacientes(); // REATIVADO COM CORREÇÃO DEFINITIVA
+    
     
     // Configurar formulário de adicionar paciente
     if (formAdicionarPaciente) {
@@ -235,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
           let imagensData = { urls: [], metadados: [] };
           console.log("🖼️ Verificando se há imagens para upload...");
           console.log("🖼️ imagensSelecionadas.length:", imagensSelecionadas.length);
-          console.log("🖼️ typeof window.uploadImagensParaStorage:", typeof window.uploadImagensParaStorage);
+          console.log("🔥 typeof window.uploadImagensParaStorage:", typeof window.uploadImagensParaStorage);
           
           if (typeof window.uploadImagensParaStorage === 'function') {
             console.log("🖼️ Função uploadImagensParaStorage encontrada, iniciando upload...");
@@ -1062,9 +1063,9 @@ document.addEventListener('DOMContentLoaded', function() {
   // Inicializar o módulo de consulta
   inicializarConsulta();
 
-  // Função para inicializar sistema de sugestão de pacientes para reinternação (CORRIGIDA)
+  // Função para inicializar sistema de sugestão de pacientes para reinternação (VERSÃO FINAL CORRIGIDA)
   function inicializarSugestoesPacientes() {
-    console.log("🔧 Inicializando sistema de sugestões corrigido...");
+    console.log("🔧 Inicializando sistema de sugestões - versão final corrigida...");
     
     const nomePacienteInput = document.getElementById('nome-paciente');
     if (!nomePacienteInput) {
@@ -1113,8 +1114,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     let timeoutBusca = null;
+    let sugestoesAtivas = false;
     
-    // EVENTO DE INPUT SIMPLIFICADO - SEM keydown que causa problemas
+    // EVENTO DE INPUT - Versão corrigida que não interfere na digitação
     nomePacienteInput.addEventListener('input', function(e) {
       const termo = this.value.trim();
       
@@ -1126,6 +1128,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Só buscar com pelo menos 3 caracteres
       if (termo.length < 3) {
         sugestoesContainer.style.display = 'none';
+        sugestoesAtivas = false;
         limparMensagemReinternacao();
         return;
       }
@@ -1139,12 +1142,64 @@ document.addEventListener('DOMContentLoaded', function() {
       // Adicionar debounce para evitar muitas requisições
       timeoutBusca = setTimeout(async () => {
         try {
+          sugestoesAtivas = true;
           await buscarPacientesParaSugestao(termo, sugestoesContainer);
         } catch (error) {
           console.error("Erro na busca de sugestões:", error);
           sugestoesContainer.style.display = 'none';
+          sugestoesAtivas = false;
         }
       }, 300);
+    });
+    
+    // NAVEGAÇÃO POR TECLADO - Só funciona quando sugestões estão ativas
+    nomePacienteInput.addEventListener('keydown', function(e) {
+      // IMPORTANTE: Só interceptar teclas se as sugestões estiverem visíveis
+      if (!sugestoesAtivas || sugestoesContainer.style.display === 'none') {
+        return; // Deixar o comportamento normal do input
+      }
+      
+      const sugestoes = sugestoesContainer.querySelectorAll('.sugestao-item');
+      const sugestaoAtiva = sugestoesContainer.querySelector('.sugestao-item.ativa');
+      
+      switch(e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          if (sugestoes.length > 0) {
+            const proxima = sugestaoAtiva ? 
+              sugestaoAtiva.nextElementSibling || sugestoes[0] : 
+              sugestoes[0];
+            sugestoes.forEach(s => s.classList.remove('ativa'));
+            proxima.classList.add('ativa');
+            proxima.scrollIntoView({ block: 'nearest' });
+          }
+          break;
+          
+        case 'ArrowUp':
+          e.preventDefault();
+          if (sugestoes.length > 0) {
+            const anterior = sugestaoAtiva ? 
+              sugestaoAtiva.previousElementSibling || sugestoes[sugestoes.length - 1] : 
+              sugestoes[sugestoes.length - 1];
+            sugestoes.forEach(s => s.classList.remove('ativa'));
+            anterior.classList.add('ativa');
+            anterior.scrollIntoView({ block: 'nearest' });
+          }
+          break;
+          
+        case 'Enter':
+          e.preventDefault();
+          if (sugestaoAtiva) {
+            sugestaoAtiva.click();
+          }
+          break;
+          
+        case 'Escape':
+          e.preventDefault();
+          sugestoesContainer.style.display = 'none';
+          sugestoesAtivas = false;
+          break;
+      }
     });
     
     // Fechar sugestões ao clicar fora
@@ -1154,10 +1209,11 @@ document.addEventListener('DOMContentLoaded', function() {
           e.target !== nomePacienteInput &&
           !nomePacienteInput.contains(e.target)) {
         sugestoesContainer.style.display = 'none';
+        sugestoesAtivas = false;
       }
     });
     
-    console.log("✅ Sistema de sugestões corrigido inicializado com sucesso");
+    console.log("✅ Sistema de sugestões final corrigido inicializado com sucesso");
   }
   
   // Função para buscar pacientes para sugestão

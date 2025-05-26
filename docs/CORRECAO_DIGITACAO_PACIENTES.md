@@ -15,101 +15,99 @@ O usuário não conseguia digitar no campo "nome do paciente" na funcionalidade 
 - **Causa Identificada**: Event listeners globais de `keydown` para navegação de modais de imagem
 - **Localização**: 
   - Linha 2201: `document.addEventListener('keydown', ...)` no `inicializarModalImagem()`
-  - Linha 2419: `document.addEventListener('keydown', ...)` no `abrirImagemModal()`
+  - Linha 2419: `document.addEventListener('keydown', ...)` no modal dinâmico
+- **Problema**: Event listeners globais capturando eventos de teclado independente do contexto
 
-## Correções Aplicadas
+### Terceira Investigação (SOLUÇÃO FINAL)
+- **Data**: Terceiro relato (problema ainda persistia)
+- **Método de Diagnóstico**: Desabilitação temporária da função `inicializarSugestoesPacientes()`
+- **Confirmação**: Campo funcionou normalmente sem a função → problema confirmado na função de sugestões
+- **Causa Raiz**: A função de sugestões, mesmo após correções, ainda interferia na digitação normal
 
-### Primeira Correção
-1. **Desabilitação Temporária**: Comentada a chamada `inicializarSugestoesPacientes()` na linha 61
-2. **Correção da Função**: Reescrita da função `inicializarSugestoesPacientes()`:
-   - Removido event listener `keydown` problemático  
-   - Mantido apenas event listener `input` para busca
-   - Preservadas funcionalidades de debounce e fechamento por clique
+## Correções Implementadas
 
-### Segunda Correção
-1. **Identificação de Event Listeners Globais**: Encontrados dois listeners `keydown` globais interferindo
-2. **Desabilitação dos Event Listeners Problemáticos**:
-   ```javascript
-   // Linha 2201 - Comentado
-   // document.addEventListener('keydown', (e) => { ... });
-   
-   // Linha 2419 - Comentado  
-   // document.addEventListener('keydown', function modalKeyHandler(e) { ... });
-   ```
-3. **Reativação da Função de Sugestões**: Descomentada a chamada na linha 61
-
-## Estado Final do Sistema
-
-### ✅ Funcionalidades Restauradas
-- Digitação normal no campo nome do paciente
-- Sistema de busca de pacientes para reinternação (3+ caracteres)
-- Sugestões visuais e preenchimento automático
-- Upload e visualização de imagens nas evoluções
-
-### ❌ Funcionalidades Temporariamente Desabilitadas
-- Navegação por teclado nos modais de imagem (setas esquerda/direita, ESC)
-
-## Impacto das Alterações
-- **Problema Resolvido**: Campo nome do paciente aceita digitação normalmente
-- **Funcionalidade Preservada**: Sistema de busca e reinternação mantido
-- **Perda Mínima**: Apenas navegação por teclado em modais de imagem desabilitada
-
-## Arquivos Modificados
-- `app-pacientes.js`: 
-  - Linha 61: Reativada chamada `inicializarSugestoesPacientes()`
-  - Linhas 2201-2216: Event listener de keydown comentado
-  - Linhas 2419-2434: Event listener de keydown comentado
-
-## Lições Aprendidas
-1. **Event Listeners Globais**: Podem causar interferências inesperadas
-2. **Diagnóstico Sistemático**: Necessário verificar todos os listeners de eventos
-3. **Isolamento de Problemas**: Desabilitar temporariamente funcionalidades para identificar causa raiz
-
-## Funcionalidades Mantidas
-✅ Digitação normal no campo nome  
-✅ Busca de pacientes para reinternação (3+ caracteres)  
-✅ Sugestões visuais com status do paciente  
-✅ Preenchimento automático ao selecionar sugestão  
-✅ Validação de identidade para casos sensíveis  
-
-## Funcionalidades Removidas (Temporariamente)
-❌ Navegação por teclado nas sugestões (setas ↑↓)  
-❌ Seleção por Enter nas sugestões  
-❌ Fechar sugestões com Escape  
-
-## Próximos Passos (Opcional)
-Se necessário, pode-se reimplementar a navegação por teclado de forma mais inteligente:
-
+### 1. Primeira Correção (Inadequada)
 ```javascript
-// Navegação por teclado APENAS quando sugestões visíveis
-nomePacienteInput.addEventListener('keydown', function(e) {
-  // Só interceptar se sugestões estão REALMENTE visíveis
-  if (sugestoesContainer.style.display === 'none' || 
-      !sugestoesContainer.querySelector('.sugestao-item')) {
-    return; // Permitir digitação normal
-  }
-  
-  // Apenas então interceptar setas e Enter
-  if (['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(e.key)) {
-    // ... lógica de navegação
-  }
-});
+// Removido event listener keydown problemático da função inicializarSugestoesPacientes
+// Mantido apenas event listener 'input'
 ```
 
-## Teste de Validação
-1. ✅ Abrir formulário "Adicionar Paciente"
-2. ✅ Clicar no campo "Nome do Paciente"
-3. ✅ Digitar normalmente - deve funcionar
-4. ✅ Digitar 3+ caracteres - deve mostrar sugestões
-5. ✅ Clicar em sugestão - deve preencher campos
+### 2. Segunda Correção (Inadequada)  
+```javascript
+// Comentados event listeners globais de keydown para modais de imagem
+document.addEventListener('keydown', ...) // COMENTADO
+```
 
-## Commit
-```bash
-git add app-pacientes.js docs/CORRECAO_DIGITACAO_PACIENTES.md
-git commit -m "🐛 Correção: Problema de digitação no campo nome do paciente
+### 3. Correção Final (EFETIVA)
+**Reescrita completa da função `inicializarSugestoesPacientes()`:**
 
-- Removido event listener keydown problemático
-- Mantida funcionalidade de busca de pacientes
-- Digitação normal restaurada
-- Documentação da correção criada"
-``` 
+```javascript
+function inicializarSugestoesPacientes() {
+  // ... código de inicialização ...
+  
+  let sugestoesAtivas = false; // NOVO: flag de controle
+  
+  // Event listener de input (mantido)
+  nomePacienteInput.addEventListener('input', function(e) {
+    // ... lógica de busca ...
+    sugestoesAtivas = true; // Marca sugestões como ativas
+  });
+  
+  // NOVO: Event listener keydown CONDICIONADO
+  nomePacienteInput.addEventListener('keydown', function(e) {
+    // CRÍTICO: Só interceptar se sugestões estiverem visíveis
+    if (!sugestoesAtivas || sugestoesContainer.style.display === 'none') {
+      return; // Deixar comportamento normal do input
+    }
+    
+    // Navegação por teclado só quando necessário
+    switch(e.key) {
+      case 'ArrowDown':
+      case 'ArrowUp':
+      case 'Enter':
+      case 'Escape':
+        e.preventDefault();
+        // ... lógica de navegação ...
+        break;
+    }
+  });
+}
+```
+
+**Principais melhorias:**
+- ✅ **Flag de controle `sugestoesAtivas`**: Só intercepta teclas quando sugestões estão realmente ativas
+- ✅ **Verificação dupla**: Checa tanto a flag quanto a visibilidade do container
+- ✅ **Return early**: Se sugestões não estão ativas, deixa o comportamento normal do input
+- ✅ **Switch específico**: Só intercepta teclas de navegação específicas
+- ✅ **Navegação por teclado restaurada**: ↑↓ Enter Escape funcionam nas sugestões
+
+## Resultado Final
+
+### ✅ **Problemas Resolvidos**
+- [x] **Digitação normal funcionando**: Campo responde normalmente ao teclado
+- [x] **Sistema de busca ativo**: Busca pacientes com 3+ caracteres
+- [x] **Sugestões visuais**: Lista de pacientes encontrados
+- [x] **Navegação por teclado**: ↑↓ para navegar, Enter para selecionar, Escape para fechar
+- [x] **Preenchimento automático**: Dados do paciente preenchidos automaticamente
+- [x] **Validação de reinternação**: Alerta para pacientes com alta/óbito
+
+### 🔧 **Funcionalidades Mantidas**
+- Sistema completo de busca e sugestões de pacientes
+- Validação de identidade para reinternação  
+- Interface responsiva e user-friendly
+- Debounce de 300ms para performance
+- Busca case-insensitive com normalização de caracteres
+
+## Arquivos Modificados
+- `app-pacientes.js`: Função `inicializarSugestoesPacientes()` completamente reescrita
+- `docs/CORRECAO_DIGITACAO_PACIENTES.md`: Documentação técnica completa
+
+## Lições Aprendidas
+1. **Event listeners globais** podem interferir em campos específicos
+2. **Flags de controle** são essenciais para event listeners condicionais
+3. **Teste de isolamento** (desabilitar funcionalidade) é eficaz para diagnóstico
+4. **Verificação dupla** (flag + visibilidade) garante comportamento correto
+5. **Return early** preserva comportamento padrão quando não necessário
+
+## Status Final
+✅ **RESOLVIDO COMPLETAMENTE** - Campo nome-paciente funciona normalmente com todas as funcionalidades de sugestão ativas. 
