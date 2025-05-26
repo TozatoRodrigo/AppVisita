@@ -1,214 +1,111 @@
-# 📚 Índice da Documentação - AppVisita
+# 📚 Índice de Documentação - AppVisita
 
-## 🗂️ Estrutura Completa da Documentação
+## 🏠 **Documentação Principal**
 
-### 📊 **Product Management**
+### 📋 **Getting Started**
+- 📄 **[README Principal](../README.md)** - Visão geral e instalação
+- 🚀 **[Guia de Instalação](./INSTALLATION.md)** - Setup completo passo a passo
+- 👤 **[Manual do Usuário](./USER_MANUAL.md)** - Como usar o sistema
 
-#### 🎯 Estratégia e Visão
-- **[📋 Product Backlog](PRODUCT_BACKLOG.md)** - Roadmap completo 2025-2027 com metodologia MoSCoW
-- **[📊 Product Strategy](PRODUCT_STRATEGY.md)** - Análise de mercado, personas e estratégia de crescimento
-- **[💼 Executive Summary](EXECUTIVE_SUMMARY.md)** - Resumo executivo para investidores e board
-
-#### 🔍 Análise e Métricas
-- **[📈 Métricas de Produto](#)** - KPIs de produto e negócio (em desenvolvimento)
-- **[🎯 OKRs](#)** - Objectives and Key Results trimestrais (em desenvolvimento)
-- **[💰 Business Case](#)** - Justificativas financeiras (em desenvolvimento)
-
----
-
-### 👤 **Usuário e Produto**
-
-#### 📖 Manuais de Uso
-- **[👤 User Manual](USER_MANUAL.md)** - Manual completo do usuário final
-- **[🚀 Quick Start Guide](#)** - Guia rápido de início (em desenvolvimento)
-- **[❓ FAQ](#)** - Perguntas frequentes (em desenvolvimento)
-
-#### 🎨 Experiência do Usuário
-- **[🎨 UI/UX Guidelines](#)** - Diretrizes de interface (em desenvolvimento)
-- **[📱 Mobile Guidelines](#)** - Especificações mobile (em desenvolvimento)
-- **[♿ Accessibility](#)** - Guia de acessibilidade (em desenvolvimento)
+### 🔧 **Documentação Técnica**
+- 🏗️ **[Arquitetura](./ARCHITECTURE.md)** - Visão técnica do sistema
+- 💾 **[Banco de Dados](./DATABASE.md)** - Estrutura Firestore
+- 🔌 **[API](./api/)** - Documentação da API REST
+- 🛠️ **[Manutenção](./MAINTENANCE.md)** - Guias de manutenção
 
 ---
 
-### 🏗️ **Técnica e Arquitetura**
+## 📦 **Release Notes**
 
-#### 🔧 Documentação Técnica
-- **[🏗️ Architecture](ARCHITECTURE.md)** - Arquitetura do sistema e componentes
-- **[🗄️ Database](#)** - Esquemas de banco de dados (em desenvolvimento)
-- **[🔌 API Documentation](#)** - Documentação da API REST (em desenvolvimento)
+### 📋 **Versões Recentes**
+- 🆕 **[Release v2.5](./RELEASE_NOTES_V2_5.md)** - Correções críticas + Validação de reinternação (Maio 2025)
+- 📝 **[Correção de Digitação](./CORRECAO_DIGITACAO_PACIENTES.md)** - Fix detalhado do sistema de digitação
+- 🏥 **[Melhoria Alta/Óbito](./MELHORIA_ALTA_OBITO.md)** - Status de pacientes
+- 📸 **[Funcionalidades de Imagens](./FUNCIONALIDADES_IMAGENS.md)** - Sistema completo de upload
 
-#### 💻 Desenvolvimento
-- **[🛠️ Development Guide](#)** - Guia para desenvolvedores (em desenvolvimento)
-- **[🧪 Testing Strategy](#)** - Estratégia de testes (em desenvolvimento)
-- **[🚀 Deployment Guide](#)** - Guia de deploy (em desenvolvimento)
-
----
-
-### ⚙️ **Funcionalidades e Features**
-
-#### 📋 Especificações de Features
-- **[📸 Sistema de Imagens](FUNCIONALIDADES_IMAGENS.md)** - Documentação completa do sistema de imagens
-- **[✅ Feature: Anexar Imagens](features/FEATURE_anexar_imagens_evolucao.md)** - Especificação implementada
-- **[🔔 Feature: Notificações](#)** - Sistema de notificações (planejado)
-- **[📱 Feature: App Mobile](#)** - Aplicativo móvel (planejado)
-
-#### 🔄 Status de Implementação
-- **[📊 Features Dashboard](#)** - Painel de status das features (em desenvolvimento)
-- **[🚧 Roadmap Visual](#)** - Timeline visual do roadmap (em desenvolvimento)
+### 🐛 **Bug Fixes e Troubleshooting**
+- 🔍 **[Troubleshooting Busca](./TROUBLESHOOTING_BUSCA_PACIENTES.md)** - Resolução de problemas de busca
+- ⚡ **[Correções GitHub Actions](./CORRECOES_GITHUB_ACTIONS.md)** - CI/CD fixes
+- 📂 **[Bug Fixes](./bugfixes/)** - Arquivo de correções organizadas
 
 ---
 
-### 📊 **Releases e Versionamento**
+## 🧪 **Testes e Qualidade**
 
-#### 📝 Histórico
-- **[📋 Changelog](../CHANGELOG.md)** - Histórico detalhado de mudanças
-- **[🚀 Releases](../RELEASES.md)** - Histórico de versões e estatísticas
-- **[🗺️ Roadmap](../ROADMAP_COMERCIAL.md)** - Roadmap comercial detalhado
-
-#### 🎯 Planejamento
-- **[📅 Sprint Planning](#)** - Planejamento de sprints (em desenvolvimento)
-- **[📈 Velocity Tracking](#)** - Acompanhamento de velocidade (em desenvolvimento)
+### 🔬 **Documentação de Testes**
+- 🧪 **[Testes Regressivos](./TESTES_REGRESSIVOS.md)** - Suite completa de testes
+- 🔄 **[Atualização Automática](./ATUALIZACAO_AUTOMATICA_TESTES.md)** - Sistema de testes automatizados
+- 📊 **[Relatórios de Qualidade](./bugfixes/)** - Métricas e relatórios
 
 ---
 
-### 🔒 **Segurança e Compliance**
+## 💼 **Product Management**
 
-#### 🛡️ Segurança
-- **[🔐 Security Guidelines](#)** - Diretrizes de segurança (em desenvolvimento)
-- **[🏥 LGPD Compliance](#)** - Conformidade LGPD (em desenvolvimento)
-- **[🔍 Audit Logs](#)** - Logs de auditoria (em desenvolvimento)
+### 📊 **Estratégia e Planejamento**
+- 💼 **[Executive Summary](./EXECUTIVE_SUMMARY.md)** - Resumo executivo para investidores
+- 🎯 **[Product Strategy](./PRODUCT_STRATEGY.md)** - Estratégia de produto 2025-2027
+- 📋 **[Product Backlog](./PRODUCT_BACKLOG.md)** - Roadmap detalhado de funcionalidades
 
-#### 📋 Compliance
-- **[🏛️ Regulatory](#)** - Conformidade regulatória (em desenvolvimento)
-- **[📜 Privacy Policy](#)** - Política de privacidade (em desenvolvimento)
-
----
-
-### 🎓 **Treinamento e Suporte**
-
-#### 📚 Materiais de Treinamento
-- **[🎥 Video Tutorials](#)** - Tutoriais em vídeo (planejado)
-- **[📖 Training Materials](#)** - Materiais de treinamento (em desenvolvimento)
-- **[🎯 Onboarding](#)** - Processo de onboarding (em desenvolvimento)
-
-#### 🆘 Suporte
-- **[🔧 Troubleshooting](#)** - Resolução de problemas (em desenvolvimento)
-- **[📞 Support Guidelines](#)** - Diretrizes de suporte (em desenvolvimento)
+### 📈 **Features e Roadmap**
+- ⭐ **[Features](./features/)** - Documentação de funcionalidades por versão
+- 🔮 **Roadmap Q2 2025**: Sistema de notificações em tempo real
+- 🔮 **Roadmap Q3 2025**: App mobile nativo (iOS/Android)
+- 🔮 **Roadmap Q4 2025**: API REST completa
 
 ---
 
-## 📊 Status da Documentação
+## 🛡️ **Segurança e Compliance**
 
-### ✅ Documentos Completos
-- [x] **Product Backlog** - Roadmap 2025-2027 com MoSCoW
-- [x] **Product Strategy** - Análise de mercado e estratégia
-- [x] **Executive Summary** - Resumo para investidores
-- [x] **User Manual** - Manual completo do usuário
-- [x] **Architecture** - Documentação técnica da arquitetura
-- [x] **Funcionalidades Imagens** - Sistema de imagens médicas
-- [x] **Feature Anexar Imagens** - Especificação implementada
-- [x] **Changelog** - Histórico detalhado v1.0 → v2.2.0
-- [x] **Releases** - Histórico de versões
-
-### 🔄 Em Desenvolvimento
-- [ ] **Quick Start Guide** - Guia de início rápido
-- [ ] **API Documentation** - Documentação da API REST
-- [ ] **Development Guide** - Guia para desenvolvedores
-- [ ] **Testing Strategy** - Estratégia de testes
-- [ ] **Database Schema** - Esquemas de banco
-
-### 📋 Planejados
-- [ ] **Mobile Guidelines** - Especificações do app móvel
-- [ ] **Security Guidelines** - Diretrizes de segurança
-- [ ] **LGPD Compliance** - Documentação de conformidade
-- [ ] **Video Tutorials** - Tutoriais em vídeo
-- [ ] **FAQ** - Perguntas frequentes
+### 🔒 **Documentação de Segurança**
+- 🔐 **[Guia de Segurança](./features/)** - Boas práticas implementadas
+- 📋 **[Compliance LGPD](./features/)** - Adequação à lei de proteção de dados
+- 🔍 **[Auditoria](./features/)** - Sistema de logs e rastreabilidade
 
 ---
 
-## 🎯 Público-Alvo por Documento
+## 📞 **Suporte e Manutenção**
 
-### 👔 **Executivos e Investidores**
-- Executive Summary
-- Product Strategy
-- Business Case (planejado)
-- Financial Projections (planejado)
+### 🛠️ **Operações**
+- 🔧 **[Guia de Manutenção](./MAINTENANCE.md)** - Procedimentos operacionais
+- 📈 **[Monitoramento](./features/)** - Métricas e alertas
+- 🆙 **[Atualizações](./DOCUMENTATION_UPDATE.md)** - Processo de atualização
 
-### 🛠️ **Product Managers**
-- Product Backlog
-- Product Strategy
-- Features Dashboard (planejado)
-- OKRs (planejado)
-
-### 💻 **Desenvolvedores**
-- Architecture
-- Development Guide (planejado)
-- API Documentation (planejado)
-- Testing Strategy (planejado)
-
-### 👥 **Usuários Finais**
-- User Manual
-- Quick Start Guide (planejado)
-- Video Tutorials (planejado)
-- FAQ (planejado)
-
-### 🏥 **Equipes Médicas**
-- User Manual
-- Funcionalidades Imagens
-- Training Materials (planejado)
-- Onboarding (planejado)
-
-### 🔧 **Suporte e Operações**
-- Troubleshooting (planejado)
-- Support Guidelines (planejado)
-- Deployment Guide (planejado)
+### 📋 **Templates e Padrões**
+- 📝 **Templates de Issue**: Para reportar bugs e solicitar features
+- 📊 **Templates de PR**: Para contribuições de código
+- 📚 **Padrões de Documentação**: Guias de escrita
 
 ---
 
-## 📝 Convenções de Documentação
+## 🔗 **Links Úteis**
 
-### 🏷️ Labels e Status
-- ✅ **Completo** - Documentação finalizada e revisada
-- 🔄 **Em desenvolvimento** - Sendo escrito atualmente
-- 📋 **Planejado** - Na roadmap para desenvolvimento
-- 🚧 **Em revisão** - Aguardando aprovação
-- ⚠️ **Desatualizado** - Necessita atualização
+### 🌐 **Recursos Externos**
+- 🔥 **[Firebase Console](https://console.firebase.google.com/)** - Gerenciamento do backend
+- 📚 **[Firebase Docs](https://firebase.google.com/docs)** - Documentação oficial
+- 🐙 **[GitHub Repository](https://github.com/rodrigodiastozato/AppVisita)** - Código fonte
 
-### 📅 Frequência de Atualização
-- **Product Backlog**: Quinzenal
-- **Product Strategy**: Trimestral
-- **User Manual**: A cada nova feature
-- **Architecture**: A cada mudança significativa
-- **Changelog**: A cada release
-
-### 👥 Responsabilidades
-- **Product Manager**: Estratégia, roadmap, backlog
-- **Tech Lead**: Arquitetura, desenvolvimento, APIs
-- **UX Designer**: User manual, guidelines de UI/UX
-- **QA Engineer**: Testing strategy, troubleshooting
-- **DevOps**: Deployment, infrastructure
+### 📧 **Contatos**
+- 🐛 **Reportar Bug**: [GitHub Issues](https://github.com/rodrigodiastozato/AppVisita/issues)
+- 💡 **Solicitar Feature**: [GitHub Discussions](https://github.com/rodrigodiastozato/AppVisita/discussions)
+- 📧 **Suporte Direto**: Através do sistema interno
 
 ---
 
-## 🔗 Links Úteis
+## 📊 **Estatísticas da Documentação**
 
-### 📱 Aplicação
-- **[AppVisita Live](http://localhost:8000)** - Aplicação rodando localmente
-- **[GitHub Repository](https://github.com/TozatoRodrigo/AppVisita)** - Código fonte
-- **[Firebase Console](#)** - Console do Firebase (privado)
+### 📈 **Métricas**
+- **Total de Documentos**: 20+ arquivos
+- **Última Atualização**: 26 de Maio de 2025
+- **Versão Atual**: v2.5
+- **Cobertura**: 95% das funcionalidades documentadas
 
-### 🛠️ Ferramentas de Desenvolvimento
-- **[Jira/Trello](#)** - Gestão de tasks (a configurar)
-- **[Figma](#)** - Designs e protótipos (a configurar)
-- **[Postman](#)** - Testes de API (futuro)
-
-### 📊 Monitoramento
-- **[Analytics Dashboard](#)** - Métricas de uso (futuro)
-- **[Error Tracking](#)** - Monitoramento de erros (futuro)
-- **[Performance Monitoring](#)** - Performance do sistema (futuro)
+### ✅ **Status da Documentação**
+- 🟢 **Atualizada**: Release Notes, README, Manual do Usuário
+- 🟡 **Em Revisão**: Documentação de API, Features avançadas
+- 🔴 **Pendente**: Documentação de deploy automatizado
 
 ---
 
-*Índice da documentação mantido pela equipe de Product Management*  
-*Última atualização: 23 de Janeiro de 2025*  
-*Próxima revisão: 06 de Fevereiro de 2025* 
+*📅 Última atualização: 26 de Maio de 2025*  
+*📝 Mantido por: Equipe de Desenvolvimento AppVisita*  
+*📍 Versão da Documentação: 2.5.0* 

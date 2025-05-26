@@ -25,10 +25,12 @@ O **AppVisita** é um sistema web desenvolvido para facilitar o gerenciamento de
 - 📝 **Registro de evoluções médicas** com histórico completo
 - 📸 **Sistema completo de upload de imagens** com drag & drop
 - 🖼️ **Visualizador profissional de imagens** com navegação por teclado
-- 🔍 **Sistema de busca** avançado de pacientes
+- 🔍 **Sistema de busca** avançado de pacientes com sugestões em tempo real
+- 🚫 **Validação rigorosa de reinternação** (apenas pacientes com alta hospitalar)
+- 💬 **Sistema de alertas visuais** com animações e feedback contextual
 - 📊 **Dashboard administrativo** com estatísticas
 - 📱 **Interface responsiva** para desktop e mobile
-- 🏥 **Status do paciente** (Internado, Alta, Óbito)
+- 🏥 **Status do paciente** (Internado, Alta, Óbito) com regras de negócio
 
 ## 📸 Sistema de Imagens Médicas
 
@@ -421,4 +423,21 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 [🐛 Reportar Bug](https://github.com/rodrigodiastozato/AppVisita/issues) • [💡 Solicitar Feature](https://github.com/rodrigodiastozato/AppVisita/issues) • [📖 Documentação](https://github.com/rodrigodiastozato/AppVisita/wiki)
 
-</div> 
+</div>
+
+## 🆕 **Novidades da Versão 2.5**
+
+### ✅ **Sistema de Digitação Corrigido**
+- **Problema resolvido**: Campo "nome do paciente" agora aceita digitação normalmente
+- **Sugestões visuais**: Pacientes anteriores aparecem durante a digitação
+- **Navegação por teclado**: Use setas para navegar e Enter para selecionar
+
+### 🔒 **Validação Inteligente de Reinternação**
+- **Regra implementada**: Apenas pacientes com "alta hospitalar" podem ser reinternados
+- **Alertas contextuais**: Sistema informa se paciente está internado ou falecido
+- **Prevenção de erros**: Evita duplicatas e inconsistências nos dados
+
+### 🎨 **Sistema de Alertas Melhorado**
+- **Animações suaves**: Alertas deslizam da direita com animações CSS
+- **Cores contextuais**: Vermelho para erros, amarelo para avisos, verde para sucesso
+- **Auto-dismiss**: Desaparecimento automático após 5 segundos 
