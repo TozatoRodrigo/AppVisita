@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Inicializar sistema de sugestão de pacientes
-    inicializarSugestoesPacientes();
+    inicializarSugestoesPacientes(); // REATIVADO - versão corrigida
     
     // Configurar formulário de adicionar paciente
     if (formAdicionarPaciente) {
@@ -1062,19 +1062,29 @@ document.addEventListener('DOMContentLoaded', function() {
   // Inicializar o módulo de consulta
   inicializarConsulta();
 
-  // Função para inicializar sistema de sugestão de pacientes para reinternação
+  // Função para inicializar sistema de sugestão de pacientes para reinternação (CORRIGIDA)
   function inicializarSugestoesPacientes() {
-    const nomePacienteInput = document.getElementById('nome-paciente');
-    const pacientesSugeridosContainer = document.getElementById('pacientes-sugeridos');
+    console.log("🔧 Inicializando sistema de sugestões corrigido...");
     
-    if (!nomePacienteInput || !pacientesSugeridosContainer) {
-      console.error("Elementos para sugestão de pacientes não encontrados");
+    const nomePacienteInput = document.getElementById('nome-paciente');
+    if (!nomePacienteInput) {
+      console.warn("Campo nome-paciente não encontrado");
       return;
     }
     
+    // Verificar se já foi inicializado para evitar duplicação
+    if (nomePacienteInput.hasAttribute('data-sugestoes-inicializadas')) {
+      console.log("Sugestões já inicializadas para este campo");
+      return;
+    }
+    
+    // Marcar como inicializado
+    nomePacienteInput.setAttribute('data-sugestoes-inicializadas', 'true');
+    
     // Criar elemento para sugestões se não existir
-    if (!document.querySelector('.sugestoes-container')) {
-      const sugestoesContainer = document.createElement('div');
+    let sugestoesContainer = document.querySelector('.sugestoes-container');
+    if (!sugestoesContainer) {
+      sugestoesContainer = document.createElement('div');
       sugestoesContainer.className = 'sugestoes-container';
       sugestoesContainer.style.cssText = `
         position: absolute;
@@ -1082,8 +1092,8 @@ document.addEventListener('DOMContentLoaded', function() {
         left: 0;
         right: 0;
         background: white;
-        border: 1px solid var(--border-color);
-        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        border: 1px solid var(--border-color, #ddd);
+        border-radius: 0 0 8px 8px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         z-index: 1000;
         max-height: 300px;
@@ -1102,11 +1112,10 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
     
-    const sugestoesContainer = document.querySelector('.sugestoes-container');
     let timeoutBusca = null;
     
-    // Adicionar evento para buscar sugestões ao digitar
-    nomePacienteInput.addEventListener('input', async function() {
+    // EVENTO DE INPUT SIMPLIFICADO - SEM keydown que causa problemas
+    nomePacienteInput.addEventListener('input', function(e) {
       const termo = this.value.trim();
       
       // Limpar timeout anterior
@@ -1121,59 +1130,34 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
       
+      // Só buscar se Firebase estiver disponível
+      if (!window.verificarFirebaseDisponivel || !window.verificarFirebaseDisponivel()) {
+        console.warn("Firebase não disponível - sugestões desabilitadas");
+        return;
+      }
+      
       // Adicionar debounce para evitar muitas requisições
       timeoutBusca = setTimeout(async () => {
-        await buscarPacientesParaSugestao(termo, sugestoesContainer);
+        try {
+          await buscarPacientesParaSugestao(termo, sugestoesContainer);
+        } catch (error) {
+          console.error("Erro na busca de sugestões:", error);
+          sugestoesContainer.style.display = 'none';
+        }
       }, 300);
     });
     
-    // Melhorar o evento de clique fora
+    // Fechar sugestões ao clicar fora
     document.addEventListener('click', function(e) {
-      if (!sugestoesContainer.contains(e.target) && 
+      if (sugestoesContainer && 
+          !sugestoesContainer.contains(e.target) && 
           e.target !== nomePacienteInput &&
           !nomePacienteInput.contains(e.target)) {
         sugestoesContainer.style.display = 'none';
       }
     });
     
-    // Adicionar navegação por teclado
-    nomePacienteInput.addEventListener('keydown', function(e) {
-      const items = sugestoesContainer.querySelectorAll('.sugestao-item');
-      let selectedIndex = Array.from(items).findIndex(item => item.classList.contains('selected'));
-      
-      switch(e.key) {
-        case 'ArrowDown':
-          e.preventDefault();
-          if (selectedIndex < items.length - 1) {
-            if (selectedIndex >= 0) items[selectedIndex].classList.remove('selected');
-            selectedIndex++;
-            items[selectedIndex].classList.add('selected');
-            items[selectedIndex].scrollIntoView({ block: 'nearest' });
-          }
-          break;
-          
-        case 'ArrowUp':
-          e.preventDefault();
-          if (selectedIndex > 0) {
-            items[selectedIndex].classList.remove('selected');
-            selectedIndex--;
-            items[selectedIndex].classList.add('selected');
-            items[selectedIndex].scrollIntoView({ block: 'nearest' });
-          }
-          break;
-          
-        case 'Enter':
-          e.preventDefault();
-          if (selectedIndex >= 0) {
-            items[selectedIndex].click();
-          }
-          break;
-          
-        case 'Escape':
-          sugestoesContainer.style.display = 'none';
-          break;
-      }
-    });
+    console.log("✅ Sistema de sugestões corrigido inicializado com sucesso");
   }
   
   // Função para buscar pacientes para sugestão
