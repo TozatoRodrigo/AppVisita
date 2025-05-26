@@ -2365,4 +2365,80 @@ input:focus, textarea:focus, select:focus {
         align-self: flex-start;
         margin-left: 0;
     }
+}
+
+/* Responsividade para mensagens vazias */
+@media (max-width: 768px) {
+    .paciente-vazio {
+        padding: 20px 15px !important;
+    }
+    
+    .paciente-vazio-mensagem i {
+        font-size: 2rem !important;
+    }
+    
+    .paciente-vazio-mensagem p {
+        font-size: 0.9rem !important;
+    }
+}
+
+/* Estilos específicos para o nome do usuário no header */
+.user-menu {
+    position: relative;
+}
+
+.user-menu #user-menu-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.user-menu #user-menu-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.user-menu #user-name {
+    font-weight: 500;
+    color: inherit;
+    font-size: 0.9rem;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.user-menu i.fa-user-circle {
+    font-size: 1.2rem;
+    opacity: 0.8;
+}
+
+/* Responsividade para nome do usuário */
+@media (max-width: 768px) {
+    .user-menu #user-menu-toggle {
+        max-width: 150px;
+        padding: 6px 10px;
+    }
+    
+    .user-menu #user-name {
+        font-size: 0.8rem;
+    }
+    
+    .user-menu i.fa-user-circle {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .user-menu #user-menu-toggle {
+        max-width: 120px;
+        padding: 4px 8px;
+    }
+    
+    .user-menu #user-name {
+        font-size: 0.75rem;
+    }
 } 

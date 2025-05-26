@@ -252,6 +252,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log("Usuário aprovado ou é admin, carregando dashboard...");
                 appContainer.style.display = 'block';
                 
+                // Atualizar nome do usuário no header
+                atualizarNomeUsuarioHeader(userData, user);
+                
                 // Configurar interface para admin ou médico regular
                 await mostrarInterface(window.isAdmin);
                 
@@ -282,6 +285,10 @@ document.addEventListener('DOMContentLoaded', () => {
               if (window.isAdmin) {
                 console.log("Novo usuário admin criado, carregando dashboard...");
                 appContainer.style.display = 'block';
+                
+                // Atualizar nome do usuário no header (usar email para admin novo)
+                atualizarNomeUsuarioHeader(null, user);
+                
                 await mostrarInterface(true);
               } else {
                 console.log("Novo usuário criado, mostrando formulário de cadastro complementar...");
@@ -1034,5 +1041,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     console.log("Tela de login resetada");
+  }
+
+  // Função para atualizar nome do usuário no header
+  function atualizarNomeUsuarioHeader(userData, user) {
+    console.log("Atualizando nome do usuário no header");
+    
+    const userNameElement = document.getElementById('user-name');
+    if (userNameElement) {
+      // Priorizar nomeCompleto, depois email
+      const nomeExibicao = userData?.nomeCompleto || user.email.split('@')[0];
+      
+      // Limitar o tamanho do nome para não quebrar o layout
+      const nomeFormatado = nomeExibicao.length > 20 
+        ? nomeExibicao.substring(0, 20) + '...' 
+        : nomeExibicao;
+      
+      userNameElement.textContent = nomeFormatado;
+      userNameElement.title = userData?.nomeCompleto || user.email; // Tooltip com nome completo
+      
+      console.log(`Nome do usuário atualizado para: ${nomeFormatado}`);
+    } else {
+      console.warn("Elemento user-name não encontrado no DOM");
+    }
   }
 }); 
