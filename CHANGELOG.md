@@ -1,5 +1,31 @@
 # 📋 Changelog - AppVisita
 
+Todas as mudanças notáveis deste projeto serão documentadas neste arquivo.
+
+## [2.6.0] - 2025-05-26
+
+### ✨ Adicionado
+- **Nova funcionalidade:** Visualização completa de perfil do paciente
+- Clique no nome do paciente para acessar dados completos
+- Modal de perfil com seções organizadas (dados cadastrais, histórico, estatísticas)
+- Cálculo automático de idade do paciente
+- Tempo de internação calculado em dias e horas
+- Estatísticas inteligentes (evoluções, imagens, médicos envolvidos)
+- Navegação direta do perfil para nova evolução
+- Galeria de imagens integrada no histórico de evoluções
+
+### 🎨 Melhorado
+- Interface responsiva para o modal de perfil
+- Design moderno com ícones FontAwesome
+- Layout otimizado para dispositivos móveis
+- Organização visual dos dados do paciente
+
+### 🔧 Técnico
+- Novas funções JavaScript para gerenciamento de perfil
+- Event listeners para interação com modal
+- Cálculos automáticos de tempo e estatísticas
+- CSS responsivo para diferentes tamanhos de tela
+
 ## [2.5.0] - 2025-05-26
 
 ### ✨ **NOVAS FUNCIONALIDADES**

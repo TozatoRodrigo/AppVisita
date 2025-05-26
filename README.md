@@ -273,21 +273,28 @@ O AppVisita segue uma estratégia de crescimento estruturada com foco no mercado
    - **Preview**: Visualizar imagens antes de salvar
    - **Remoção**: Excluir imagens específicas se necessário
 
-3. **Upload de Imagens**:
+3. **Visualizar Perfil Completo do Paciente** 🆕:
+   - **Clique no nome**: Acesso direto aos dados completos
+   - **Dados cadastrais**: Nome, CPF, idade calculada automaticamente
+   - **Histórico completo**: Timeline de todas as evoluções
+   - **Estatísticas inteligentes**: Dias internado, total de evoluções, imagens anexadas
+   - **Navegação rápida**: Botão para registrar nova evolução diretamente do perfil
+
+4. **Upload de Imagens**:
    - **Arrastar e soltar**: Simplesmente arraste arquivos para a área
    - **Clique para selecionar**: Botão tradicional de seleção
    - **Múltiplas imagens**: Até 10 imagens por evolução
    - **Formatos suportados**: JPEG, PNG, WebP (máx. 5MB cada)
    - **Compressão automática**: Sistema otimiza automaticamente
 
-4. **Visualizar Histórico**:
+5. **Visualizar Histórico**:
    - **Buscar por nome ou ID**: Sistema de busca inteligente
    - **Timeline completa**: Histórico cronológico de evoluções
    - **Galeria de imagens**: Miniaturas clicáveis no histórico
    - **Visualização ampliada**: Modal profissional para imagens
    - **Navegação**: Use setas do teclado ou botões na tela
 
-5. **Navegação nas Imagens**:
+6. **Navegação nas Imagens**:
    - **Clique na miniatura**: Abre visualização em tamanho grande
    - **Teclas de atalho**: 
      - `ESC` para fechar
@@ -386,16 +393,19 @@ AppVisita/
 
 ## 📋 Roadmap
 
-### Versão Atual (2.2.0)
+### Versão Atual (2.6.0)
 - ✅ Sistema base completo
 - ✅ Upload de imagens funcionando
 - ✅ Gestão de equipes operacional
 - ✅ Interface responsiva
+- ✅ **Visualização completa de perfil do paciente** 🆕
+- ✅ Sistema de digitação corrigido
+- ✅ Validação inteligente de reinternação
 
 ### Próximas Versões
-- 🔄 **v2.3.0**: Sistema de notificações em tempo real
-- 🔄 **v2.4.0**: App mobile nativo iOS/Android
-- 🔄 **v2.5.0**: API REST para integrações
+- 🔄 **v2.7.0**: Exportação de relatórios PDF
+- 🔄 **v2.8.0**: Gráficos de evolução temporal
+- 🔄 **v2.9.0**: Sistema de notificações em tempo real
 - 🔄 **v3.0.0**: Telemedicina e IA médica
 
 ## 📄 Licença
@@ -424,20 +434,3 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 [🐛 Reportar Bug](https://github.com/rodrigodiastozato/AppVisita/issues) • [💡 Solicitar Feature](https://github.com/rodrigodiastozato/AppVisita/issues) • [📖 Documentação](https://github.com/rodrigodiastozato/AppVisita/wiki)
 
 </div>
-
-## 🆕 **Novidades da Versão 2.5**
-
-### ✅ **Sistema de Digitação Corrigido**
-- **Problema resolvido**: Campo "nome do paciente" agora aceita digitação normalmente
-- **Sugestões visuais**: Pacientes anteriores aparecem durante a digitação
-- **Navegação por teclado**: Use setas para navegar e Enter para selecionar
-
-### 🔒 **Validação Inteligente de Reinternação**
-- **Regra implementada**: Apenas pacientes com "alta hospitalar" podem ser reinternados
-- **Alertas contextuais**: Sistema informa se paciente está internado ou falecido
-- **Prevenção de erros**: Evita duplicatas e inconsistências nos dados
-
-### 🎨 **Sistema de Alertas Melhorado**
-- **Animações suaves**: Alertas deslizam da direita com animações CSS
-- **Cores contextuais**: Vermelho para erros, amarelo para avisos, verde para sucesso
-- **Auto-dismiss**: Desaparecimento automático após 5 segundos 

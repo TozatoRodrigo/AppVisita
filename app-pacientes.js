@@ -631,7 +631,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // HTML do paciente
     pacienteItem.innerHTML = `
       <div class="paciente-header">
-        <h3 class="paciente-nome">${paciente.nome}</h3>
+        <h3 class="paciente-nome" data-id="${paciente.id}" title="Clique para ver dados completos">${paciente.nome}</h3>
         <span class="paciente-id">ID: ${paciente.idInternacao}</span>
       </div>
       <div class="paciente-info">
@@ -653,6 +653,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (btnEvolucao) {
       btnEvolucao.addEventListener('click', function() {
         abrirModalEvolucao(this.dataset.id, this.dataset.nome);
+      });
+    }
+    
+    // Configurar clique no nome do paciente para abrir perfil completo
+    const nomePaciente = pacienteItem.querySelector('.paciente-nome');
+    if (nomePaciente) {
+      nomePaciente.addEventListener('click', function() {
+        abrirModalPerfilPaciente(this.dataset.id);
       });
     }
     
@@ -2604,4 +2612,498 @@ document.addEventListener('DOMContentLoaded', function() {
     limparImagensSelecionadas,
     inicializarUploadImagens
   };
+
+  // =====================================================
+  // FUNÇÕES DO MODAL DE PERFIL DO PACIENTE
+  // =====================================================
+  
+  // Função para abrir modal de perfil completo do paciente
+  async function abrirModalPerfilPaciente(pacienteId) {
+    const modalPerfil = document.getElementById('modal-perfil-paciente');
+    if (!modalPerfil) {
+      console.error("Modal de perfil do paciente não encontrado");
+      return;
+    }
+    
+    try {
+      // Verificar se o Firebase está disponível
+      if (!window.verificarFirebaseDisponivel()) {
+        throw new Error("Firebase não está disponível");
+      }
+      
+      // Mostrar loading
+      const esconderLoading = AppModulos.UI.mostrarLoading('Carregando dados do paciente...');
+      
+      // Buscar dados completos do paciente
+      const pacienteDoc = await window.db.collection('pacientes').doc(pacienteId).get();
+      
+      if (!pacienteDoc.exists) {
+        throw new Error("Paciente não encontrado");
+      }
+      
+      const paciente = { id: pacienteDoc.id, ...pacienteDoc.data() };
+      
+      // Preencher dados do modal
+      await preencherDadosPerfilPaciente(paciente);
+      
+      // Armazenar dados do paciente no modal para uso posterior
+      modalPerfil.dataset.pacienteId = paciente.id;
+      modalPerfil.dataset.pacienteNome = paciente.nome;
+      
+      // Exibir modal
+      modalPerfil.style.display = 'block';
+      modalPerfil.style.zIndex = '999999';
+      
+      // Scroll para o topo
+      document.body.scrollTop = 0;
+      document.documentElement.scrollTop = 0;
+      
+      // Esconder loading
+      esconderLoading();
+      
+      console.log("✅ Modal de perfil aberto para paciente:", paciente.nome);
+      
+    } catch (error) {
+      console.error("Erro ao abrir perfil do paciente:", error);
+      AppModulos.UI.mostrarNotificacao('Erro ao carregar dados do paciente. Tente novamente.', 'erro');
+      
+      // Fechar modal em caso de erro
+      modalPerfil.style.display = 'none';
+    }
+  }
+  
+  // Função para preencher dados do perfil do paciente
+  async function preencherDadosPerfilPaciente(paciente) {
+    // Título do modal
+    const tituloModal = document.getElementById('modal-perfil-titulo');
+    if (tituloModal) {
+      tituloModal.textContent = `Perfil Completo - ${paciente.nome}`;
+    }
+    
+    // Preencher dados cadastrais
+    await preencherDadosCadastrais(paciente);
+    
+    // Preencher histórico de evoluções
+    await preencherHistoricoEvolucoes(paciente);
+    
+    // Preencher estatísticas
+    await preencherEstatisticasPaciente(paciente);
+  }
+  
+  // Função para preencher dados cadastrais
+  async function preencherDadosCadastrais(paciente) {
+    const containerDados = document.getElementById('perfil-dados-cadastrais');
+    if (!containerDados) return;
+    
+    // Formatar data de nascimento
+    let dataNascimento = 'Não informada';
+    if (paciente.dataNascimento) {
+      try {
+        if (paciente.dataNascimento && typeof paciente.dataNascimento === 'object' && 'seconds' in paciente.dataNascimento) {
+          dataNascimento = AppVisita.Utils.formatarData(paciente.dataNascimento);
+        } else if (typeof paciente.dataNascimento === 'string') {
+          const partes = paciente.dataNascimento.split('-');
+          if (partes.length === 3) {
+            const data = new Date(partes[0], partes[1] - 1, partes[2]);
+            dataNascimento = data.toLocaleDateString('pt-BR');
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao formatar data de nascimento:", error);
+      }
+    }
+    
+    // Calcular idade
+    let idade = 'Não calculada';
+    if (paciente.dataNascimento) {
+      try {
+        let dataNasc;
+        if (typeof paciente.dataNascimento === 'string') {
+          const partes = paciente.dataNascimento.split('-');
+          if (partes.length === 3) {
+            dataNasc = new Date(partes[0], partes[1] - 1, partes[2]);
+          }
+        } else if (paciente.dataNascimento.seconds) {
+          dataNasc = new Date(paciente.dataNascimento.seconds * 1000);
+        }
+        
+        if (dataNasc) {
+          const hoje = new Date();
+          let idadeCalculada = hoje.getFullYear() - dataNasc.getFullYear();
+          const mes = hoje.getMonth() - dataNasc.getMonth();
+          if (mes < 0 || (mes === 0 && hoje.getDate() < dataNasc.getDate())) {
+            idadeCalculada--;
+          }
+          idade = `${idadeCalculada} anos`;
+        }
+      } catch (error) {
+        console.error("Erro ao calcular idade:", error);
+      }
+    }
+    
+    // Obter nome da equipe
+    let equipeNome = 'Não definida';
+    if (paciente.equipeId && window.equipesUsuario) {
+      const equipe = window.equipesUsuario.find(e => e.id === paciente.equipeId);
+      if (equipe) {
+        equipeNome = equipe.nome;
+      }
+    }
+    
+    // Formatar datas
+    const dataRegistro = AppVisita.Utils.formatarDataHora(paciente.dataRegistro);
+    const ultimaAtualizacao = paciente.ultimaAtualizacao ? 
+      AppVisita.Utils.formatarDataHora(paciente.ultimaAtualizacao) : 'Não disponível';
+    
+    // Dados de internação atual
+    const tempoInternacao = calcularTempoInternacao(paciente.dataRegistro);
+    
+    containerDados.innerHTML = `
+      <div class="perfil-item">
+        <i class="fas fa-user"></i>
+        <div class="perfil-item-content">
+          <div class="perfil-item-label">Nome Completo</div>
+          <div class="perfil-item-valor">${paciente.nome}</div>
+        </div>
+      </div>
+      
+      <div class="perfil-item">
+        <i class="fas fa-id-card"></i>
+        <div class="perfil-item-content">
+          <div class="perfil-item-label">CPF</div>
+          <div class="perfil-item-valor">${paciente.cpf || 'Não informado'}</div>
+        </div>
+      </div>
+      
+      <div class="perfil-item">
+        <i class="fas fa-birthday-cake"></i>
+        <div class="perfil-item-content">
+          <div class="perfil-item-label">Data de Nascimento</div>
+          <div class="perfil-item-valor">${dataNascimento}</div>
+        </div>
+      </div>
+      
+      <div class="perfil-item">
+        <i class="fas fa-calculator"></i>
+        <div class="perfil-item-content">
+          <div class="perfil-item-label">Idade</div>
+          <div class="perfil-item-valor">${idade}</div>
+        </div>
+      </div>
+      
+      <div class="perfil-item">
+        <i class="fas fa-hospital"></i>
+        <div class="perfil-item-content">
+          <div class="perfil-item-label">Local de Internação</div>
+          <div class="perfil-item-valor">${paciente.localLeito}</div>
+        </div>
+      </div>
+      
+      <div class="perfil-item">
+        <i class="fas fa-bed"></i>
+        <div class="perfil-item-content">
+          <div class="perfil-item-label">ID/Leito</div>
+          <div class="perfil-item-valor">${paciente.idInternacao}</div>
+        </div>
+      </div>
+      
+      <div class="perfil-item">
+        <i class="fas fa-users"></i>
+        <div class="perfil-item-content">
+          <div class="perfil-item-label">Equipe Responsável</div>
+          <div class="perfil-item-valor">${equipeNome}</div>
+        </div>
+      </div>
+      
+      <div class="perfil-item">
+        <i class="fas fa-heartbeat"></i>
+        <div class="perfil-item-content">
+          <div class="perfil-item-label">Status Atual</div>
+          <div class="perfil-item-valor">
+            <span class="perfil-evolucao-status status-${paciente.status}">
+              <i class="fas ${paciente.status === 'internado' ? 'fa-procedures' : 
+                            paciente.status === 'alta' ? 'fa-walking' : 'fa-skull'}"></i>
+              ${paciente.status === 'internado' ? 'Internado' : 
+                paciente.status === 'alta' ? 'Alta Hospitalar' : 'Óbito'}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="perfil-item">
+        <i class="fas fa-calendar-plus"></i>
+        <div class="perfil-item-content">
+          <div class="perfil-item-label">Data de Internação</div>
+          <div class="perfil-item-valor">${dataRegistro}</div>
+        </div>
+      </div>
+      
+      <div class="perfil-item">
+        <i class="fas fa-clock"></i>
+        <div class="perfil-item-content">
+          <div class="perfil-item-label">Tempo de Internação</div>
+          <div class="perfil-item-valor">${tempoInternacao}</div>
+        </div>
+      </div>
+      
+      <div class="perfil-item">
+        <i class="fas fa-edit"></i>
+        <div class="perfil-item-content">
+          <div class="perfil-item-label">Última Atualização</div>
+          <div class="perfil-item-valor">${ultimaAtualizacao}</div>
+        </div>
+      </div>
+      
+      <div class="perfil-item">
+        <i class="fas fa-user-md"></i>
+        <div class="perfil-item-content">
+          <div class="perfil-item-label">Médico Responsável</div>
+          <div class="perfil-item-valor">${paciente.medicoEmail || 'Não informado'}</div>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Função para preencher histórico de evoluções no perfil
+  async function preencherHistoricoEvolucoes(paciente) {
+    const containerHistorico = document.getElementById('perfil-historico-evolucoes');
+    const contadorEvolucoes = document.getElementById('perfil-contador-evolucoes');
+    
+    if (!containerHistorico) return;
+    
+    const evolucoes = paciente.evolucoes || [];
+    
+    // Atualizar contador
+    if (contadorEvolucoes) {
+      contadorEvolucoes.textContent = evolucoes.length;
+    }
+    
+    if (evolucoes.length === 0) {
+      containerHistorico.innerHTML = `
+        <div class="perfil-sem-evolucoes">
+          <i class="fas fa-info-circle"></i>
+          <p>Nenhuma evolução registrada ainda.</p>
+        </div>
+      `;
+      return;
+    }
+    
+    // Ordenar evoluções da mais recente para a mais antiga
+    evolucoes.sort((a, b) => {
+      const dataA = a.dataRegistro ? (a.dataRegistro.seconds || 0) : 0;
+      const dataB = b.dataRegistro ? (b.dataRegistro.seconds || 0) : 0;
+      return dataB - dataA;
+    });
+    
+    // Criar HTML para cada evolução
+    let historicoHTML = '';
+    
+    evolucoes.forEach(evolucao => {
+      const dataFormatada = AppVisita.Utils.formatarDataHora(evolucao.dataRegistro);
+      const statusText = evolucao.status === 'internado' ? 'Continua Internado' : 
+                        evolucao.status === 'alta' ? 'Alta Hospitalar' : 'Óbito';
+      
+      const statusClass = evolucao.status === 'internado' ? 'status-internado' : 
+                         evolucao.status === 'alta' ? 'status-alta' : 'status-obito';
+      
+      // Renderizar galeria de imagens se houver
+      let galeriaImagens = '';
+      if (evolucao.imagens && evolucao.imagens.length > 0) {
+        galeriaImagens = `
+          <div class="perfil-galeria-imagens">
+            <div class="perfil-galeria-titulo">
+              📸 Imagens Anexadas (${evolucao.imagens.length})
+            </div>
+            <div class="perfil-galeria-grid">
+              ${evolucao.imagens.map((url, index) => `
+                <div class="perfil-galeria-item" onclick="window.abrirImagemModal(${JSON.stringify(evolucao.imagens).replace(/"/g, '&quot;')}, ${index})">
+                  <img src="${url}" alt="Imagem ${index + 1}" loading="lazy">
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+      
+      historicoHTML += `
+        <div class="perfil-evolucao-item">
+          <div class="perfil-evolucao-header">
+            <span class="perfil-evolucao-data">${dataFormatada}</span>
+            <span class="perfil-evolucao-medico">${evolucao.medicoEmail || 'Médico não identificado'}</span>
+          </div>
+          <div class="perfil-evolucao-texto">${evolucao.texto}</div>
+          ${galeriaImagens}
+          <div class="perfil-evolucao-status ${statusClass}">
+            <i class="fas ${evolucao.status === 'internado' ? 'fa-procedures' : 
+                          evolucao.status === 'alta' ? 'fa-walking' : 'fa-skull'}"></i>
+            ${statusText}
+          </div>
+        </div>
+      `;
+    });
+    
+    containerHistorico.innerHTML = historicoHTML;
+  }
+  
+  // Função para preencher estatísticas do paciente
+  async function preencherEstatisticasPaciente(paciente) {
+    const containerEstatisticas = document.getElementById('perfil-estatisticas');
+    if (!containerEstatisticas) return;
+    
+    const evolucoes = paciente.evolucoes || [];
+    const totalEvolucoes = evolucoes.length;
+    
+    // Calcular dias internado
+    const diasInternado = calcularDiasInternacao(paciente.dataRegistro);
+    
+    // Calcular evoluções com imagens
+    const evolucoesComImagens = evolucoes.filter(e => e.imagens && e.imagens.length > 0).length;
+    const totalImagens = evolucoes.reduce((total, e) => total + (e.imagens ? e.imagens.length : 0), 0);
+    
+    // Última evolução
+    let ultimaEvolucaoData = 'Nenhuma';
+    if (evolucoes.length > 0) {
+      const ultimaEvolucao = evolucoes.sort((a, b) => {
+        const dataA = a.dataRegistro ? (a.dataRegistro.seconds || 0) : 0;
+        const dataB = b.dataRegistro ? (b.dataRegistro.seconds || 0) : 0;
+        return dataB - dataA;
+      })[0];
+      
+      ultimaEvolucaoData = AppVisita.Utils.formatarDataHora(ultimaEvolucao.dataRegistro);
+    }
+    
+    // Médicos diferentes que registraram evoluções
+    const medicosUnicos = new Set(evolucoes.map(e => e.medicoEmail).filter(Boolean)).size;
+    
+    containerEstatisticas.innerHTML = `
+      <div class="perfil-estatistica">
+        <div class="perfil-estatistica-valor">${totalEvolucoes}</div>
+        <div class="perfil-estatistica-label">Total de Evoluções</div>
+      </div>
+      
+      <div class="perfil-estatistica">
+        <div class="perfil-estatistica-valor">${diasInternado}</div>
+        <div class="perfil-estatistica-label">Dias Internado</div>
+      </div>
+      
+      <div class="perfil-estatistica">
+        <div class="perfil-estatistica-valor">${totalImagens}</div>
+        <div class="perfil-estatistica-label">Imagens Anexadas</div>
+      </div>
+      
+      <div class="perfil-estatistica">
+        <div class="perfil-estatistica-valor">${medicosUnicos}</div>
+        <div class="perfil-estatistica-label">Médicos Envolvidos</div>
+      </div>
+    `;
+  }
+  
+  // Função auxiliar para calcular tempo de internação
+  function calcularTempoInternacao(dataRegistro) {
+    try {
+      let dataInternacao;
+      
+      if (dataRegistro && dataRegistro.seconds) {
+        dataInternacao = new Date(dataRegistro.seconds * 1000);
+      } else if (dataRegistro instanceof Date) {
+        dataInternacao = dataRegistro;
+      } else {
+        return 'Não calculado';
+      }
+      
+      const agora = new Date();
+      const diferenca = agora - dataInternacao;
+      const dias = Math.floor(diferenca / (1000 * 60 * 60 * 24));
+      const horas = Math.floor((diferenca % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      
+      if (dias === 0) {
+        return `${horas} hora(s)`;
+      } else if (dias === 1) {
+        return `1 dia e ${horas} hora(s)`;
+      } else {
+        return `${dias} dias e ${horas} hora(s)`;
+      }
+    } catch (error) {
+      console.error("Erro ao calcular tempo de internação:", error);
+      return 'Erro no cálculo';
+    }
+  }
+  
+  // Função auxiliar para calcular dias de internação
+  function calcularDiasInternacao(dataRegistro) {
+    try {
+      let dataInternacao;
+      
+      if (dataRegistro && dataRegistro.seconds) {
+        dataInternacao = new Date(dataRegistro.seconds * 1000);
+      } else if (dataRegistro instanceof Date) {
+        dataInternacao = dataRegistro;
+      } else {
+        return 0;
+      }
+      
+      const agora = new Date();
+      const diferenca = agora - dataInternacao;
+      return Math.floor(diferenca / (1000 * 60 * 60 * 24));
+    } catch (error) {
+      console.error("Erro ao calcular dias de internação:", error);
+      return 0;
+    }
+  }
+  
+  // =====================================================
+  // EVENT LISTENERS DO MODAL DE PERFIL
+  // =====================================================
+  
+  // Configurar event listeners do modal de perfil
+  document.addEventListener('DOMContentLoaded', function() {
+    const modalPerfil = document.getElementById('modal-perfil-paciente');
+    const btnFecharPerfil = document.getElementById('btn-fechar-perfil');
+    const btnCloseHeaderPerfil = document.getElementById('close-perfil-paciente');
+    const btnNovaEvolucaoPerfil = document.getElementById('btn-nova-evolucao-perfil');
+    
+    // Fechar modal
+    if (btnFecharPerfil) {
+      btnFecharPerfil.addEventListener('click', function() {
+        modalPerfil.style.display = 'none';
+      });
+    }
+    
+    if (btnCloseHeaderPerfil) {
+      btnCloseHeaderPerfil.addEventListener('click', function() {
+        modalPerfil.style.display = 'none';
+      });
+    }
+    
+    // Fechar modal clicando fora dele
+    if (modalPerfil) {
+      modalPerfil.addEventListener('click', function(e) {
+        if (e.target === modalPerfil) {
+          modalPerfil.style.display = 'none';
+        }
+      });
+    }
+    
+    // Botão para nova evolução
+    if (btnNovaEvolucaoPerfil) {
+      btnNovaEvolucaoPerfil.addEventListener('click', function() {
+        // Obter ID do paciente atual no perfil (vamos implementar)
+        const pacienteId = modalPerfil.dataset.pacienteId;
+        const pacienteNome = modalPerfil.dataset.pacienteNome;
+        
+        if (pacienteId && pacienteNome) {
+          // Fechar modal de perfil
+          modalPerfil.style.display = 'none';
+          
+          // Abrir modal de evolução
+          setTimeout(() => {
+            abrirModalEvolucao(pacienteId, pacienteNome);
+          }, 300);
+        }
+      });
+    }
+  });
+  
+  // Expor função globalmente
+  window.abrirModalPerfilPaciente = abrirModalPerfilPaciente;
 }); 

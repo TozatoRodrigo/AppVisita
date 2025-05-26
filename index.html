@@ -549,6 +549,58 @@
         </div>
     </div>
 
+    <!-- Modal de Visualização Completa do Paciente -->
+    <div id="modal-perfil-paciente" class="modal" style="display: none;">
+        <div class="modal-content modal-content--large">
+            <div class="modal-header">
+                <h2 id="modal-perfil-titulo">Dados Completos do Paciente</h2>
+                <button class="close-button" id="close-perfil-paciente">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Dados Cadastrais -->
+                <div class="perfil-section">
+                    <h3 class="perfil-section-title">
+                        <i class="fas fa-user"></i> Dados Cadastrais
+                    </h3>
+                    <div class="perfil-dados" id="perfil-dados-cadastrais">
+                        <!-- Dados serão preenchidos dinamicamente -->
+                    </div>
+                </div>
+
+                <!-- Histórico de Evoluções -->
+                <div class="perfil-section">
+                    <h3 class="perfil-section-title">
+                        <i class="fas fa-history"></i> Histórico de Evoluções
+                        <span id="perfil-contador-evolucoes" class="contador-badge">0</span>
+                    </h3>
+                    <div class="perfil-historico" id="perfil-historico-evolucoes">
+                        <!-- Histórico será preenchido dinamicamente -->
+                    </div>
+                </div>
+
+                <!-- Estatísticas -->
+                <div class="perfil-section">
+                    <h3 class="perfil-section-title">
+                        <i class="fas fa-chart-bar"></i> Estatísticas da Internação
+                    </h3>
+                    <div class="perfil-estatisticas" id="perfil-estatisticas">
+                        <!-- Estatísticas serão preenchidas dinamicamente -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn--secondary" id="btn-fechar-perfil">
+                    <i class="fas fa-times"></i> Fechar
+                </button>
+                <button type="button" class="btn btn--primary" id="btn-nova-evolucao-perfil">
+                    <i class="fas fa-plus"></i> Nova Evolução
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts de Testes Regressivos (apenas em desenvolvimento) -->
     <script>
         // Carregar testes regressivos apenas em desenvolvimento

@@ -2510,4 +2510,316 @@ input:focus, textarea:focus, select:focus {
   right: 20px !important;
   max-width: 400px !important;
   z-index: 999999 !important;
+}
+
+/* Modal de Perfil do Paciente */
+.modal-content--large {
+    max-width: 900px;
+    width: 95%;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--border-color);
+    padding: 20px 0 0 0;
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-footer .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.modal-footer .btn--primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.modal-footer .btn--primary:hover {
+    background-color: #3367d6;
+    transform: translateY(-1px);
+}
+
+.modal-footer .btn--secondary {
+    background-color: var(--background-secondary);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+.modal-footer .btn--secondary:hover {
+    background-color: var(--border-color);
+}
+
+/* Seções do Perfil */
+.perfil-section {
+    margin-bottom: 30px;
+    background-color: var(--background-secondary);
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.perfil-section-title {
+    margin: 0 0 15px 0;
+    color: var(--text-color);
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.perfil-section-title i {
+    color: var(--primary-color);
+    font-size: 1rem;
+}
+
+.perfil-section-title .contador-badge {
+    margin-left: auto;
+}
+
+/* Dados Cadastrais */
+.perfil-dados {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.perfil-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background-color: var(--background-color);
+    border-radius: 6px;
+    border-left: 3px solid var(--primary-color);
+}
+
+.perfil-item i {
+    color: var(--primary-color);
+    font-size: 1rem;
+    width: 16px;
+    text-align: center;
+}
+
+.perfil-item-content {
+    flex: 1;
+}
+
+.perfil-item-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.perfil-item-valor {
+    font-size: 0.95rem;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+/* Histórico de Evoluções no Perfil */
+.perfil-historico {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.perfil-evolucao-item {
+    background-color: var(--background-color);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-left: 4px solid var(--primary-color);
+    position: relative;
+}
+
+.perfil-evolucao-item:last-child {
+    margin-bottom: 0;
+}
+
+.perfil-evolucao-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.perfil-evolucao-data {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.perfil-evolucao-medico {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    background-color: var(--background-secondary);
+    padding: 4px 8px;
+    border-radius: 12px;
+}
+
+.perfil-evolucao-texto {
+    line-height: 1.5;
+    margin-bottom: 10px;
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+.perfil-evolucao-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.perfil-evolucao-status.status-internado {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.perfil-evolucao-status.status-alta {
+    background-color: #e8f5e8;
+    color: #2e7d32;
+}
+
+.perfil-evolucao-status.status-obito {
+    background-color: #fce4ec;
+    color: #c2185b;
+}
+
+/* Galeria de Imagens no Perfil */
+.perfil-galeria-imagens {
+    margin-top: 12px;
+}
+
+.perfil-galeria-titulo {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.perfil-galeria-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px;
+    max-width: 100%;
+}
+
+.perfil-galeria-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.perfil-galeria-item:hover {
+    border-color: var(--primary-color);
+    transform: scale(1.05);
+}
+
+.perfil-galeria-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Estatísticas */
+.perfil-estatisticas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.perfil-estatistica {
+    text-align: center;
+    padding: 20px;
+    background-color: var(--background-color);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.perfil-estatistica-valor {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 5px;
+}
+
+.perfil-estatistica-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Nome clicável */
+.paciente-nome {
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.paciente-nome:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .modal-content--large {
+        width: 98%;
+        margin: 2% auto;
+        max-height: 95vh;
+        overflow-y: auto;
+    }
+    
+    .perfil-dados {
+        grid-template-columns: 1fr;
+    }
+    
+    .perfil-estatisticas {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .modal-footer {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .modal-footer .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .perfil-evolucao-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 } 
