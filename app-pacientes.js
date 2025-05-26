@@ -656,11 +656,17 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
     
-    // Configurar clique no nome do paciente para abrir perfil completo
+    // Tornar o nome do paciente clicável para abrir o perfil completo
     const nomePaciente = pacienteItem.querySelector('.paciente-nome');
     if (nomePaciente) {
-      nomePaciente.addEventListener('click', function() {
-        abrirModalPerfilPaciente(this.dataset.id);
+      nomePaciente.style.cursor = 'pointer';
+      nomePaciente.title = 'Clique para ver perfil completo';
+      nomePaciente.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const pacienteId = pacienteItem.dataset.id; // Pegar o ID do elemento pai
+        console.log("🔥 Clicando no nome do paciente:", paciente.nome, "ID:", pacienteId);
+        abrirModalPerfilPaciente(pacienteId);
       });
     }
     
@@ -2619,11 +2625,15 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Função para abrir modal de perfil completo do paciente
   async function abrirModalPerfilPaciente(pacienteId) {
+    console.log("🔥 abrirModalPerfilPaciente chamada com ID:", pacienteId);
+    
     const modalPerfil = document.getElementById('modal-perfil-paciente');
     if (!modalPerfil) {
-      console.error("Modal de perfil do paciente não encontrado");
+      console.error("❌ Modal de perfil do paciente não encontrado");
       return;
     }
+    
+    console.log("✅ Modal encontrado:", modalPerfil);
     
     try {
       // Verificar se o Firebase está disponível
@@ -2631,10 +2641,13 @@ document.addEventListener('DOMContentLoaded', function() {
         throw new Error("Firebase não está disponível");
       }
       
+      console.log("✅ Firebase disponível");
+      
       // Mostrar loading
       const esconderLoading = AppModulos.UI.mostrarLoading('Carregando dados do paciente...');
       
       // Buscar dados completos do paciente
+      console.log("🔍 Buscando paciente no Firestore...");
       const pacienteDoc = await window.db.collection('pacientes').doc(pacienteId).get();
       
       if (!pacienteDoc.exists) {
@@ -2642,17 +2655,29 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       
       const paciente = { id: pacienteDoc.id, ...pacienteDoc.data() };
+      console.log("✅ Paciente carregado:", paciente.nome);
       
       // Preencher dados do modal
+      console.log("🔧 Preenchendo dados do modal...");
       await preencherDadosPerfilPaciente(paciente);
       
       // Armazenar dados do paciente no modal para uso posterior
       modalPerfil.dataset.pacienteId = paciente.id;
       modalPerfil.dataset.pacienteNome = paciente.nome;
       
-      // Exibir modal
+      // Exibir modal - forçar exibição
+      console.log("🎭 Exibindo modal...");
       modalPerfil.style.display = 'block';
+      modalPerfil.style.visibility = 'visible';
+      modalPerfil.style.opacity = '1';
       modalPerfil.style.zIndex = '999999';
+      modalPerfil.classList.remove('hidden');
+      
+      // Garantir que o body não role por trás do modal - APENAS se o modal for exibido com sucesso
+      if (modalPerfil.offsetHeight > 0) {
+        document.body.style.overflow = 'hidden';
+        console.log("🔒 Scroll da página bloqueado");
+      }
       
       // Scroll para o topo
       document.body.scrollTop = 0;
@@ -2662,13 +2687,22 @@ document.addEventListener('DOMContentLoaded', function() {
       esconderLoading();
       
       console.log("✅ Modal de perfil aberto para paciente:", paciente.nome);
+      console.log("🔍 Estado do modal:");
+      console.log("  - display:", modalPerfil.style.display);
+      console.log("  - visibility:", modalPerfil.style.visibility);
+      console.log("  - opacity:", modalPerfil.style.opacity);
+      console.log("  - zIndex:", modalPerfil.style.zIndex);
+      console.log("  - offsetHeight:", modalPerfil.offsetHeight);
+      console.log("  - offsetWidth:", modalPerfil.offsetWidth);
       
     } catch (error) {
-      console.error("Erro ao abrir perfil do paciente:", error);
+      console.error("❌ Erro ao abrir perfil do paciente:", error);
       AppModulos.UI.mostrarNotificacao('Erro ao carregar dados do paciente. Tente novamente.', 'erro');
       
-      // Fechar modal em caso de erro
+      // Fechar modal em caso de erro E restaurar scroll
       modalPerfil.style.display = 'none';
+      document.body.style.overflow = 'auto';
+      console.log("🔓 Scroll da página liberado (erro)");
     }
   }
   
@@ -3066,12 +3100,16 @@ document.addEventListener('DOMContentLoaded', function() {
     if (btnFecharPerfil) {
       btnFecharPerfil.addEventListener('click', function() {
         modalPerfil.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        console.log("🔓 Scroll liberado (botão fechar)");
       });
     }
     
     if (btnCloseHeaderPerfil) {
       btnCloseHeaderPerfil.addEventListener('click', function() {
         modalPerfil.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        console.log("🔓 Scroll liberado (X do header)");
       });
     }
     
@@ -3080,20 +3118,33 @@ document.addEventListener('DOMContentLoaded', function() {
       modalPerfil.addEventListener('click', function(e) {
         if (e.target === modalPerfil) {
           modalPerfil.style.display = 'none';
+          document.body.style.overflow = 'auto';
+          console.log("🔓 Scroll liberado (clique fora)");
         }
       });
     }
     
+    // Fechar modal com tecla ESC
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && modalPerfil && modalPerfil.style.display === 'block') {
+        modalPerfil.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        console.log("🔓 Scroll liberado (ESC)");
+      }
+    });
+    
     // Botão para nova evolução
     if (btnNovaEvolucaoPerfil) {
       btnNovaEvolucaoPerfil.addEventListener('click', function() {
-        // Obter ID do paciente atual no perfil (vamos implementar)
+        // Obter ID do paciente atual no perfil
         const pacienteId = modalPerfil.dataset.pacienteId;
         const pacienteNome = modalPerfil.dataset.pacienteNome;
         
         if (pacienteId && pacienteNome) {
           // Fechar modal de perfil
           modalPerfil.style.display = 'none';
+          document.body.style.overflow = 'auto';
+          console.log("🔓 Scroll liberado (nova evolução)");
           
           // Abrir modal de evolução
           setTimeout(() => {
@@ -3102,8 +3153,41 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
     }
+    
+    console.log("🎯 Event listeners do modal de perfil configurados");
   });
   
   // Expor função globalmente
   window.abrirModalPerfilPaciente = abrirModalPerfilPaciente;
+
+  // =====================================================
+  // LIBERAÇÃO IMEDIATA DO SCROLL (CORREÇÃO DE EMERGÊNCIA)
+  // =====================================================
+  
+  // Executar imediatamente para corrigir possível problema atual
+  if (typeof document !== 'undefined') {
+    document.body.style.overflow = 'auto';
+    console.log("🆘 CORREÇÃO IMEDIATA: Scroll da página liberado automaticamente");
+  }
+  
+  // =====================================================
+  // FUNÇÃO DE EMERGÊNCIA PARA LIBERAR SCROLL
+  // =====================================================
+  
+  // Função de emergência para liberar scroll da página
+  function liberarScrollPagina() {
+    document.body.style.overflow = 'auto';
+    console.log("🆘 EMERGÊNCIA: Scroll da página liberado manualmente");
+    
+    // Fechar também qualquer modal aberto
+    const modalPerfil = document.getElementById('modal-perfil-paciente');
+    if (modalPerfil) {
+      modalPerfil.style.display = 'none';
+    }
+    
+    AppModulos.UI.mostrarNotificacao('Scroll da página foi liberado', 'sucesso');
+  }
+  
+  // Expor função globalmente para debug
+  window.liberarScrollPagina = liberarScrollPagina;
 }); 
