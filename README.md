@@ -6,12 +6,31 @@
 
 **Sistema completo de gestão de pacientes e evoluções médicas**
 
+[![Version](https://img.shields.io/badge/Version-2.6.1-brightgreen?style=flat&logo=github)](https://github.com)
 [![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat&logo=firebase&logoColor=black)](https://firebase.google.com/)
 [![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
 [![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
 
 </div>
+
+## 🔥 **Novidades v2.6.1 (Hotfix)**
+
+### 🚨 **Correções Críticas Implementadas**
+- ✅ **Modal de Perfil do Paciente**: Clique no nome do paciente agora funciona corretamente
+- ✅ **Scroll da Página**: Resolvido problema de scroll travado
+- ✅ **Debug Avançado**: Logs detalhados para facilitar troubleshooting
+- ✅ **Função de Emergência**: `liberarScrollPagina()` disponível globalmente no console
+
+### 🔧 **Melhorias Técnicas**
+- Evento de clique corrigido para buscar ID do elemento pai corretamente
+- Tratamento robusto de erro com restauração automática do overflow
+- Sistema de emergency recovery para situações críticas
+- Logs de debug aprimorados para suporte técnico
+
+📋 **Ver detalhes completos**: [Release Notes v2.6.1](docs/RELEASE_NOTES_V2_6_1.md)
+
+---
 
 ## 📋 Sobre o Projeto
 
@@ -23,6 +42,7 @@ O **AppVisita** é um sistema web desenvolvido para facilitar o gerenciamento de
 - 👥 **Gestão de equipes médicas** e usuários
 - 🏥 **Cadastro e gerenciamento de pacientes**
 - 📝 **Registro de evoluções médicas** com histórico completo
+- 👤 **Perfil completo do paciente** com dados cadastrais, histórico e estatísticas (v2.6.0+)
 - 📸 **Sistema completo de upload de imagens** com drag & drop
 - 🖼️ **Visualizador profissional de imagens** com navegação por teclado
 - 🔍 **Sistema de busca** avançado de pacientes com sugestões em tempo real
@@ -31,6 +51,7 @@ O **AppVisita** é um sistema web desenvolvido para facilitar o gerenciamento de
 - 📊 **Dashboard administrativo** com estatísticas
 - 📱 **Interface responsiva** para desktop e mobile
 - 🏥 **Status do paciente** (Internado, Alta, Óbito) com regras de negócio
+- 🆘 **Sistema de emergência** para recovery automático (v2.6.1+)
 
 ## 📸 Sistema de Imagens Médicas
 

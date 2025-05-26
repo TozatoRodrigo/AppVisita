@@ -2,6 +2,21 @@
 
 Todas as mudanças notáveis deste projeto serão documentadas neste arquivo.
 
+## [2.6.1] - 2025-05-26
+
+### 🐛 Correções
+- **Modal de Perfil do Paciente**: Corrigido problema onde o clique no nome do paciente não funcionava corretamente
+- **Scroll da Página**: Resolvido problema de scroll travado quando modal apresentava erro
+- **Event Listeners**: Melhorados os event listeners do modal de perfil com cleanup adequado
+- **Debug**: Adicionados logs detalhados para facilitar troubleshooting
+- **Função de Emergência**: Implementada `liberarScrollPagina()` disponível globalmente para situações críticas
+
+### 🔧 Melhorias Técnicas
+- Correção do evento de clique para pegar ID do elemento pai corretamente
+- Tratamento de erro robusto com restauração automática do overflow do body
+- Execução imediata da liberação de scroll como correção preventiva
+- Logs de debug aprimorados na função `abrirModalPerfilPaciente`
+
 ## [2.6.0] - 2025-05-26
 
 ### ✨ Adicionado
