@@ -1010,11 +1010,13 @@ footer {
 .alert--warning {
     background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
     border-left: 4px solid #ff9800;
+    color: #e65100;
 }
 
 .alert--danger {
     background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
     border-left: 4px solid #f44336;
+    color: #c62828;
 }
 
 .alert--info {
@@ -2458,4 +2460,54 @@ input:focus, textarea:focus, select:focus {
     .user-menu #user-name {
         font-size: 0.75rem;
     }
+}
+
+/* Animações para alertas de reinternação */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Melhorias para alertas fixos */
+.alert--danger {
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  border-left: 4px solid #f44336;
+  color: #c62828;
+}
+
+.alert--warning {
+  background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+  border-left: 4px solid #ff9800;
+  color: #e65100;
+}
+
+.alert--danger .alert-header i,
+.alert--warning .alert-header i {
+  color: inherit;
+}
+
+/* Container de alertas fixo */
+#alert-reinternacao {
+  position: fixed !important;
+  top: 20px !important;
+  right: 20px !important;
+  max-width: 400px !important;
+  z-index: 999999 !important;
 } 

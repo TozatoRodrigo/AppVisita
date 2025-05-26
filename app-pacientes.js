@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Inicializar sistema de sugestão de pacientes
-    inicializarSugestoesPacientes(); // REATIVADO VERSÃO ULTRA SEGURA
+    inicializarSugestoesPacientes(); // VERSÃO ULTRA MINIMALISTA ATIVADA
     
     
     // Configurar formulário de adicionar paciente
@@ -1063,9 +1063,9 @@ document.addEventListener('DOMContentLoaded', function() {
   // Inicializar o módulo de consulta
   inicializarConsulta();
 
-  // Função para inicializar sistema de sugestão de pacientes para reinternação (VERSÃO ULTRA SEGURA)
+  // Função para inicializar sistema de sugestão de pacientes para reinternação (VERSÃO ULTRA MINIMALISTA)
   function inicializarSugestoesPacientes() {
-    console.log("🔧 Inicializando sistema de sugestões - versão ULTRA SEGURA...");
+    console.log("🔧 Inicializando sistema de sugestões - versão ULTRA MINIMALISTA...");
     
     const nomePacienteInput = document.getElementById('nome-paciente');
     if (!nomePacienteInput) {
@@ -1073,76 +1073,78 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     
-    // Verificar se já foi inicializado para evitar duplicação
+    // Verificar se já foi inicializado
     if (nomePacienteInput.hasAttribute('data-sugestoes-inicializadas')) {
-      console.log("Sugestões já inicializadas para este campo");
+      console.log("Sugestões já inicializadas");
       return;
     }
     
-    // Marcar como inicializado
     nomePacienteInput.setAttribute('data-sugestoes-inicializadas', 'true');
     
-    // Criar elemento para sugestões se não existir
+    // Criar container de sugestões com estilo ULTRA AGRESSIVO
     let sugestoesContainer = document.querySelector('.sugestoes-container');
     if (!sugestoesContainer) {
       sugestoesContainer = document.createElement('div');
       sugestoesContainer.className = 'sugestoes-container';
-      sugestoesContainer.style.cssText = `
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: white;
-        border: 1px solid var(--border-color, #ddd);
-        border-radius: 0 0 8px 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        z-index: 1000;
-        max-height: 300px;
-        overflow-y: auto;
-        display: none;
-      `;
       
-      // Fazer o container do input relativo para posicionamento
+      // ESTILOS ULTRA AGRESSIVOS - FORÇA VISIBILIDADE
+      sugestoesContainer.style.setProperty('position', 'absolute', 'important');
+      sugestoesContainer.style.setProperty('top', '100%', 'important');
+      sugestoesContainer.style.setProperty('left', '0', 'important');
+      sugestoesContainer.style.setProperty('right', '0', 'important');
+      sugestoesContainer.style.setProperty('width', '100%', 'important');
+      sugestoesContainer.style.setProperty('backgroundColor', '#ffffff', 'important');
+      sugestoesContainer.style.setProperty('border', '2px solid #007bff', 'important');
+      sugestoesContainer.style.setProperty('borderTop', 'none', 'important');
+      sugestoesContainer.style.setProperty('borderRadius', '0 0 8px 8px', 'important');
+      sugestoesContainer.style.setProperty('boxShadow', '0 4px 12px rgba(0, 0, 0, 0.3)', 'important');
+      sugestoesContainer.style.setProperty('zIndex', '999999', 'important');
+      sugestoesContainer.style.setProperty('maxHeight', '250px', 'important');
+      sugestoesContainer.style.setProperty('overflowY', 'auto', 'important');
+      sugestoesContainer.style.setProperty('display', 'none', 'important');
+      sugestoesContainer.style.setProperty('fontSize', '14px', 'important');
+      sugestoesContainer.style.setProperty('fontFamily', 'Arial, sans-serif', 'important');
+      sugestoesContainer.style.setProperty('visibility', 'visible', 'important');
+      sugestoesContainer.style.setProperty('opacity', '1', 'important');
+      
+      // POSICIONAMENTO DO FORM GROUP
       const formGroup = nomePacienteInput.closest('.form-group');
       if (formGroup) {
         formGroup.style.position = 'relative';
+        formGroup.style.zIndex = '10000';
         formGroup.appendChild(sugestoesContainer);
+        console.log("✅ Container criado com estilos ULTRA AGRESSIVOS");
       } else {
+        // Fallback: adicionar após o input
         nomePacienteInput.parentNode.style.position = 'relative';
+        nomePacienteInput.parentNode.style.zIndex = '10000';
         nomePacienteInput.parentNode.appendChild(sugestoesContainer);
+        console.log("✅ Container criado via FALLBACK");
       }
     }
     
     let timeoutBusca = null;
     
-    // APENAS INPUT EVENT - SEM KEYDOWN para não interferir na digitação
+    // APENAS input event - ZERO interferência na digitação
     nomePacienteInput.addEventListener('input', function(e) {
       const termo = this.value.trim();
       
-      // Limpar timeout anterior
-      if (timeoutBusca) {
-        clearTimeout(timeoutBusca);
-      }
+      if (timeoutBusca) clearTimeout(timeoutBusca);
       
-      // Só buscar com pelo menos 3 caracteres
       if (termo.length < 3) {
         sugestoesContainer.style.display = 'none';
-        limparMensagemReinternacao();
         return;
       }
       
-      // Só buscar se Firebase estiver disponível
       if (!window.verificarFirebaseDisponivel || !window.verificarFirebaseDisponivel()) {
-        console.warn("Firebase não disponível - sugestões desabilitadas");
         return;
       }
       
-      // Debounce para evitar muitas requisições
       timeoutBusca = setTimeout(async () => {
         try {
           await buscarPacientesParaSugestao(termo, sugestoesContainer);
         } catch (error) {
-          console.error("Erro na busca de sugestões:", error);
+          console.error("Erro na busca:", error);
           sugestoesContainer.style.display = 'none';
         }
       }, 300);
@@ -1152,22 +1154,26 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('click', function(e) {
       if (sugestoesContainer && 
           !sugestoesContainer.contains(e.target) && 
-          e.target !== nomePacienteInput &&
-          !nomePacienteInput.contains(e.target)) {
+          e.target !== nomePacienteInput) {
         sugestoesContainer.style.display = 'none';
       }
     });
     
-    console.log("✅ Sistema de sugestões ULTRA SEGURO inicializado - SEM navegação por teclado");
+    console.log("✅ Sistema de sugestões ULTRA MINIMALISTA inicializado");
   }
   
   // Função para buscar pacientes para sugestão
   async function buscarPacientesParaSugestao(termo, container) {
+    console.log("🔍 BUSCA INICIADA - Termo:", termo);
+    
     try {
       // Verificar se o Firebase está disponível
       if (!window.verificarFirebaseDisponivel()) {
+        console.error("🔍 ERRO: Firebase não disponível");
         throw new Error("Firebase não está disponível");
       }
+      
+      console.log("🔍 Firebase OK, iniciando busca...");
       
       // Mostrar indicador de carregamento
       container.innerHTML = `
@@ -1176,16 +1182,20 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
       `;
       container.style.display = 'block';
+      console.log("🔍 Container de carregamento exibido");
       
       // Buscar por nome (case insensitive)
       const termoLower = termo.toLowerCase();
       
       // Busca mais inteligente: buscar todos os pacientes e filtrar no cliente
       // para permitir busca case-insensitive
+      console.log("🔍 Executando query no Firestore...");
       const pacientesSnapshot = await window.db.collection('pacientes')
         .orderBy('nome')
         .limit(50) // Limitar para performance
         .get();
+      
+      console.log("🔍 Query executada. Documentos encontrados:", pacientesSnapshot.size);
       
       // Filtrar no cliente para busca mais flexível
       const pacientesFiltrados = [];
@@ -1194,10 +1204,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const nomeNormalizado = paciente.nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         const termoNormalizado = termoLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         
+        console.log("🔍 Comparando:", paciente.nome, "com termo:", termo);
+        
         if (nomeNormalizado.includes(termoNormalizado)) {
+          console.log("🔍 ✅ MATCH encontrado:", paciente.nome);
           pacientesFiltrados.push(paciente);
         }
       });
+      
+      console.log("🔍 Pacientes filtrados:", pacientesFiltrados.length);
       
       // Ordenar por relevância (começa com o termo primeiro)
       pacientesFiltrados.sort((a, b) => {
@@ -1213,9 +1228,11 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Limitar a 8 resultados
       const resultados = pacientesFiltrados.slice(0, 8);
+      console.log("🔍 Resultados finais:", resultados.length);
       
       // Se não encontrou resultados
       if (resultados.length === 0) {
+        console.log("🔍 Nenhum resultado encontrado");
         container.innerHTML = `
           <div class="sugestao-sem-resultados">
             <i class="fas fa-search"></i>
@@ -1226,11 +1243,13 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
       
+      console.log("🔍 Renderizando resultados...");
       // Renderizar resultados
       await renderizarSugestoesPacientes(resultados, container, termo);
+      console.log("🔍 Resultados renderizados com sucesso");
       
     } catch (error) {
-      console.error("Erro ao buscar sugestões de pacientes:", error);
+      console.error("🔍 ERRO na busca:", error);
       container.innerHTML = `
         <div class="sugestao-erro">
           <i class="fas fa-exclamation-triangle"></i>
@@ -1243,6 +1262,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Função para renderizar sugestões de pacientes
   async function renderizarSugestoesPacientes(pacientes, container, termo) {
+    
     container.innerHTML = '';
     
     // Adicionar cabeçalho se houver resultados
@@ -1252,23 +1272,24 @@ document.addEventListener('DOMContentLoaded', function() {
       header.innerHTML = `
         <div class="sugestoes-titulo">
           <i class="fas fa-users"></i>
-          Pacientes encontrados (${pacientes.length})
+          <span>Pacientes encontrados</span>
         </div>
         <div class="sugestoes-hint">
           <i class="fas fa-info-circle"></i>
-          Use ↑↓ para navegar, Enter para selecionar
+          <span>Clique para selecionar</span>
         </div>
       `;
       container.appendChild(header);
+      
+      // Renderizar cada paciente
+      for (const paciente of pacientes) {
+        const itemSugestao = await criarItemSugestao(paciente, termo);
+        container.appendChild(itemSugestao);
+      }
     }
     
-    // Renderizar cada paciente
-    for (const paciente of pacientes) {
-      const sugestaoItem = await criarItemSugestao(paciente, termo);
-      container.appendChild(sugestaoItem);
-    }
-    
-    container.style.display = 'block';
+    // FORÇAR EXIBIÇÃO COM LOGS DETALHADOS
+    container.style.setProperty('display', 'block', 'important');
   }
   
   // Função para criar item de sugestão
@@ -1442,6 +1463,44 @@ document.addEventListener('DOMContentLoaded', function() {
     const dataNascimentoInput = document.getElementById('data-nascimento-paciente');
     const sugestoesContainer = document.querySelector('.sugestoes-container');
     
+    // ✅ VALIDAÇÃO RIGOROSA: Permitir apenas pacientes com alta
+    if (paciente.status !== 'alta') {
+      
+      // Ocultar sugestões
+      sugestoesContainer.style.display = 'none';
+      
+      // Mostrar alerta específico baseado no status
+      let titulo, mensagem, icone, cor;
+      
+      if (paciente.status === 'internado') {
+        titulo = '🚫 Reinternação Não Permitida';
+        mensagem = `O paciente <strong>${paciente.nome}</strong> já está <strong>internado</strong> no sistema. Não é possível fazer uma nova internação.`;
+        icone = 'fa-ban';
+        cor = 'danger';
+      } else if (paciente.status === 'obito') {
+        titulo = '⚠️ Atenção: Óbito Registrado';
+        mensagem = `Foi registrado <strong>óbito</strong> para ${paciente.nome}. Verifique se não é um <strong>homônimo</strong> antes de prosseguir. Se for uma nova pessoa, cadastre com dados completos.`;
+        icone = 'fa-exclamation-triangle';
+        cor = 'warning';
+      } else {
+        titulo = '❌ Status Inválido';
+        mensagem = `Status do paciente <strong>${paciente.nome}</strong> é "<strong>${paciente.status}</strong>". Apenas pacientes com <strong>alta hospitalar</strong> podem ser reinternados.`;
+        icone = 'fa-times-circle';
+        cor = 'danger';
+      }
+      
+      // Mostrar alerta customizado
+      mostrarAlertaPersonalizado(titulo, mensagem, icone, cor);
+      
+      // Limpar campos
+      nomePacienteInput.value = '';
+      if (dataNascimentoInput) dataNascimentoInput.value = '';
+      
+      return; // IMPEDIR prosseguimento
+    }
+    
+    // ✅ PACIENTE COM ALTA - PERMITIR REINTERNAÇÃO
+    
     // Preencher campos
     nomePacienteInput.value = paciente.nome;
     
@@ -1449,7 +1508,7 @@ document.addEventListener('DOMContentLoaded', function() {
       dataNascimentoInput.value = dataNascimentoFormatada;
     }
     
-    // Mostrar mensagem de reinternação
+    // Mostrar mensagem de reinternação (apenas para casos válidos)
     mostrarMensagemReinternacao(paciente);
     
     // Adicionar ID oculto para referência
@@ -1464,6 +1523,63 @@ document.addEventListener('DOMContentLoaded', function() {
       setTimeout(() => proximoCampo.focus(), 100);
     }
   }
+  
+  // Função para mostrar alerta personalizado
+  function mostrarAlertaPersonalizado(titulo, mensagem, icone, cor) {
+    // Criar ou reutilizar container de alerta
+    let alertContainer = document.getElementById('alert-reinternacao');
+    if (!alertContainer) {
+      alertContainer = document.createElement('div');
+      alertContainer.id = 'alert-reinternacao';
+      alertContainer.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        max-width: 400px;
+        z-index: 999999;
+        animation: slideInRight 0.3s ease;
+      `;
+      document.body.appendChild(alertContainer);
+    }
+    
+    alertContainer.innerHTML = `
+      <div class="alert alert--${cor}" style="margin: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+        <div class="alert-content">
+          <div class="alert-header">
+            <i class="fas ${icone}"></i>
+            <strong>${titulo}</strong>
+          </div>
+          <div class="alert-body">
+            <p>${mensagem}</p>
+          </div>
+          <div class="alert-actions">
+            <button type="button" class="btn btn--ghost btn--sm" onclick="fecharAlertaReinternacao()">
+              <i class="fas fa-times"></i> OK
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Auto-remover após 8 segundos
+    setTimeout(() => {
+      fecharAlertaReinternacao();
+    }, 8000);
+  }
+  
+  // Função para fechar alerta de reinternação
+  function fecharAlertaReinternacao() {
+    const alertContainer = document.getElementById('alert-reinternacao');
+    if (alertContainer) {
+      alertContainer.style.animation = 'slideOutRight 0.3s ease';
+      setTimeout(() => {
+        alertContainer.remove();
+      }, 300);
+    }
+  }
+  
+  // Expor função globalmente
+  window.fecharAlertaReinternacao = fecharAlertaReinternacao;
   
   // Função para mostrar mensagem de reinternação
   function mostrarMensagemReinternacao(paciente) {
@@ -2199,28 +2315,28 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
     
-    // Navegação por teclado
-    document.addEventListener('keydown', function modalKeyHandler(e) {
-      // IMPORTANTE: Só interceptar se o modal dinâmico estiver REALMENTE visível
-      const modalDinamico = document.getElementById('modal-imagem-dinamico');
-      if (!modalDinamico || modalDinamico.style.display === 'none') {
-        return; // NÃO interceptar se modal não está visível
-      }
-      
-      if (e.key === 'Escape') {
-        console.log("🖼️ Fechando modal via ESC");
-        modal.remove();
-        document.removeEventListener('keydown', modalKeyHandler);
-      } else if (e.key === 'ArrowLeft' && indiceAtual > 0) {
-        indiceAtual--;
-        atualizarImagem();
-        console.log("🖼️ Navegando via seta esquerda para:", indiceAtual);
-      } else if (e.key === 'ArrowRight' && indiceAtual < imagens.length - 1) {
-        indiceAtual++;
-        atualizarImagem();
-        console.log("🖼️ Navegando via seta direita para:", indiceAtual);
-      }
-    });
+//     // Navegação por teclado
+//     document.addEventListener('keydown', function modalKeyHandler(e) {
+//       // IMPORTANTE: Só interceptar se o modal dinâmico estiver REALMENTE visível
+//       const modalDinamico = document.getElementById('modal-imagem-dinamico');
+//       if (!modalDinamico || modalDinamico.style.display === 'none') {
+//         return; // NÃO interceptar se modal não está visível
+//       }
+//       
+//       if (e.key === 'Escape') {
+//         console.log("🖼️ Fechando modal via ESC");
+//         modal.remove();
+//         document.removeEventListener('keydown', modalKeyHandler);
+//       } else if (e.key === 'ArrowLeft' && indiceAtual > 0) {
+//         indiceAtual--;
+//         atualizarImagem();
+//         console.log("🖼️ Navegando via seta esquerda para:", indiceAtual);
+//       } else if (e.key === 'ArrowRight' && indiceAtual < imagens.length - 1) {
+//         indiceAtual++;
+//         atualizarImagem();
+//         console.log("🖼️ Navegando via seta direita para:", indiceAtual);
+//       }
+//     });
     
     console.log("🖼️ Modal de imagem inicializado com sucesso!");
   }
@@ -2422,28 +2538,28 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
     
-    // Navegação por teclado
-    document.addEventListener('keydown', function modalKeyHandler(e) {
-      // IMPORTANTE: Só interceptar se o modal dinâmico estiver REALMENTE visível
-      const modalDinamico = document.getElementById('modal-imagem-dinamico');
-      if (!modalDinamico || modalDinamico.style.display === 'none') {
-        return; // NÃO interceptar se modal não está visível
-      }
-      
-      if (e.key === 'Escape') {
-        console.log("🖼️ Fechando modal via ESC");
-        modal.remove();
-        document.removeEventListener('keydown', modalKeyHandler);
-      } else if (e.key === 'ArrowLeft' && indiceAtual > 0) {
-        indiceAtual--;
-        atualizarImagem();
-        console.log("🖼️ Navegando via seta esquerda para:", indiceAtual);
-      } else if (e.key === 'ArrowRight' && indiceAtual < imagens.length - 1) {
-        indiceAtual++;
-        atualizarImagem();
-        console.log("🖼️ Navegando via seta direita para:", indiceAtual);
-      }
-    });
+//     // Navegação por teclado
+//     document.addEventListener('keydown', function modalKeyHandler(e) {
+//       // IMPORTANTE: Só interceptar se o modal dinâmico estiver REALMENTE visível
+//       const modalDinamico = document.getElementById('modal-imagem-dinamico');
+//       if (!modalDinamico || modalDinamico.style.display === 'none') {
+//         return; // NÃO interceptar se modal não está visível
+//       }
+//       
+//       if (e.key === 'Escape') {
+//         console.log("🖼️ Fechando modal via ESC");
+//         modal.remove();
+//         document.removeEventListener('keydown', modalKeyHandler);
+//       } else if (e.key === 'ArrowLeft' && indiceAtual > 0) {
+//         indiceAtual--;
+//         atualizarImagem();
+//         console.log("🖼️ Navegando via seta esquerda para:", indiceAtual);
+//       } else if (e.key === 'ArrowRight' && indiceAtual < imagens.length - 1) {
+//         indiceAtual++;
+//         atualizarImagem();
+//         console.log("🖼️ Navegando via seta direita para:", indiceAtual);
+//       }
+//     });
     
     // Atualizar estado inicial
     atualizarImagem();
