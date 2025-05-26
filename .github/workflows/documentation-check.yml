@@ -1,7 +1,7 @@
-# 🔍 Verificação de Documentação - AppVisita
-# Workflow para garantir que código e documentação estejam sincronizados
+# Verificacao de Documentacao - AppVisita
+# Workflow para garantir que codigo e documentacao estejam sincronizados
 
-name: 📝 Documentation Check
+name: Documentation Check
 
 on:
   push:
@@ -11,16 +11,16 @@ on:
 
 jobs:
   documentation-check:
-    name: 🔍 Verificar Documentação
+    name: Verificar Documentacao
     runs-on: ubuntu-latest
     
     steps:
-    - name: 📥 Checkout código
+    - name: Checkout codigo
       uses: actions/checkout@v3
       with:
-        fetch-depth: 2  # Necessário para comparar commits
+        fetch-depth: 2  # Necessario para comparar commits
     
-    - name: 🔍 Verificar documentação atualizada
+    - name: Verificar documentacao atualizada
       run: |
         chmod +x scripts/check-docs.sh
         ./scripts/check-docs.sh
@@ -28,19 +28,19 @@ jobs:
         CI: true
         GITHUB_ENV: $GITHUB_ENV
     
-    - name: 🐍 Setup Python
+    - name: Setup Python
       if: always()
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
     
-    - name: 🚨 Executar monitor de documentação
+    - name: Executar monitor de documentacao
       if: always()
       run: |
         python scripts/monitor-docs.py
       continue-on-error: true
     
-    - name: 📊 Upload relatório de documentação
+    - name: Upload relatorio de documentacao
       if: always()
       uses: actions/upload-artifact@v3
       with:
@@ -48,55 +48,20 @@ jobs:
         path: logs/docs-monitor-*.json
         retention-days: 30
     
-    - name: 💬 Comentar no PR (se houver problemas)
+    - name: Comentar no PR (se houver problemas)
       if: failure() && github.event_name == 'pull_request'
       uses: actions/github-script@v6
       with:
         script: |
-          const fs = require('fs');
+          const reportContent = `## Problemas de Documentacao Detectados
           
-          // Ler logs se existirem
-          let reportContent = '';
-          try {
-            const logFiles = fs.readdirSync('logs').filter(f => f.startsWith('docs-monitor-'));
-            if (logFiles.length > 0) {
-              const latestLog = logFiles.sort().pop();
-              const logData = JSON.parse(fs.readFileSync(`logs/${latestLog}`, 'utf8'));
-              reportContent = `## 🚨 Problemas de Documentação Detectados
-
-### Resumo
-- ❌ Erros: ${logData.errors?.length || 0}
-- ⚠️ Warnings: ${logData.warnings?.length || 0}
-
-### Erros Encontrados`
-${logData.errors?.map(error => `- ❌ ${error}`).join('\n') || 'Nenhum'}
-
-### Warnings
-${logData.warnings?.map(warning => `- ⚠️ ${warning}`).join('\n') || 'Nenhum'}
-
-### 📝 Ação Necessária
-1. Verifique quais documentos precisam ser atualizados
-2. Consulte \`docs/DOCUMENTATION_UPDATE.md\` para o processo
-3. Atualize a documentação relevante antes do merge
-
----
-*Verificação automática de documentação*
-              `;
-            }
-          } catch (e) {
-            reportContent = `
-## ⚠️ Verificação de Documentação
-
-A verificação de documentação encontrou problemas. Por favor:
-
-1. 📝 Verifique se a documentação foi atualizada junto com o código
-2. 🔍 Execute \`./scripts/check-docs.sh\` localmente
-3. 📋 Consulte \`docs/DOCUMENTATION_UPDATE.md\` para detalhes
-
----
-*Para mais informações, verifique os logs do CI/CD*
-            `;
-          }
+          A verificacao de documentacao encontrou problemas. Por favor:
+          
+          1. Verifique se a documentacao foi atualizada junto com o codigo
+          2. Execute ./scripts/check-docs.sh localmente
+          3. Consulte docs/DOCUMENTATION_UPDATE.md para detalhes
+          
+          Para mais informacoes, verifique os logs do CI/CD`;
           
           github.rest.issues.createComment({
             issue_number: context.issue.number,
@@ -106,20 +71,20 @@ A verificação de documentação encontrou problemas. Por favor:
           });
 
   documentation-monitor:
-    name: 📊 Monitor de Documentação
+    name: Monitor de Documentacao
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'  # Só no main branch
+    if: github.ref == 'refs/heads/main'  # So no main branch
     
     steps:
-    - name: 📥 Checkout código
+    - name: Checkout codigo
       uses: actions/checkout@v3
     
-    - name: 🐍 Setup Python
+    - name: Setup Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
     
-    - name: 🚨 Executar monitor completo
+    - name: Executar monitor completo
       run: |
         python scripts/monitor-docs.py --send-alerts
       env:
@@ -129,7 +94,7 @@ A verificação de documentação encontrou problemas. Por favor:
         FROM_PASSWORD: ${{ secrets.FROM_PASSWORD }}
         ALERT_EMAILS: ${{ secrets.ALERT_EMAILS }}
     
-    - name: 📊 Salvar relatório como artifact
+    - name: Salvar relatorio como artifact
       if: always()
       uses: actions/upload-artifact@v3
       with:
@@ -138,47 +103,47 @@ A verificação de documentação encontrou problemas. Por favor:
         retention-days: 90
 
   templates-validation:
-    name: 🧪 Validar Templates
+    name: Validar Templates
     runs-on: ubuntu-latest
     
     steps:
-    - name: 📥 Checkout código
+    - name: Checkout codigo
       uses: actions/checkout@v3
     
-    - name: 🐍 Setup Python
+    - name: Setup Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
     
-    - name: 🔍 Verificar templates existem
+    - name: Verificar templates existem
       run: |
         python scripts/create-docs.py <<EOF
         5
         0
         EOF
     
-    - name: 📝 Testar criação de documentação
+    - name: Testar criacao de documentacao
       run: |
-        # Teste automatizado de criação de docs
+        # Teste automatizado de criacao de docs
         python scripts/create-docs.py <<EOF
         1
         Funcionalidade de Teste CI
         app-test.js  
         Bot do CI
         v1.0.0
-        Teste automatizado de documentação
+        Teste automatizado de documentacao
         0
         EOF
         
         # Verificar se arquivo foi criado
         if [ -f "docs/features/FEATURE_funcionalidade_de_teste_ci.md" ]; then
-          echo "✅ Template de funcionalidade funcionando"
+          echo "Template de funcionalidade funcionando"
         else
-          echo "❌ Falha no template de funcionalidade"
+          echo "Falha no template de funcionalidade"
           exit 1
         fi
     
-    - name: 🧹 Limpar arquivos de teste
+    - name: Limpar arquivos de teste
       if: always()
       run: |
         rm -f docs/features/FEATURE_funcionalidade_de_teste_ci.md
