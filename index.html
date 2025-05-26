@@ -561,7 +561,9 @@
             // Carregar framework de testes
             const scripts = [
                 'tests/regression-framework.js',
-                'tests/regression-runner.js'
+                'tests/regression-runner.js',
+                'tests/auto-test-updater.js',
+                'tests/auto-integration.js'
             ];
             
             scripts.forEach(scriptSrc => {
@@ -569,6 +571,19 @@
                 script.src = scriptSrc;
                 script.onerror = () => console.warn(`⚠️ Não foi possível carregar: ${scriptSrc}`);
                 document.head.appendChild(script);
+            });
+            
+            // Configurar atualização automática após carregamento
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    if (window.autoTestUpdater && window.autoIntegration) {
+                        console.log('🤖 Sistema de atualização automática de testes ativo!');
+                        console.log('💡 Comandos disponíveis:');
+                        console.log('   - autoTestUpdater.runCompleteUpdate() - Gerar novos testes');
+                        console.log('   - autoIntegration.runAutoIntegrationFromFiles() - Integração completa');
+                        console.log('   - URL: ?auto_integrate=true - Integração automática a cada 30min');
+                    }
+                }, 1000);
             });
         }
     </script>

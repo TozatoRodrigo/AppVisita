@@ -1,0 +1,83 @@
+# Auto Update Tests - Atualização Automática de Testes
+# Executa a cada push para detectar mudanças e atualizar testes automaticamente
+
+name: Auto Update Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+
+jobs:
+  update-tests:
+    name: Atualizar Testes Automaticamente
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Detectar mudanças e gerar testes
+      run: |
+        echo "🤖 Iniciando atualização automática de testes..."
+        
+        # Obter arquivos modificados
+        CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD | grep -E '\.(js|html)$' | grep -v test || true)
+        
+        if [ -z "$CHANGED_FILES" ]; then
+          echo "ℹ️ Nenhuma mudança de código detectada"
+          exit 0
+        fi
+        
+        echo "📁 Arquivos modificados:"
+        echo "$CHANGED_FILES"
+        
+        # Criar diretório para resultados
+        mkdir -p test-updates
+        
+        # Analisar cada arquivo modificado
+        echo "$CHANGED_FILES" | while read -r file; do
+          if [ -f "$file" ]; then
+            echo "🔍 Analisando $file..."
+            
+            # Detectar novas funções
+            NEW_FUNCTIONS=$(grep -o 'function [a-zA-Z_][a-zA-Z0-9_]*' "$file" | sed 's/function //' || true)
+            
+            if [ -n "$NEW_FUNCTIONS" ]; then
+              echo "✨ Funções detectadas em $file:"
+              echo "$NEW_FUNCTIONS"
+              
+              # Gerar sugestões de teste
+              echo "// 🤖 Testes sugeridos para $file ($(date))" >> test-updates/suggestions.txt
+              echo "$NEW_FUNCTIONS" | while read -r func; do
+                echo "// - Teste para função: $func" >> test-updates/suggestions.txt
+              done
+              echo "" >> test-updates/suggestions.txt
+            fi
+          fi
+        done
+        
+        # Verificar se há sugestões
+        if [ -f "test-updates/suggestions.txt" ]; then
+          echo "📋 Sugestões de teste geradas:"
+          cat test-updates/suggestions.txt
+        else
+          echo "ℹ️ Nenhuma sugestão de teste necessária"
+        fi
+    
+    - name: Upload sugestões de teste
+      if: hashFiles('test-updates/suggestions.txt') != ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-suggestions-${{ github.run_id }}
+        path: test-updates/
+        retention-days: 30 
