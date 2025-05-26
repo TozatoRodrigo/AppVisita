@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Inicializar sistema de sugestão de pacientes
-    inicializarSugestoesPacientes(); // REATIVADO COM CORREÇÃO DEFINITIVA
+    inicializarSugestoesPacientes(); // REATIVADO VERSÃO ULTRA SEGURA
     
     
     // Configurar formulário de adicionar paciente
@@ -1063,9 +1063,9 @@ document.addEventListener('DOMContentLoaded', function() {
   // Inicializar o módulo de consulta
   inicializarConsulta();
 
-  // Função para inicializar sistema de sugestão de pacientes para reinternação (VERSÃO FINAL CORRIGIDA)
+  // Função para inicializar sistema de sugestão de pacientes para reinternação (VERSÃO ULTRA SEGURA)
   function inicializarSugestoesPacientes() {
-    console.log("🔧 Inicializando sistema de sugestões - versão final corrigida...");
+    console.log("🔧 Inicializando sistema de sugestões - versão ULTRA SEGURA...");
     
     const nomePacienteInput = document.getElementById('nome-paciente');
     if (!nomePacienteInput) {
@@ -1114,9 +1114,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     let timeoutBusca = null;
-    let sugestoesAtivas = false;
     
-    // EVENTO DE INPUT - Versão corrigida que não interfere na digitação
+    // APENAS INPUT EVENT - SEM KEYDOWN para não interferir na digitação
     nomePacienteInput.addEventListener('input', function(e) {
       const termo = this.value.trim();
       
@@ -1128,7 +1127,6 @@ document.addEventListener('DOMContentLoaded', function() {
       // Só buscar com pelo menos 3 caracteres
       if (termo.length < 3) {
         sugestoesContainer.style.display = 'none';
-        sugestoesAtivas = false;
         limparMensagemReinternacao();
         return;
       }
@@ -1139,67 +1137,15 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
       
-      // Adicionar debounce para evitar muitas requisições
+      // Debounce para evitar muitas requisições
       timeoutBusca = setTimeout(async () => {
         try {
-          sugestoesAtivas = true;
           await buscarPacientesParaSugestao(termo, sugestoesContainer);
         } catch (error) {
           console.error("Erro na busca de sugestões:", error);
           sugestoesContainer.style.display = 'none';
-          sugestoesAtivas = false;
         }
       }, 300);
-    });
-    
-    // NAVEGAÇÃO POR TECLADO - Só funciona quando sugestões estão ativas
-    nomePacienteInput.addEventListener('keydown', function(e) {
-      // IMPORTANTE: Só interceptar teclas se as sugestões estiverem visíveis
-      if (!sugestoesAtivas || sugestoesContainer.style.display === 'none') {
-        return; // Deixar o comportamento normal do input
-      }
-      
-      const sugestoes = sugestoesContainer.querySelectorAll('.sugestao-item');
-      const sugestaoAtiva = sugestoesContainer.querySelector('.sugestao-item.ativa');
-      
-      switch(e.key) {
-        case 'ArrowDown':
-          e.preventDefault();
-          if (sugestoes.length > 0) {
-            const proxima = sugestaoAtiva ? 
-              sugestaoAtiva.nextElementSibling || sugestoes[0] : 
-              sugestoes[0];
-            sugestoes.forEach(s => s.classList.remove('ativa'));
-            proxima.classList.add('ativa');
-            proxima.scrollIntoView({ block: 'nearest' });
-          }
-          break;
-          
-        case 'ArrowUp':
-          e.preventDefault();
-          if (sugestoes.length > 0) {
-            const anterior = sugestaoAtiva ? 
-              sugestaoAtiva.previousElementSibling || sugestoes[sugestoes.length - 1] : 
-              sugestoes[sugestoes.length - 1];
-            sugestoes.forEach(s => s.classList.remove('ativa'));
-            anterior.classList.add('ativa');
-            anterior.scrollIntoView({ block: 'nearest' });
-          }
-          break;
-          
-        case 'Enter':
-          e.preventDefault();
-          if (sugestaoAtiva) {
-            sugestaoAtiva.click();
-          }
-          break;
-          
-        case 'Escape':
-          e.preventDefault();
-          sugestoesContainer.style.display = 'none';
-          sugestoesAtivas = false;
-          break;
-      }
     });
     
     // Fechar sugestões ao clicar fora
@@ -1209,11 +1155,10 @@ document.addEventListener('DOMContentLoaded', function() {
           e.target !== nomePacienteInput &&
           !nomePacienteInput.contains(e.target)) {
         sugestoesContainer.style.display = 'none';
-        sugestoesAtivas = false;
       }
     });
     
-    console.log("✅ Sistema de sugestões final corrigido inicializado com sucesso");
+    console.log("✅ Sistema de sugestões ULTRA SEGURO inicializado - SEM navegação por teclado");
   }
   
   // Função para buscar pacientes para sugestão
@@ -2255,23 +2200,27 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Navegação por teclado
-    // document.addEventListener('keydown', function modalKeyHandler(e) {
-    //   if (document.getElementById('modal-imagem-dinamico')) {
-    //     if (e.key === 'Escape') {
-    //       console.log("🖼️ Fechando modal via ESC");
-    //       modal.remove();
-    //       document.removeEventListener('keydown', modalKeyHandler);
-    //     } else if (e.key === 'ArrowLeft' && indiceAtual > 0) {
-    //       indiceAtual--;
-    //       atualizarImagem();
-    //       console.log("🖼️ Navegando via seta esquerda para:", indiceAtual);
-    //     } else if (e.key === 'ArrowRight' && indiceAtual < imagens.length - 1) {
-    //       indiceAtual++;
-    //       atualizarImagem();
-    //       console.log("🖼️ Navegando via seta direita para:", indiceAtual);
-    //     }
-    //   }
-    // });
+    document.addEventListener('keydown', function modalKeyHandler(e) {
+      // IMPORTANTE: Só interceptar se o modal dinâmico estiver REALMENTE visível
+      const modalDinamico = document.getElementById('modal-imagem-dinamico');
+      if (!modalDinamico || modalDinamico.style.display === 'none') {
+        return; // NÃO interceptar se modal não está visível
+      }
+      
+      if (e.key === 'Escape') {
+        console.log("🖼️ Fechando modal via ESC");
+        modal.remove();
+        document.removeEventListener('keydown', modalKeyHandler);
+      } else if (e.key === 'ArrowLeft' && indiceAtual > 0) {
+        indiceAtual--;
+        atualizarImagem();
+        console.log("🖼️ Navegando via seta esquerda para:", indiceAtual);
+      } else if (e.key === 'ArrowRight' && indiceAtual < imagens.length - 1) {
+        indiceAtual++;
+        atualizarImagem();
+        console.log("🖼️ Navegando via seta direita para:", indiceAtual);
+      }
+    });
     
     console.log("🖼️ Modal de imagem inicializado com sucesso!");
   }
@@ -2475,20 +2424,24 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Navegação por teclado
     document.addEventListener('keydown', function modalKeyHandler(e) {
-      if (document.getElementById('modal-imagem-dinamico')) {
-        if (e.key === 'Escape') {
-          console.log("🖼️ Fechando modal via ESC");
-          modal.remove();
-          document.removeEventListener('keydown', modalKeyHandler);
-        } else if (e.key === 'ArrowLeft' && indiceAtual > 0) {
-          indiceAtual--;
-          atualizarImagem();
-          console.log("🖼️ Navegando via seta esquerda para:", indiceAtual);
-        } else if (e.key === 'ArrowRight' && indiceAtual < imagens.length - 1) {
-          indiceAtual++;
-          atualizarImagem();
-          console.log("🖼️ Navegando via seta direita para:", indiceAtual);
-        }
+      // IMPORTANTE: Só interceptar se o modal dinâmico estiver REALMENTE visível
+      const modalDinamico = document.getElementById('modal-imagem-dinamico');
+      if (!modalDinamico || modalDinamico.style.display === 'none') {
+        return; // NÃO interceptar se modal não está visível
+      }
+      
+      if (e.key === 'Escape') {
+        console.log("🖼️ Fechando modal via ESC");
+        modal.remove();
+        document.removeEventListener('keydown', modalKeyHandler);
+      } else if (e.key === 'ArrowLeft' && indiceAtual > 0) {
+        indiceAtual--;
+        atualizarImagem();
+        console.log("🖼️ Navegando via seta esquerda para:", indiceAtual);
+      } else if (e.key === 'ArrowRight' && indiceAtual < imagens.length - 1) {
+        indiceAtual++;
+        atualizarImagem();
+        console.log("🖼️ Navegando via seta direita para:", indiceAtual);
       }
     });
     

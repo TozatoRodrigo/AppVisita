@@ -1,85 +1,122 @@
 # Correção - Problema de Digitação no Campo Nome do Paciente
 
-## Problema Reportado
-O usuário não conseguia digitar no campo "nome do paciente" na funcionalidade de adicionar novo paciente.
+## Resumo do Problema
+Usuário relatou impossibilidade de digitar no campo "nome do paciente" na funcionalidade de adicionar novo paciente. As teclas não respondiam especificamente nesse campo, enquanto outros campos funcionavam normalmente.
 
-## Diagnóstico Realizado
+## Investigações Realizadas
 
 ### Primeira Investigação
-- **Data**: Primeiro relato
-- **Causa Identificada**: Event listener `keydown` na função `inicializarSugestoesPacientes()` interceptando todas as teclas
-- **Problema**: O código interceptava teclas mesmo quando sugestões não estavam visíveis, bloqueando digitação normal
+- **Problema identificado**: Event listener `keydown` na função `inicializarSugestoesPacientes()` (linha 1066)
+- **Ação tomada**: Comentado temporariamente a chamada da função (linha 61)
+- **Resultado**: Problema persistiu
 
 ### Segunda Investigação  
-- **Data**: Segundo relato (problema persistiu)
-- **Causa Identificada**: Event listeners globais de `keydown` para navegação de modais de imagem
-- **Localização**: 
+- **Problema identificado**: Event listeners globais de `keydown` para navegação de modais de imagem
+- **Localizações**: 
   - Linha 2201: `document.addEventListener('keydown', ...)` no `inicializarModalImagem()`
   - Linha 2419: `document.addEventListener('keydown', ...)` no modal dinâmico
-- **Problema**: Event listeners globais capturando eventos de teclado independente do contexto
+- **Ação tomada**: Comentados os event listeners globais
+- **Resultado**: Problema persistiu
 
-### Terceira Investigação (SOLUÇÃO FINAL)
-- **Data**: Terceiro relato (problema ainda persistia)
-- **Método de Diagnóstico**: Desabilitação temporária da função `inicializarSugestoesPacientes()`
-- **Confirmação**: Campo funcionou normalmente sem a função → problema confirmado na função de sugestões
-- **Causa Raiz**: A função de sugestões, mesmo após correções, ainda interferia na digitação normal
+### Terceira Investigação
+- **Método**: Implementação de logs de debug detalhados
+- **Descoberta**: Função de sugestões estava interceptando TODAS as teclas mesmo quando sugestões não estavam visíveis
+- **Ação tomada**: Desabilitação completa de `inicializarSugestoesPacientes()`
+- **Resultado**: Digitação funcionou perfeitamente sem a função
 
-## Correções Implementadas
-
-### 1. Primeira Correção (Inadequada)
+### Quarta Investigação (SOLUÇÃO FINAL)
+- **Problema real**: Event listeners de keydown nos modais de imagem interceptavam teclas globalmente
+- **Localizações problemáticas**:
+  - Linha 2280: Modal principal de imagem
+  - Linha 2498: Modal dinâmico de imagem
+- **Correção aplicada**: Verificação rigorosa de visibilidade antes de interceptar teclas
 ```javascript
-// Removido event listener keydown problemático da função inicializarSugestoesPacientes
-// Mantido apenas event listener 'input'
+// ANTES (problemático)
+document.addEventListener('keydown', function modalKeyHandler(e) {
+  if (document.getElementById('modal-imagem-dinamico')) {
+    // interceptava sempre que elemento existisse
+  }
+});
+
+// DEPOIS (corrigido)  
+document.addEventListener('keydown', function modalKeyHandler(e) {
+  const modalDinamico = document.getElementById('modal-imagem-dinamico');
+  if (!modalDinamico || modalDinamico.style.display === 'none') {
+    return; // NÃO interceptar se modal não está visível
+  }
+  // só intercepta se modal realmente visível
+});
 ```
 
-### 2. Segunda Correção (Inadequada)  
-```javascript
-// Comentados event listeners globais de keydown para modais de imagem
-document.addEventListener('keydown', ...) // COMENTADO
-```
+### Quinta Investigação (SOLUÇÃO DEFINITIVA)
+- **Problema persistente**: Mesmo com correções, function de sugestões ainda interferia
+- **Solução final**: Reescrita completa da função `inicializarSugestoesPacientes()` 
+- **Abordagem nova**: 
+  - **REMOVIDO**: Event listener `keydown` completamente
+  - **MANTIDO**: Apenas event listener `input` para buscar sugestões  
+  - **RESULTADO**: Digitação 100% livre, sugestões funcionais apenas por clique
 
-### 3. Correção Final (EFETIVA)
-**Reescrita completa da função `inicializarSugestoesPacientes()`:**
+## Código da Solução Final
 
 ```javascript
 function inicializarSugestoesPacientes() {
-  // ... código de inicialização ...
+  // ... setup do container ...
   
-  let sugestoesAtivas = false; // NOVO: flag de controle
-  
-  // Event listener de input (mantido)
+  // APENAS INPUT EVENT - SEM KEYDOWN para não interferir na digitação
   nomePacienteInput.addEventListener('input', function(e) {
-    // ... lógica de busca ...
-    sugestoesAtivas = true; // Marca sugestões como ativas
-  });
-  
-  // NOVO: Event listener keydown CONDICIONADO
-  nomePacienteInput.addEventListener('keydown', function(e) {
-    // CRÍTICO: Só interceptar se sugestões estiverem visíveis
-    if (!sugestoesAtivas || sugestoesContainer.style.display === 'none') {
-      return; // Deixar comportamento normal do input
+    const termo = this.value.trim();
+    
+    if (termo.length < 3) {
+      sugestoesContainer.style.display = 'none';
+      return;
     }
     
-    // Navegação por teclado só quando necessário
-    switch(e.key) {
-      case 'ArrowDown':
-      case 'ArrowUp':
-      case 'Enter':
-      case 'Escape':
-        e.preventDefault();
-        // ... lógica de navegação ...
-        break;
+    // Buscar sugestões com debounce
+    timeoutBusca = setTimeout(async () => {
+      await buscarPacientesParaSugestao(termo, sugestoesContainer);
+    }, 300);
+  });
+  
+  // Fechar sugestões ao clicar fora (sem interceptar teclado)
+  document.addEventListener('click', function(e) {
+    if (!sugestoesContainer.contains(e.target) && e.target !== nomePacienteInput) {
+      sugestoesContainer.style.display = 'none';
     }
   });
 }
 ```
 
-**Principais melhorias:**
-- ✅ **Flag de controle `sugestoesAtivas`**: Só intercepta teclas quando sugestões estão realmente ativas
-- ✅ **Verificação dupla**: Checa tanto a flag quanto a visibilidade do container
-- ✅ **Return early**: Se sugestões não estão ativas, deixa o comportamento normal do input
-- ✅ **Switch específico**: Só intercepta teclas de navegação específicas
-- ✅ **Navegação por teclado restaurada**: ↑↓ Enter Escape funcionam nas sugestões
+## Estado Final
+- ✅ **Digitação normal**: Funciona perfeitamente no campo nome do paciente
+- ✅ **Sistema de busca**: Mantido (busca a partir de 3+ caracteres)  
+- ✅ **Sugestões visuais**: Funcionam com status do paciente
+- ❌ **Navegação por teclado**: Removida por segurança (apenas clique)
+- ✅ **Preenchimento automático**: Funciona ao clicar na sugestão
+- ✅ **Validação de reinternação**: Mantida para pacientes com alta/óbito
+
+## Arquivos Modificados
+- `app-pacientes.js`: 
+  - Função `inicializarSugestoesPacientes()` completamente reescrita
+  - Event listeners de modal de imagem corrigidos
+- `docs/CORRECAO_DIGITACAO_PACIENTES.md`: Documentação completa
+
+## Lições Aprendidas
+1. **Event listeners globais** podem interferir em campos específicos mesmo que não relacionados
+2. **Verificação de visibilidade** não é suficiente - element existence ≠ element visibility  
+3. **Isolamento de funcionalidades** é crucial - sugestões não devem interferir na digitação básica
+4. **Navegação por teclado** pode ser sacrificada em favor da estabilidade da digitação
+5. **Teste de isolamento** (desabilitar funcionalidade) é método eficaz de diagnóstico
+
+## Commit da Solução
+```
+feat: Solução definitiva para digitação no campo nome do paciente
+
+- Removido event listener keydown da função de sugestões 
+- Mantidas sugestões visuais apenas por input event
+- Corrigidos event listeners globais dos modais de imagem
+- Digitação completamente restaurada e funcional
+- Sistema de busca de pacientes mantido (3+ caracteres)
+```
 
 ## Resultado Final
 
