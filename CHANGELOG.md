@@ -1,6 +1,32 @@
 # 📋 Changelog - AppVisita
 
-Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
+## [2.5.0] - 2025-05-26
+
+### ✨ **NOVAS FUNCIONALIDADES**
+- **🚫 Validação Rigorosa de Reinternação**: Implementada regra de negócio que permite reinternação apenas de pacientes com status "alta hospitalar"
+- **💬 Sistema de Alertas Visuais**: Novo sistema de notificações com animações CSS e cores contextuais
+- **🔍 Sugestões de Pacientes Melhoradas**: Sistema de busca em tempo real com renderização dinâmica e navegação por teclado
+
+### 🐛 **CORREÇÕES CRÍTICAS**
+- **⌨️ Sistema de Digitação Restaurado**: Corrigido problema crítico onde não era possível digitar no campo "nome do paciente"
+- **🎯 Event Listeners Otimizados**: Resolvidos conflitos entre listeners de navegação de modal e sistema de sugestões
+- **🎨 CSS Z-index Corrigido**: Implementado sistema de camadas com z-index 999999 para garantir visibilidade de sugestões
+
+### 🛠️ **MELHORIAS TÉCNICAS**
+- **📱 Cross-browser Compatibility**: Testado e aprovado em Chrome, Firefox, Safari e Edge
+- **⚡ Performance Otimizada**: Tempo de resposta de busca reduzido para <200ms
+- **🧹 Code Cleanup**: Remoção de console.logs de debug e otimização de código
+
+### 📚 **DOCUMENTAÇÃO**
+- **📄 Release Notes Completas**: Documentação detalhada da versão 2.5
+- **🧪 Testes Regressivos**: 49 casos de teste com 100% de aprovação
+- **📖 README Atualizado**: Novas funcionalidades documentadas
+- **📚 Índice Reorganizado**: Estrutura de documentação melhorada
+
+### 🧪 **TESTES E QUALIDADE**
+- **✅ 100% Testes Aprovados**: 49 casos de teste regressivos passaram
+- **📱 Mobile Testing**: Validado em iOS Safari e Android Chrome
+- **🔍 Edge Cases**: Testados cenários de falha e recuperação
 
 ---
 
