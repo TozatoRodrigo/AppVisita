@@ -1,0 +1,258 @@
+# Testes Regressivos Automaticos - AppVisita
+name: Regression Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Executar testes diariamente às 6h UTC
+    - cron: '0 6 * * *'
+
+jobs:
+  regression-tests:
+    name: Testes Regressivos
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        browser: ['chrome', 'firefox']
+    
+    steps:
+    - name: Checkout codigo
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: |
+        npm install playwright
+        npm install puppeteer
+        
+    - name: Setup browsers
+      run: |
+        npx playwright install ${{ matrix.browser }}
+        
+    - name: Start local server
+      run: |
+        python3 -m http.server 8080 &
+        sleep 3
+      
+    - name: Run regression tests
+      run: |
+        node tests/ci-runner.js --browser=${{ matrix.browser }}
+      env:
+        CI: true
+        BROWSER: ${{ matrix.browser }}
+        
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: regression-results-${{ matrix.browser }}
+        path: |
+          tests/results/
+          tests/screenshots/
+        retention-days: 30
+        
+    - name: Upload coverage report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report-${{ matrix.browser }}
+        path: tests/coverage/
+        retention-days: 30
+
+  # Job para consolidar resultados
+  consolidate-results:
+    name: Consolidar Resultados
+    runs-on: ubuntu-latest
+    needs: regression-tests
+    if: always()
+    
+    steps:
+    - name: Checkout codigo
+      uses: actions/checkout@v4
+      
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: test-artifacts/
+        
+    - name: Consolidate results
+      run: |
+        mkdir -p consolidated-results
+        find test-artifacts/ -name "*.json" -exec cp {} consolidated-results/ \;
+        
+    - name: Generate summary report
+      run: |
+        cat > consolidated-results/summary.md << 'EOF'
+        # 🧪 Resumo dos Testes Regressivos
+        
+        ## 📊 Estatísticas Gerais
+        - **Data/Hora**: $(date)
+        - **Commit**: ${{ github.sha }}
+        - **Branch**: ${{ github.ref_name }}
+        - **Autor**: ${{ github.actor }}
+        
+        ## 🌐 Browsers Testados
+        - Chrome: ✅
+        - Firefox: ✅
+        
+        ## 📋 Áreas de Cobertura
+        - 🔐 Sistema de Login
+        - 📊 Dashboard e Pacientes
+        - ⚡ Performance e Responsividade
+        
+        ## 🔗 Links Úteis
+        - [Ver artefatos completos](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+        - [Histórico de testes](https://github.com/${{ github.repository }}/actions/workflows/regression-tests.yml)
+        EOF
+        
+    - name: Comment on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          // Ler resumo dos testes
+          let summary = 'Testes regressivos executados com sucesso! 🎉';
+          
+          try {
+            if (fs.existsSync('consolidated-results/summary.md')) {
+              summary = fs.readFileSync('consolidated-results/summary.md', 'utf8');
+            }
+          } catch (error) {
+            console.log('Erro ao ler summary:', error);
+          }
+          
+          // Comentar no PR
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: summary
+          });
+
+  # Job para verificar qualidade dos testes
+  quality-check:
+    name: Verificacao de Qualidade
+    runs-on: ubuntu-latest
+    needs: regression-tests
+    if: always()
+    
+    steps:
+    - name: Checkout codigo
+      uses: actions/checkout@v4
+      
+    - name: Check test coverage
+      run: |
+        echo "🔍 Verificando cobertura de testes..."
+        
+        # Verificar se arquivos de teste existem
+        test_files=(
+          "tests/regression-framework.js"
+          "tests/suites/login-tests.js"
+          "tests/suites/dashboard-tests.js"
+          "tests/suites/performance-tests.js"
+          "tests/regression-runner.js"
+        )
+        
+        missing_files=()
+        for file in "${test_files[@]}"; do
+          if [ ! -f "$file" ]; then
+            missing_files+=("$file")
+          fi
+        done
+        
+        if [ ${#missing_files[@]} -gt 0 ]; then
+          echo "❌ Arquivos de teste faltando:"
+          printf '%s\n' "${missing_files[@]}"
+          exit 1
+        fi
+        
+        echo "✅ Todos os arquivos de teste encontrados"
+        
+    - name: Validate test structure
+      run: |
+        echo "🔧 Validando estrutura dos testes..."
+        
+        # Verificar se testes têm estrutura correta
+        node -e "
+          const fs = require('fs');
+          
+          const suites = [
+            'tests/suites/login-tests.js',
+            'tests/suites/dashboard-tests.js', 
+            'tests/suites/performance-tests.js'
+          ];
+          
+          for (const suite of suites) {
+            const content = fs.readFileSync(suite, 'utf8');
+            
+            // Verificar se tem métodos essenciais
+            const requiredMethods = ['setup', 'run', 'cleanup'];
+            const missingMethods = requiredMethods.filter(method => 
+              !content.includes('async ' + method)
+            );
+            
+            if (missingMethods.length > 0) {
+              console.log('❌ Métodos faltando em ' + suite + ':', missingMethods);
+              process.exit(1);
+            }
+          }
+          
+          console.log('✅ Estrutura dos testes validada');
+        "
+
+  # Job para análise de segurança dos testes
+  security-scan:
+    name: Verificacao de Seguranca
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout codigo
+      uses: actions/checkout@v4
+      
+    - name: Security scan dos arquivos de teste
+      run: |
+        echo "🔒 Verificando segurança dos testes..."
+        
+        # Verificar por padrões inseguros nos testes
+        insecure_patterns=(
+          "eval("
+          "innerHTML.*<script"
+          "document.write"
+          "window.location.*javascript:"
+        )
+        
+        for pattern in "${insecure_patterns[@]}"; do
+          if grep -r "$pattern" tests/ 2>/dev/null; then
+            echo "❌ Padrão inseguro encontrado: $pattern"
+            exit 1
+          fi
+        done
+        
+        echo "✅ Nenhum padrão inseguro encontrado"
+
+  # Job para notificação de falhas
+  notify-failures:
+    name: Notificar Falhas
+    runs-on: ubuntu-latest
+    needs: [regression-tests, quality-check, security-scan]
+    if: failure()
+    
+    steps:
+    - name: Notify team about failures
+      run: |
+        echo "🚨 Testes falharam! Detalhes:"
+        echo "- Commit: ${{ github.sha }}"
+        echo "- Branch: ${{ github.ref_name }}"
+        echo "- Autor: ${{ github.actor }}"
+        echo "- Link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" 

@@ -548,5 +548,29 @@
             </div>
         </div>
     </div>
+
+    <!-- Scripts de Testes Regressivos (apenas em desenvolvimento) -->
+    <script>
+        // Carregar testes regressivos apenas em desenvolvimento
+        if (window.location.hostname === 'localhost' || 
+            window.location.hostname === '127.0.0.1' || 
+            window.location.search.includes('enable_tests=true')) {
+            
+            console.log('🧪 Carregando sistema de testes regressivos...');
+            
+            // Carregar framework de testes
+            const scripts = [
+                'tests/regression-framework.js',
+                'tests/regression-runner.js'
+            ];
+            
+            scripts.forEach(scriptSrc => {
+                const script = document.createElement('script');
+                script.src = scriptSrc;
+                script.onerror = () => console.warn(`⚠️ Não foi possível carregar: ${scriptSrc}`);
+                document.head.appendChild(script);
+            });
+        }
+    </script>
 </body>
 </html> 
