@@ -1,0 +1,17 @@
+{
+  "timestamp": "2025-05-26T14:35:48.473Z",
+  "browser": "chrome",
+  "coverage": {
+    "lines": 7.962448707535663,
+    "functions": 10.981801577830797,
+    "branches": 99.74182803007668,
+    "statements": 85.40280134950575
+  },
+  "files": [
+    "app-login.js",
+    "app-pacientes.js",
+    "app-diagnostico.js",
+    "app-equipes.js",
+    "app-admin.js"
+  ]
+}

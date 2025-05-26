@@ -1,0 +1,54 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Relatório de Testes - chrome</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .header { background: #f5f5f5; padding: 20px; border-radius: 8px; }
+        .summary { display: flex; gap: 20px; margin: 20px 0; }
+        .metric { background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd; flex: 1; }
+        .passed { border-left: 4px solid #4caf50; }
+        .failed { border-left: 4px solid #f44336; }
+        .warning { border-left: 4px solid #ff9800; }
+        .test-list { margin-top: 20px; }
+        .test-item { padding: 10px; margin: 5px 0; border-radius: 4px; }
+        .test-pass { background: #e8f5e8; }
+        .test-fail { background: #ffeaea; }
+        .test-warn { background: #fff3e0; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧪 Relatório de Testes Regressivos</h1>
+        <p><strong>Browser:</strong> chrome</p>
+        <p><strong>Data:</strong> 2025-05-26T14:35:48.473Z</p>
+        <p><strong>Duração:</strong> 0.25s</p>
+    </div>
+    
+    <div class="summary">
+        <div class="metric passed">
+            <h3>✅ Passou</h3>
+            <div style="font-size: 24px;">0</div>
+        </div>
+        <div class="metric failed">
+            <h3>❌ Falhou</h3>
+            <div style="font-size: 24px;">1</div>
+        </div>
+        <div class="metric warning">
+            <h3>⚠️ Avisos</h3>
+            <div style="font-size: 24px;">0</div>
+        </div>
+    </div>
+    
+    <div class="test-list">
+        <h2>📋 Detalhes dos Testes</h2>
+        
+            <div class="test-item test-fail">
+                <strong>❌ Sistema de Testes</strong><br>
+                <small>Erro durante execução: Cannot read properties of undefined (reading 'launch')</small>
+            </div>
+        
+    </div>
+</body>
+</html>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="AppVisita Regression Tests (chrome)" 
+           tests="1" 
+           failures="1" 
+           time="0.25">
+<testcase name="Sistema de Testes" classname="system" time="0.1">
+          <failure message="Erro durante execução: Cannot read properties of undefined (reading 'launch')">
+            Erro durante execução: Cannot read properties of undefined (reading 'launch')
+          </failure>
+        </testcase>
+</testsuite>

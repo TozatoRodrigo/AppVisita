@@ -171,6 +171,17 @@ class CIRunner {
     try {
       // Usar Playwright para execução
       const playwright = await this.getPlaywright();
+      
+      // Verificar se o browser está disponível
+      if (!playwright[this.browser]) {
+        const availableBrowsers = Object.keys(playwright).filter(key => 
+          typeof playwright[key] === 'object' && 
+          playwright[key].launch && 
+          typeof playwright[key].launch === 'function'
+        );
+        throw new Error(`Browser '${this.browser}' não disponível. Browsers disponíveis: ${availableBrowsers.join(', ')}`);
+      }
+      
       browser = await playwright[this.browser].launch({
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
@@ -324,7 +335,9 @@ class CIRunner {
   // Obter Playwright
   async getPlaywright() {
     try {
-      return require('playwright');
+      const playwright = require('playwright');
+      console.log('✅ Playwright carregado com sucesso');
+      return playwright;
     } catch (error) {
       console.error('❌ Playwright não disponível:', error.message);
       
@@ -334,8 +347,15 @@ class CIRunner {
       try {
         const { execSync } = require('child_process');
         execSync('npm install playwright', { stdio: 'inherit' });
-        return require('playwright');
+        console.log('✅ Playwright instalado, recarregando...');
+        
+        // Limpar require cache e tentar novamente
+        delete require.cache[require.resolve('playwright')];
+        const playwright = require('playwright');
+        console.log('✅ Playwright carregado após instalação');
+        return playwright;
       } catch (installError) {
+        console.error('❌ Erro ao instalar Playwright:', installError.message);
         throw new Error('Playwright é necessário para execução dos testes. Execute: npm install playwright');
       }
     }

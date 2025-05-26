@@ -1,0 +1,28 @@
+{
+  "timestamp": "2025-05-26T14:35:48.473Z",
+  "browser": "chrome",
+  "baseUrl": "http://localhost:8080",
+  "environment": {
+    "node": "v22.15.1",
+    "platform": "darwin",
+    "ci": true
+  },
+  "results": {
+    "total": 1,
+    "passed": 0,
+    "failed": 1,
+    "skipped": 0,
+    "warnings": 0,
+    "duration": 246,
+    "tests": [],
+    "details": [
+      {
+        "test": "Sistema de Testes",
+        "passed": false,
+        "warning": false,
+        "message": "Erro durante execução: Cannot read properties of undefined (reading 'launch')",
+        "suite": "system"
+      }
+    ]
+  }
+}
