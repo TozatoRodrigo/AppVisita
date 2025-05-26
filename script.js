@@ -717,10 +717,62 @@ if (typeof firebaseConfig !== 'undefined' && firebaseConfig.apiKey && firebaseCo
     
     // Função para renderizar pacientes na interface
     const renderizarPacientes = (pacientes = null) => {
-        const lista = document.getElementById('lista-pacientes-pendentes');
-        
         // Se não receber lista de pacientes, usar a lista local filtrada
         const pacientesParaRenderizar = pacientes || pacientesLocal;
+        
+        // Verificar se a nova implementação de seções está disponível
+        const listaPacientesPendentes = document.getElementById('lista-pacientes-pendentes');
+        const listaPacientesVisitados = document.getElementById('lista-pacientes-visitados');
+        const contadorPendentes = document.getElementById('contador-pendentes');
+        const contadorVisitados = document.getElementById('contador-visitados');
+        
+        // Se os novos elementos existem, usar a nova implementação
+        if (listaPacientesVisitados && contadorPendentes && contadorVisitados) {
+            console.log("Usando nova implementação de seções para renderizar pacientes");
+            
+            // Usar a função global do app-pacientes.js se estiver disponível
+            if (typeof window.AppModulos?.Pacientes?.renderizarPacientesSecionados === 'function') {
+                console.log("Usando função do módulo app-pacientes.js");
+                
+                // Filtrar apenas pacientes internados
+                const pacientesInternados = pacientesParaRenderizar.filter(p => p.status === 'internado');
+                
+                // Separar pacientes entre pendentes e visitados
+                const hoje = new Date();
+                hoje.setHours(0, 0, 0, 0);
+                
+                const pacientesPendentes = [];
+                const pacientesVisitados = [];
+                
+                pacientesInternados.forEach(paciente => {
+                    const foiVisitadoHoje = verificarSeVisitadoHoje(paciente, hoje);
+                    
+                    if (foiVisitadoHoje) {
+                        pacientesVisitados.push(paciente);
+                    } else {
+                        pacientesPendentes.push(paciente);
+                    }
+                });
+                
+                // Ordenar conforme critério selecionado
+                const criterioOrdenacao = ordenarPor.value;
+                const pacientesPendentesOrdenados = ordenarListaPacientes(pacientesPendentes, criterioOrdenacao);
+                const pacientesVisitadosOrdenados = ordenarListaPacientes(pacientesVisitados, criterioOrdenacao);
+                
+                // Renderizar usando a nova implementação
+                renderizarPacientesSecionados(pacientesPendentesOrdenados, pacientesVisitadosOrdenados);
+                return;
+            }
+        }
+        
+        // Fallback para implementação antiga se os novos elementos não existirem
+        console.log("Usando implementação antiga (fallback)");
+        const lista = listaPacientesPendentes;
+        
+        if (!lista) {
+            console.error("Lista de pacientes não encontrada");
+            return;
+        }
         
         // Limpar lista
         lista.innerHTML = '';
@@ -745,7 +797,7 @@ if (typeof firebaseConfig !== 'undefined' && firebaseConfig.apiKey && firebaseCo
             });
         }
         
-        // Criar item para cada paciente
+        // Criar item para cada paciente (implementação antiga)
         pacientesParaRenderizar.forEach(paciente => {
             const dataAdicionado = paciente.dataAdicao 
                 ? new Date(paciente.dataAdicao.seconds * 1000).toLocaleDateString('pt-BR')
@@ -832,6 +884,266 @@ if (typeof firebaseConfig !== 'undefined' && firebaseConfig.apiKey && firebaseCo
             });
         });
     };
+
+    // Função auxiliar para verificar se paciente foi visitado hoje
+    function verificarSeVisitadoHoje(paciente, hoje) {
+        if (!paciente.evolucoes || paciente.evolucoes.length === 0) {
+            return false;
+        }
+        
+        // Verificar se há alguma evolução de hoje
+        return paciente.evolucoes.some(evolucao => {
+            if (!evolucao.dataRegistro && !evolucao.data) return false;
+            
+            let dataEvolucao;
+            
+            // Compatibilidade: verificar tanto dataRegistro quanto data
+            const dataRef = evolucao.dataRegistro || evolucao.data;
+            
+            // Lidar com diferentes formatos de data
+            if (dataRef && dataRef.seconds) {
+                // Timestamp do Firestore
+                dataEvolucao = new Date(dataRef.seconds * 1000);
+            } else if (dataRef instanceof Date) {
+                // Objeto Date
+                dataEvolucao = dataRef;
+            } else if (typeof dataRef === 'string') {
+                // String de data
+                dataEvolucao = new Date(dataRef);
+            } else {
+                return false;
+            }
+            
+            dataEvolucao.setHours(0, 0, 0, 0);
+            return dataEvolucao.getTime() === hoje.getTime();
+        });
+    }
+
+    // Função auxiliar para ordenar lista de pacientes
+    function ordenarListaPacientes(pacientes, metodo) {
+        switch (metodo) {
+            case 'nome':
+                return pacientes.sort((a, b) => a.nome.localeCompare(b.nome));
+            case 'adicao':
+            default:
+                return pacientes.sort((a, b) => {
+                    // Compatibilidade: verificar tanto dataRegistro quanto dataAdicao
+                    const dataA = (a.dataRegistro || a.dataAdicao) ? ((a.dataRegistro || a.dataAdicao).seconds || 0) : 0;
+                    const dataB = (b.dataRegistro || b.dataAdicao) ? ((b.dataRegistro || b.dataAdicao).seconds || 0) : 0;
+                    return dataB - dataA; // Mais recentes primeiro
+                });
+        }
+    }
+
+    // Função para renderizar pacientes em seções separadas
+    function renderizarPacientesSecionados(pacientesPendentes, pacientesVisitados) {
+        const listaPacientesPendentes = document.getElementById('lista-pacientes-pendentes');
+        const listaPacientesVisitados = document.getElementById('lista-pacientes-visitados');
+        const contadorPendentes = document.getElementById('contador-pendentes');
+        const contadorVisitados = document.getElementById('contador-visitados');
+        
+        if (!listaPacientesPendentes || !listaPacientesVisitados) {
+            console.error("Elementos das listas de pacientes não encontrados");
+            return;
+        }
+        
+        // Atualizar contadores
+        if (contadorPendentes) contadorPendentes.textContent = pacientesPendentes.length;
+        if (contadorVisitados) contadorVisitados.textContent = pacientesVisitados.length;
+        
+        // Renderizar lista de pendentes
+        renderizarListaPacientes(listaPacientesPendentes, pacientesPendentes, 'pendente');
+        
+        // Renderizar lista de visitados
+        renderizarListaPacientes(listaPacientesVisitados, pacientesVisitados, 'visitado');
+    }
+
+    // Função unificada para renderizar uma lista de pacientes
+    function renderizarListaPacientes(elemento, pacientes, tipo) {
+        // Limpar lista atual
+        elemento.innerHTML = '';
+        
+        // Se não houver pacientes, mostrar mensagem
+        if (!pacientes || pacientes.length === 0) {
+            const mensagem = tipo === 'pendente' 
+                ? 'Nenhum paciente pendente de visita.' 
+                : 'Nenhum paciente visitado hoje.';
+            
+            const submensagem = tipo === 'pendente'
+                ? 'Adicione um novo paciente para iniciar as visitas.'
+                : 'Registre evoluções para que os pacientes apareçam aqui.';
+            
+            elemento.innerHTML = `
+                <li class="paciente-item paciente-vazio">
+                    <div class="paciente-vazio-mensagem">
+                        <i class="fas ${tipo === 'pendente' ? 'fa-user-plus' : 'fa-clipboard-check'}"></i>
+                        <p>${mensagem}</p>
+                        <small>${submensagem}</small>
+                    </div>
+                </li>
+            `;
+            return;
+        }
+        
+        // Renderizar cada paciente
+        pacientes.forEach(paciente => {
+            const pacienteItem = criarElementoPaciente(paciente, tipo);
+            elemento.appendChild(pacienteItem);
+        });
+    }
+
+    // Função para criar elemento de um paciente
+    function criarElementoPaciente(paciente, tipo) {
+        // Criar elemento de paciente
+        const pacienteItem = document.createElement('li');
+        pacienteItem.className = 'paciente-item';
+        pacienteItem.dataset.id = paciente.id;
+        
+        // Formatar data de registro - compatibilidade com dataAdicao e dataRegistro
+        const dataRegistro = AppVisita?.Utils?.formatarData ? 
+            AppVisita.Utils.formatarData(paciente.dataRegistro || paciente.dataAdicao) :
+            (paciente.dataRegistro || paciente.dataAdicao) ? 
+                new Date((paciente.dataRegistro || paciente.dataAdicao).seconds * 1000).toLocaleDateString('pt-BR') :
+                'Data desconhecida';
+        
+        // Formatar data de nascimento
+        let dataNascimento = 'Não informada';
+        if (paciente.dataNascimento) {
+            try {
+                // Verificar se é um objeto Timestamp do Firestore
+                if (paciente.dataNascimento && typeof paciente.dataNascimento === 'object' && 'seconds' in paciente.dataNascimento) {
+                    dataNascimento = new Date(paciente.dataNascimento.seconds * 1000).toLocaleDateString('pt-BR');
+                }
+                // Verificar se dataNascimento é uma string
+                else if (typeof paciente.dataNascimento === 'string') {
+                    const partes = paciente.dataNascimento.split('-');
+                    if (partes.length === 3) {
+                        const data = new Date(partes[0], partes[1] - 1, partes[2]);
+                        dataNascimento = data.toLocaleDateString('pt-BR');
+                    } else {
+                        dataNascimento = paciente.dataNascimento;
+                    }
+                } 
+                else if (paciente.dataNascimento instanceof Date) {
+                    dataNascimento = paciente.dataNascimento.toLocaleDateString('pt-BR');
+                }
+                else {
+                    dataNascimento = String(paciente.dataNascimento);
+                }
+            } catch (error) {
+                console.error("Erro ao formatar data de nascimento:", error);
+                dataNascimento = 'Erro ao formatar data';
+            }
+        }
+        
+        // Definir equipe do paciente
+        let equipeNome = 'Não definida';
+        if (paciente.equipeId && window.equipesUsuario) {
+            const equipe = window.equipesUsuario.find(e => e.id === paciente.equipeId);
+            if (equipe) {
+                equipeNome = equipe.nome;
+            }
+        }
+        
+        // Obter informações da última visita se for paciente visitado
+        let infoUltimaVisita = '';
+        if (tipo === 'visitado') {
+            const ultimaEvolucao = obterUltimaEvolucaoHoje(paciente);
+            if (ultimaEvolucao) {
+                const horaVisita = ultimaEvolucao.dataRegistro || ultimaEvolucao.data ? 
+                    new Date((ultimaEvolucao.dataRegistro || ultimaEvolucao.data).seconds * 1000).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) :
+                    'Hora desconhecida';
+                infoUltimaVisita = `
+                    <div class="info-item info-visita">
+                        <i class="fas fa-clock"></i> 
+                        Visitado às ${horaVisita} por ${ultimaEvolucao.medicoEmail || 'Médico'}
+                    </div>
+                `;
+            }
+        }
+        
+        // Texto do botão baseado no tipo
+        const textoBotao = tipo === 'visitado' ? 'Nova Evolução' : 'Registrar Evolução';
+        const iconeBotao = tipo === 'visitado' ? 'fa-plus' : 'fa-clipboard-list';
+        
+        // HTML do paciente
+        pacienteItem.innerHTML = `
+            <div class="paciente-header">
+                <h3 class="paciente-nome">${paciente.nome}</h3>
+                <span class="paciente-id">ID: ${paciente.idInternacao}</span>
+            </div>
+            <div class="paciente-info">
+                <div class="info-item"><i class="fas fa-hospital"></i> Local: ${paciente.localLeito || paciente.local || 'Não informado'}</div>
+                <div class="info-item"><i class="fas fa-birthday-cake"></i> Nascimento: ${dataNascimento}</div>
+                <div class="info-item"><i class="fas fa-users"></i> Equipe: ${equipeNome}</div>
+                <div class="info-item"><i class="fas fa-calendar-plus"></i> Adicionado: ${dataRegistro}</div>
+                ${infoUltimaVisita}
+            </div>
+            <div class="paciente-actions">
+                <button class="btn-registrar-evolucao" data-id="${paciente.id}" data-nome="${paciente.nome}">
+                    <i class="fas ${iconeBotao}"></i> ${textoBotao}
+                </button>
+            </div>
+        `;
+        
+        // Configurar botão de evolução
+        const btnEvolucao = pacienteItem.querySelector('.btn-registrar-evolucao');
+        if (btnEvolucao) {
+            btnEvolucao.addEventListener('click', function() {
+                // Tentar usar a função do app-pacientes.js primeiro
+                if (typeof window.abrirModalEvolucao === 'function') {
+                    window.abrirModalEvolucao(this.dataset.id, this.dataset.nome);
+                } else {
+                    // Fallback para função local
+                    const paciente = todosPacientes.find(p => p.id === this.dataset.id);
+                    if (paciente) {
+                        abrirModalEvolucao(paciente);
+                    }
+                }
+            });
+        }
+        
+        return pacienteItem;
+    }
+
+    // Função auxiliar para obter a última evolução de hoje
+    function obterUltimaEvolucaoHoje(paciente) {
+        if (!paciente.evolucoes || paciente.evolucoes.length === 0) {
+            return null;
+        }
+        
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        
+        const evolucoesHoje = paciente.evolucoes.filter(evolucao => {
+            if (!evolucao.dataRegistro && !evolucao.data) return false;
+            
+            let dataEvolucao;
+            const dataRef = evolucao.dataRegistro || evolucao.data;
+            
+            if (dataRef && dataRef.seconds) {
+                dataEvolucao = new Date(dataRef.seconds * 1000);
+            } else if (dataRef instanceof Date) {
+                dataEvolucao = dataRef;
+            } else if (typeof dataRef === 'string') {
+                dataEvolucao = new Date(dataRef);
+            } else {
+                return false;
+            }
+            
+            dataEvolucao.setHours(0, 0, 0, 0);
+            return dataEvolucao.getTime() === hoje.getTime();
+        });
+        
+        if (evolucoesHoje.length === 0) return null;
+        
+        // Retornar a evolução mais recente do dia
+        return evolucoesHoje.sort((a, b) => {
+            const dataA = (a.dataRegistro || a.data).seconds || (a.dataRegistro || a.data).getTime?.() || 0;
+            const dataB = (b.dataRegistro || b.data).seconds || (b.dataRegistro || b.data).getTime?.() || 0;
+            return dataB - dataA;
+        })[0];
+    }
 
     // Função para abrir o modal de evolução de paciente
     const abrirModalEvolucao = (paciente) => {
@@ -1639,93 +1951,6 @@ if (typeof firebaseConfig !== 'undefined' && firebaseConfig.apiKey && firebaseCo
         sidebar.classList.remove('active');
         sidebarOverlay.classList.remove('active');
     });
-
-    // Eventos do modal de equipe
-    if (btnNovaEquipe && modalEquipe && closeButtonEquipe && formEquipe) {
-        btnNovaEquipe.addEventListener('click', async () => {
-            console.log("Botão Nova Equipe clicado");
-            // Limpar formulário
-            formEquipe.reset();
-            equipeIdInput.value = '';
-            
-            // Atualizar título do modal
-            const modalTituloEquipe = document.getElementById('modal-titulo-equipe');
-            if (modalTituloEquipe) {
-                modalTituloEquipe.textContent = 'Nova Equipe';
-            }
-            
-            // Carregar médicos disponíveis
-            await carregarMedicosAprovadosNoModal();
-            
-            // Mostrar modal
-            modalEquipe.style.display = 'block';
-        });
-
-        closeButtonEquipe.addEventListener('click', () => {
-            console.log("Botão fechar modal clicado");
-            modalEquipe.style.display = 'none';
-        });
-
-        // Fechar modal ao clicar fora
-        window.addEventListener('click', (e) => {
-            if (e.target === modalEquipe) {
-                modalEquipe.style.display = 'none';
-            }
-        });
-
-        // Evento de submit do formulário de equipe
-        formEquipe.addEventListener('submit', async (e) => {
-        e.preventDefault();
-            console.log("Formulário de equipe submetido");
-            
-            const nomeEquipe = nomeEquipeInput.value.trim();
-            const descricaoEquipe = descricaoEquipeInput.value.trim();
-            const equipeId = equipeIdInput.value;
-            
-            // Coletar médicos selecionados
-            const medicosSelecionados = Array.from(selecaoMedicos.querySelectorAll('.medico-item.selecionado'))
-                .map(item => item.dataset.id);
-            
-            if (!nomeEquipe) {
-                alert('Por favor, preencha o nome da equipe.');
-            return;
-        }
-
-            try {
-                const equipeData = {
-                    nome: nomeEquipe,
-                    descricao: descricaoEquipe,
-                    membros: medicosSelecionados,
-                    dataCriacao: firebase.firestore.FieldValue.serverTimestamp()
-                };
-                
-                if (equipeId) {
-                    // Atualizar equipe existente
-                    await db.collection('equipes').doc(equipeId).update(equipeData);
-                    alert('Equipe atualizada com sucesso!');
-                } else {
-                    // Criar nova equipe
-                    await db.collection('equipes').add(equipeData);
-                    alert('Equipe criada com sucesso!');
-                }
-                
-                // Fechar modal e recarregar lista
-                modalEquipe.style.display = 'none';
-                await carregarEquipes();
-                
-            } catch (error) {
-                console.error("Erro ao salvar equipe:", error);
-                alert('Erro ao salvar equipe. Verifique o console para detalhes.');
-            }
-        });
-    } else {
-        console.error("Elementos do modal de equipe não encontrados:", {
-            btnNovaEquipe: !!btnNovaEquipe,
-            modalEquipe: !!modalEquipe,
-            closeButtonEquipe: !!closeButtonEquipe,
-            formEquipe: !!formEquipe
-        });
-    }
 
     // Eventos da seção de consulta
     btnBuscarPaciente.addEventListener('click', () => {

@@ -412,46 +412,123 @@ document.addEventListener('DOMContentLoaded', function() {
     const pacientesInternados = pacientes.filter(p => p.status === 'internado');
     console.log(`Pacientes internados: ${pacientesInternados.length}`);
     
-    // Ordenar pacientes conforme método
-    let pacientesOrdenados = [];
+    // Separar pacientes entre pendentes e visitados hoje
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0); // Início do dia de hoje
     
+    const pacientesPendentes = [];
+    const pacientesVisitados = [];
+    
+    pacientesInternados.forEach(paciente => {
+      const foiVisitadoHoje = verificarSeVisitadoHoje(paciente, hoje);
+      
+      if (foiVisitadoHoje) {
+        pacientesVisitados.push(paciente);
+      } else {
+        pacientesPendentes.push(paciente);
+      }
+    });
+    
+    console.log(`Pacientes pendentes: ${pacientesPendentes.length}, Visitados hoje: ${pacientesVisitados.length}`);
+    
+    // Ordenar cada lista conforme método
+    let pacientesPendentesOrdenados = ordenarListaPacientes(pacientesPendentes, metodo);
+    let pacientesVisitadosOrdenados = ordenarListaPacientes(pacientesVisitados, metodo);
+    
+    // Renderizar ambas as listas
+    renderizarPacientesSecionados(pacientesPendentesOrdenados, pacientesVisitadosOrdenados);
+  }
+
+  // Função auxiliar para verificar se paciente foi visitado hoje
+  function verificarSeVisitadoHoje(paciente, hoje) {
+    if (!paciente.evolucoes || paciente.evolucoes.length === 0) {
+      return false;
+    }
+    
+    // Verificar se há alguma evolução de hoje
+    return paciente.evolucoes.some(evolucao => {
+      if (!evolucao.dataRegistro) return false;
+      
+      let dataEvolucao;
+      
+      // Lidar com diferentes formatos de data
+      if (evolucao.dataRegistro.seconds) {
+        // Timestamp do Firestore
+        dataEvolucao = new Date(evolucao.dataRegistro.seconds * 1000);
+      } else if (evolucao.dataRegistro instanceof Date) {
+        // Objeto Date
+        dataEvolucao = evolucao.dataRegistro;
+      } else if (typeof evolucao.dataRegistro === 'string') {
+        // String de data
+        dataEvolucao = new Date(evolucao.dataRegistro);
+      } else {
+        return false;
+      }
+      
+      dataEvolucao.setHours(0, 0, 0, 0);
+      return dataEvolucao.getTime() === hoje.getTime();
+    });
+  }
+
+  // Função auxiliar para ordenar lista de pacientes
+  function ordenarListaPacientes(pacientes, metodo) {
     switch (metodo) {
       case 'nome':
-        pacientesOrdenados = pacientesInternados.sort((a, b) => a.nome.localeCompare(b.nome));
-        break;
+        return pacientes.sort((a, b) => a.nome.localeCompare(b.nome));
       case 'adicao':
       default:
-        // Verificar se há dataRegistro e se é um objeto timestamp (para evitar erros)
-        pacientesOrdenados = pacientesInternados.sort((a, b) => {
+        return pacientes.sort((a, b) => {
           const dataA = a.dataRegistro ? (a.dataRegistro.seconds || 0) : 0;
           const dataB = b.dataRegistro ? (b.dataRegistro.seconds || 0) : 0;
           return dataB - dataA; // Mais recentes primeiro
         });
-        break;
     }
-    
-    // Renderizar pacientes
-    renderizarPacientes(pacientesOrdenados);
   }
-  
-  // Função para renderizar pacientes na lista
-  function renderizarPacientes(pacientes) {
-    if (!listaPacientesPendentes) {
-      console.error("Elemento lista-pacientes-pendentes não encontrado");
+
+  // Função para renderizar pacientes em seções separadas
+  function renderizarPacientesSecionados(pacientesPendentes, pacientesVisitados) {
+    const listaPacientesPendentes = document.getElementById('lista-pacientes-pendentes');
+    const listaPacientesVisitados = document.getElementById('lista-pacientes-visitados');
+    const contadorPendentes = document.getElementById('contador-pendentes');
+    const contadorVisitados = document.getElementById('contador-visitados');
+    
+    if (!listaPacientesPendentes || !listaPacientesVisitados) {
+      console.error("Elementos das listas de pacientes não encontrados");
       return;
     }
     
+    // Atualizar contadores
+    if (contadorPendentes) contadorPendentes.textContent = pacientesPendentes.length;
+    if (contadorVisitados) contadorVisitados.textContent = pacientesVisitados.length;
+    
+    // Renderizar lista de pendentes
+    renderizarListaPacientes(listaPacientesPendentes, pacientesPendentes, 'pendente');
+    
+    // Renderizar lista de visitados
+    renderizarListaPacientes(listaPacientesVisitados, pacientesVisitados, 'visitado');
+  }
+
+  // Função unificada para renderizar uma lista de pacientes
+  function renderizarListaPacientes(elemento, pacientes, tipo) {
     // Limpar lista atual
-    listaPacientesPendentes.innerHTML = '';
+    elemento.innerHTML = '';
     
     // Se não houver pacientes, mostrar mensagem
     if (!pacientes || pacientes.length === 0) {
-      listaPacientesPendentes.innerHTML = `
+      const mensagem = tipo === 'pendente' 
+        ? 'Nenhum paciente pendente de visita.' 
+        : 'Nenhum paciente visitado hoje.';
+      
+      const submensagem = tipo === 'pendente'
+        ? 'Adicione um novo paciente para iniciar as visitas.'
+        : 'Registre evoluções para que os pacientes apareçam aqui.';
+      
+      elemento.innerHTML = `
         <li class="paciente-item paciente-vazio">
           <div class="paciente-vazio-mensagem">
-            <i class="fas fa-user-plus"></i>
-            <p>Nenhum paciente pendente de visita.</p>
-            <small>Adicione um novo paciente para iniciar as visitas.</small>
+            <i class="fas ${tipo === 'pendente' ? 'fa-user-plus' : 'fa-clipboard-check'}"></i>
+            <p>${mensagem}</p>
+            <small>${submensagem}</small>
           </div>
         </li>
       `;
@@ -460,86 +537,149 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Renderizar cada paciente
     pacientes.forEach(paciente => {
-      // Criar elemento de paciente
-      const pacienteItem = document.createElement('li');
-      pacienteItem.className = 'paciente-item';
-      pacienteItem.dataset.id = paciente.id;
-      
-      // Formatar data de registro
-      const dataRegistro = AppVisita.Utils.formatarData(paciente.dataRegistro);
-      
-      // Formatar data de nascimento
-      let dataNascimento = 'Não informada';
-      if (paciente.dataNascimento) {
-        try {
-          // Verificar se é um objeto Timestamp do Firestore
-          if (paciente.dataNascimento && typeof paciente.dataNascimento === 'object' && 'seconds' in paciente.dataNascimento) {
-            dataNascimento = AppVisita.Utils.formatarData(paciente.dataNascimento);
-          }
-          // Verificar se dataNascimento é uma string
-          else if (typeof paciente.dataNascimento === 'string') {
-            // Converter string de data para objeto Date para poder formatar
-            const partes = paciente.dataNascimento.split('-');
-            if (partes.length === 3) {
-              const data = new Date(partes[0], partes[1] - 1, partes[2]); // mês é 0-indexado
-              dataNascimento = data.toLocaleDateString('pt-BR');
-            } else {
-              dataNascimento = paciente.dataNascimento;
-            }
-          } 
-          // Verificar se é um objeto Date
-          else if (paciente.dataNascimento instanceof Date) {
-            dataNascimento = paciente.dataNascimento.toLocaleDateString('pt-BR');
-          }
-          // Caso seja outro formato, tentar converter para string
-          else {
-            dataNascimento = String(paciente.dataNascimento);
-          }
-        } catch (error) {
-          console.error("Erro ao formatar data de nascimento:", error);
-          dataNascimento = 'Erro ao formatar data';
-        }
-      }
-      
-      // Definir equipe do paciente
-      let equipeNome = 'Não definida';
-      if (paciente.equipeId && window.equipesUsuario) {
-        const equipe = window.equipesUsuario.find(e => e.id === paciente.equipeId);
-        if (equipe) {
-          equipeNome = equipe.nome;
-        }
-      }
-      
-      // HTML do paciente
-      pacienteItem.innerHTML = `
-        <div class="paciente-header">
-          <h3 class="paciente-nome">${paciente.nome}</h3>
-          <span class="paciente-id">ID: ${paciente.idInternacao}</span>
-        </div>
-        <div class="paciente-info">
-          <div class="info-item"><i class="fas fa-hospital"></i> Local: ${paciente.localLeito}</div>
-          <div class="info-item"><i class="fas fa-birthday-cake"></i> Nascimento: ${dataNascimento}</div>
-          <div class="info-item"><i class="fas fa-users"></i> Equipe: ${equipeNome}</div>
-          <div class="info-item"><i class="fas fa-calendar-plus"></i> Adicionado: ${dataRegistro}</div>
-        </div>
-        <div class="paciente-actions">
-          <button class="btn-registrar-evolucao" data-id="${paciente.id}" data-nome="${paciente.nome}">
-            <i class="fas fa-clipboard-list"></i> Registrar Evolução
-          </button>
-        </div>
-      `;
-      
-      // Adicionar à lista
-      listaPacientesPendentes.appendChild(pacienteItem);
-      
-      // Configurar botão de evolução
-      const btnEvolucao = pacienteItem.querySelector('.btn-registrar-evolucao');
-      if (btnEvolucao) {
-        btnEvolucao.addEventListener('click', function() {
-          abrirModalEvolucao(this.dataset.id, this.dataset.nome);
-        });
-      }
+      const pacienteItem = criarElementoPaciente(paciente, tipo);
+      elemento.appendChild(pacienteItem);
     });
+  }
+
+  // Função para criar elemento de um paciente
+  function criarElementoPaciente(paciente, tipo) {
+    // Criar elemento de paciente
+    const pacienteItem = document.createElement('li');
+    pacienteItem.className = 'paciente-item';
+    pacienteItem.dataset.id = paciente.id;
+    
+    // Formatar data de registro
+    const dataRegistro = AppVisita.Utils.formatarData(paciente.dataRegistro);
+    
+    // Formatar data de nascimento
+    let dataNascimento = 'Não informada';
+    if (paciente.dataNascimento) {
+      try {
+        // Verificar se é um objeto Timestamp do Firestore
+        if (paciente.dataNascimento && typeof paciente.dataNascimento === 'object' && 'seconds' in paciente.dataNascimento) {
+          dataNascimento = AppVisita.Utils.formatarData(paciente.dataNascimento);
+        }
+        // Verificar se dataNascimento é uma string
+        else if (typeof paciente.dataNascimento === 'string') {
+          // Converter string de data para objeto Date para poder formatar
+          const partes = paciente.dataNascimento.split('-');
+          if (partes.length === 3) {
+            const data = new Date(partes[0], partes[1] - 1, partes[2]); // mês é 0-indexado
+            dataNascimento = data.toLocaleDateString('pt-BR');
+          } else {
+            dataNascimento = paciente.dataNascimento;
+          }
+        } 
+        // Verificar se é um objeto Date
+        else if (paciente.dataNascimento instanceof Date) {
+          dataNascimento = paciente.dataNascimento.toLocaleDateString('pt-BR');
+        }
+        // Caso seja outro formato, tentar converter para string
+        else {
+          dataNascimento = String(paciente.dataNascimento);
+        }
+      } catch (error) {
+        console.error("Erro ao formatar data de nascimento:", error);
+        dataNascimento = 'Erro ao formatar data';
+      }
+    }
+    
+    // Definir equipe do paciente
+    let equipeNome = 'Não definida';
+    if (paciente.equipeId && window.equipesUsuario) {
+      const equipe = window.equipesUsuario.find(e => e.id === paciente.equipeId);
+      if (equipe) {
+        equipeNome = equipe.nome;
+      }
+    }
+    
+    // Obter informações da última visita se for paciente visitado
+    let infoUltimaVisita = '';
+    if (tipo === 'visitado') {
+      const ultimaEvolucao = obterUltimaEvolucaoHoje(paciente);
+      if (ultimaEvolucao) {
+        const horaVisita = AppVisita.Utils.formatarDataHora(ultimaEvolucao.dataRegistro).split(' ')[1];
+        infoUltimaVisita = `
+          <div class="info-item info-visita">
+            <i class="fas fa-clock"></i> 
+            Visitado às ${horaVisita} por ${ultimaEvolucao.medicoEmail || 'Médico'}
+          </div>
+        `;
+      }
+    }
+    
+    // Texto do botão baseado no tipo
+    const textoBotao = tipo === 'visitado' ? 'Nova Evolução' : 'Registrar Evolução';
+    const iconeBotao = tipo === 'visitado' ? 'fa-plus' : 'fa-clipboard-list';
+    
+    // HTML do paciente
+    pacienteItem.innerHTML = `
+      <div class="paciente-header">
+        <h3 class="paciente-nome">${paciente.nome}</h3>
+        <span class="paciente-id">ID: ${paciente.idInternacao}</span>
+      </div>
+      <div class="paciente-info">
+        <div class="info-item"><i class="fas fa-hospital"></i> Local: ${paciente.localLeito}</div>
+        <div class="info-item"><i class="fas fa-birthday-cake"></i> Nascimento: ${dataNascimento}</div>
+        <div class="info-item"><i class="fas fa-users"></i> Equipe: ${equipeNome}</div>
+        <div class="info-item"><i class="fas fa-calendar-plus"></i> Adicionado: ${dataRegistro}</div>
+        ${infoUltimaVisita}
+      </div>
+      <div class="paciente-actions">
+        <button class="btn-registrar-evolucao" data-id="${paciente.id}" data-nome="${paciente.nome}">
+          <i class="fas ${iconeBotao}"></i> ${textoBotao}
+        </button>
+      </div>
+    `;
+    
+    // Configurar botão de evolução
+    const btnEvolucao = pacienteItem.querySelector('.btn-registrar-evolucao');
+    if (btnEvolucao) {
+      btnEvolucao.addEventListener('click', function() {
+        abrirModalEvolucao(this.dataset.id, this.dataset.nome);
+      });
+    }
+    
+    return pacienteItem;
+  }
+
+  // Função auxiliar para obter a última evolução de hoje
+  function obterUltimaEvolucaoHoje(paciente) {
+    if (!paciente.evolucoes || paciente.evolucoes.length === 0) {
+      return null;
+    }
+    
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    
+    const evolucoesHoje = paciente.evolucoes.filter(evolucao => {
+      if (!evolucao.dataRegistro) return false;
+      
+      let dataEvolucao;
+      
+      if (evolucao.dataRegistro.seconds) {
+        dataEvolucao = new Date(evolucao.dataRegistro.seconds * 1000);
+      } else if (evolucao.dataRegistro instanceof Date) {
+        dataEvolucao = evolucao.dataRegistro;
+      } else if (typeof evolucao.dataRegistro === 'string') {
+        dataEvolucao = new Date(evolucao.dataRegistro);
+      } else {
+        return false;
+      }
+      
+      dataEvolucao.setHours(0, 0, 0, 0);
+      return dataEvolucao.getTime() === hoje.getTime();
+    });
+    
+    if (evolucoesHoje.length === 0) return null;
+    
+    // Retornar a evolução mais recente do dia
+    return evolucoesHoje.sort((a, b) => {
+      const dataA = a.dataRegistro.seconds || a.dataRegistro.getTime?.() || 0;
+      const dataB = b.dataRegistro.seconds || b.dataRegistro.getTime?.() || 0;
+      return dataB - dataA;
+    })[0];
   }
   
   // Função para abrir modal de evolução
@@ -1968,6 +2108,7 @@ document.addEventListener('DOMContentLoaded', function() {
   window.abrirImagemModal = abrirImagemModal;
   window.removerImagem = removerImagem;
   window.uploadImagensParaStorage = uploadImagensParaStorage;
+  window.abrirModalEvolucao = abrirModalEvolucao;
   
   // Garantir que as funções necessárias estejam disponíveis globalmente
   if (typeof window.AppModulos === 'undefined') {

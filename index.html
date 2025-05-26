@@ -293,7 +293,7 @@
                 <div class="section-header">
                     <h2>
                         <i class="fas fa-clipboard-list"></i> 
-                        Visitas Pendentes
+                        Dashboard Médico
                     </h2>
                     
                     <div class="section-actions">
@@ -307,8 +307,32 @@
                     </div>
                 </div>
                 
-                <div id="lista-pacientes-pendentes" class="patients-grid">
-                    <!-- Pacientes serão adicionados aqui -->
+                <!-- Seção de Pacientes Pendentes de Visita -->
+                <div class="dashboard-section" id="pacientes-pendentes">
+                    <div class="section-subtitle">
+                        <h3>
+                            <i class="fas fa-hourglass-half"></i>
+                            Pendentes de Visita 
+                            <span id="contador-pendentes" class="contador-badge">0</span>
+                        </h3>
+                    </div>
+                    <div id="lista-pacientes-pendentes" class="patients-grid">
+                        <!-- Pacientes pendentes serão adicionados aqui -->
+                    </div>
+                </div>
+
+                <!-- Seção de Pacientes Já Visitados -->
+                <div class="dashboard-section" id="pacientes-visitados" style="margin-top: 30px;">
+                    <div class="section-subtitle">
+                        <h3>
+                            <i class="fas fa-check-circle"></i>
+                            Visitados Hoje 
+                            <span id="contador-visitados" class="contador-badge">0</span>
+                        </h3>
+                    </div>
+                    <div id="lista-pacientes-visitados" class="patients-grid">
+                        <!-- Pacientes visitados serão adicionados aqui -->
+                    </div>
                 </div>
             </section>
             

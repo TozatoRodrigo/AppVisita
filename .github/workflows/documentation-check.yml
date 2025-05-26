@@ -62,15 +62,13 @@ jobs:
             if (logFiles.length > 0) {
               const latestLog = logFiles.sort().pop();
               const logData = JSON.parse(fs.readFileSync(`logs/${latestLog}`, 'utf8'));
-              
-              reportContent = `
-## 🚨 Problemas de Documentação Detectados
+              reportContent = `## 🚨 Problemas de Documentação Detectados
 
 ### Resumo
 - ❌ Erros: ${logData.errors?.length || 0}
 - ⚠️ Warnings: ${logData.warnings?.length || 0}
 
-### Erros Encontrados
+### Erros Encontrados`
 ${logData.errors?.map(error => `- ❌ ${error}`).join('\n') || 'Nenhum'}
 
 ### Warnings

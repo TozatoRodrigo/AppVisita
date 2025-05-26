@@ -2091,579 +2091,278 @@ input:focus, textarea:focus, select:focus {
     margin-right: 8px;
 }
 
-/* ========================================================================
-   ESTILOS DOS MODAIS DE EVOLUÇÃO
-   ======================================================================== */
-
-/* Modal Principal */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    animation: fadeIn 0.3s ease;
+/* Seções do Dashboard */
+.dashboard-section {
+    margin-bottom: 25px;
 }
 
-.modal-content {
-    position: relative;
-    background-color: var(--background-color);
-    margin: 2% auto;
-    padding: 0;
-    border-radius: var(--border-radius);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    width: 90%;
-    max-width: 800px;
-    max-height: 95vh;
-    overflow: hidden;
-    animation: slideInFromTop 0.3s ease;
+.section-subtitle {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--primary-color);
 }
 
-@keyframes slideInFromTop {
-    from {
-        transform: translateY(-50px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-/* Header do Modal */
-.modal-header {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 20px;
-    border-radius: var(--border-radius) var(--border-radius) 0 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.modal-header h2 {
+.section-subtitle h3 {
     margin: 0;
-    font-size: 1.4rem;
-    font-weight: 500;
-}
-
-.modal-header .close-button {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    padding: 0;
-    width: 30px;
-    height: 30px;
+    color: var(--text-color);
+    font-size: 1.2rem;
+    font-weight: 600;
     display: flex;
     align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: var(--transition);
+    gap: 10px;
 }
 
-.modal-header .close-button:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+.section-subtitle h3 i {
+    color: var(--primary-color);
+    font-size: 1.1rem;
 }
 
-/* Body do Modal */
-.modal-body {
-    padding: 25px;
-    max-height: 80vh;
-    overflow-y: auto;
-}
-
-/* Formulário de Evolução */
-#form-evolucao .form-group {
-    margin-bottom: 20px;
-}
-
-#form-evolucao textarea {
-    min-height: 120px;
-    font-family: 'Roboto', sans-serif;
-    line-height: 1.5;
-}
-
-/* Ações do Modal */
-.modal-actions {
-    display: flex;
-    gap: 15px;
-    margin-top: 25px;
-    padding-top: 20px;
-    border-top: 1px solid var(--border-color);
-}
-
-.modal-actions .btn {
-    flex: 1;
-    padding: 12px 20px;
-    border-radius: var(--border-radius);
-    font-weight: 500;
-    transition: var(--transition);
-    cursor: pointer;
-    border: none;
-}
-
-.modal-actions .btn--ghost {
-    background-color: transparent;
-    color: var(--text-secondary);
-    border: 1px solid var(--border-color);
-}
-
-.modal-actions .btn--ghost:hover {
-    background-color: var(--background-secondary);
-}
-
-.modal-actions .btn--primary {
+.contador-badge {
     background-color: var(--primary-color);
     color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-left: auto;
 }
 
-.modal-actions .btn--primary:hover {
-    background-color: var(--primary-dark);
+#pacientes-visitados .section-subtitle {
+    border-bottom-color: var(--success-color);
 }
 
-/* Seção de Upload de Imagens */
-.upload-area {
-    border: 2px dashed var(--border-color);
-    border-radius: var(--border-radius);
-    padding: 40px 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: var(--transition);
-    background-color: var(--background-secondary);
+#pacientes-visitados .section-subtitle h3 i {
+    color: var(--success-color);
 }
 
-.upload-area:hover,
-.upload-area.drag-over {
-    border-color: var(--primary-color);
-    background-color: var(--input-focus-color);
+#pacientes-visitados .contador-badge {
+    background-color: var(--success-color);
 }
 
-.upload-content {
+/* Estilos específicos para pacientes visitados */
+#lista-pacientes-visitados .paciente-item {
+    opacity: 0.9;
+    border-left: 4px solid var(--success-color);
+}
+
+#lista-pacientes-visitados .paciente-item .btn-registrar-evolucao {
+    background-color: var(--success-color);
+    opacity: 0.8;
+}
+
+#lista-pacientes-visitados .paciente-item .btn-registrar-evolucao:hover {
+    opacity: 1;
+}
+
+/* Estilo para informação da última visita */
+.info-visita {
+    background-color: var(--success-light, #e6f7e6);
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-top: 8px;
+    border-left: 3px solid var(--success-color);
+    font-size: 0.9rem;
+    color: var(--success-dark, #2d5a2d);
+}
+
+.info-visita i {
+    color: var(--success-color);
+    margin-right: 6px;
+}
+
+/* Responsividade para info-visita */
+@media (max-width: 768px) {
+    .info-visita {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+    }
+}
+
+/* Estilos para mensagens de pacientes vazios */
+.paciente-vazio {
+    background-color: var(--background-secondary) !important;
+    border: 2px dashed var(--border-color) !important;
+    border-radius: var(--border-radius) !important;
+    padding: 30px 20px !important;
+    text-align: center !important;
+    opacity: 0.8 !important;
+    margin-bottom: 15px !important;
+}
+
+.paciente-vazio-mensagem {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 10px;
 }
 
-.upload-icon {
-    font-size: 3rem;
-    color: var(--primary-color);
-    margin-bottom: 10px;
+.paciente-vazio-mensagem i {
+    font-size: 2.5rem;
+    color: var(--text-secondary);
+    opacity: 0.6;
 }
 
-.upload-text {
+.paciente-vazio-mensagem p {
     font-size: 1.1rem;
     color: var(--text-color);
     margin: 0;
     font-weight: 500;
 }
 
-.upload-help {
+.paciente-vazio-mensagem small {
     font-size: 0.9rem;
     color: var(--text-secondary);
+    opacity: 0.8;
+}
+
+/* Grid responsivo para as listas de pacientes */
+.patients-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+    list-style: none;
+    padding: 0;
     margin: 0;
 }
 
-/* Preview de Imagens */
-.preview-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 15px;
-    margin-top: 20px;
+@media (min-width: 768px) {
+    .patients-grid {
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    }
 }
 
-.preview-item {
-    position: relative;
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: var(--transition);
+@media (min-width: 1200px) {
+    .patients-grid {
+        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    }
 }
 
-.preview-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.preview-item img {
-    width: 100%;
-    height: 120px;
-    object-fit: cover;
-    display: block;
-}
-
-.preview-item .remove-btn {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background-color: var(--danger-color);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    cursor: pointer;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: var(--transition);
-    opacity: 0;
-}
-
-.preview-item:hover .remove-btn {
-    opacity: 1;
-}
-
-.remove-btn:hover {
-    background-color: #a01e1e;
-    transform: scale(1.1);
-}
-
-/* Progresso de Upload */
-.upload-progress {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: var(--background-secondary);
-    border-radius: var(--border-radius);
-}
-
-.progress-bar {
-    width: 100%;
-    height: 8px;
-    background-color: var(--border-color);
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 10px;
-}
-
-.progress-fill {
-    height: 100%;
-    background-color: var(--success-color);
-    transition: width 0.3s ease;
-    width: 0%;
-}
-
-.progress-text {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    text-align: center;
-}
-
-/* Histórico de Evoluções */
-.historico-section {
-    margin-top: 30px;
-    padding-top: 25px;
-    border-top: 2px solid var(--border-color);
-}
-
-.historico-section h3 {
-    color: var(--text-color);
-    margin-bottom: 20px;
-    font-size: 1.2rem;
-    font-weight: 500;
-}
-
-.historico-container {
-    max-height: 300px;
-    overflow-y: auto;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: 15px;
-    background-color: var(--background-secondary);
-}
-
-.evolucao-item {
-    background-color: var(--background-color);
-    border-radius: var(--border-radius);
-    padding: 20px;
-    margin-bottom: 15px;
-    border-left: 4px solid var(--primary-color);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.evolucao-item:last-child {
-    margin-bottom: 0;
-}
-
-.evolucao-header {
+/* Melhoria na seção do dashboard */
+.section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.section-header h2 {
+    margin: 0;
+    color: var(--text-color);
+    font-size: 1.5rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
     gap: 10px;
 }
 
-.evolucao-data {
-    font-weight: 500;
-    color: var(--text-color);
-    font-size: 0.95rem;
+.section-header h2 i {
+    color: var(--primary-color);
+    font-size: 1.3rem;
 }
 
-.evolucao-medico {
+.section-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.section-actions .form-group {
+    margin: 0;
+}
+
+.section-actions .form-label {
+    margin-bottom: 5px;
     font-size: 0.9rem;
     color: var(--text-secondary);
 }
 
-.evolucao-texto {
-    margin: 15px 0;
-    line-height: 1.6;
-    color: var(--text-color);
-    white-space: pre-wrap;
-}
-
-.evolucao-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+.section-actions .form-control {
+    min-width: 180px;
     padding: 8px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    margin-top: 10px;
-}
-
-.evolucao-status.status-internado {
-    background-color: #e3f2fd;
-    color: #1976d2;
-}
-
-.evolucao-status.status-alta {
-    background-color: #e8f5e8;
-    color: #2e7d32;
-}
-
-.evolucao-status.status-obito {
-    background-color: #ffebee;
-    color: #c62828;
-}
-
-/* Modal de Visualização de Imagem */
-.modal-imagem {
-    z-index: 1100;
-    background-color: rgba(0, 0, 0, 0.9);
-}
-
-.modal-imagem-content {
-    position: relative;
-    width: 95%;
-    height: 95%;
-    margin: 2.5% auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: none;
-    border-radius: 0;
-    box-shadow: none;
-}
-
-.modal-imagem-close {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    font-size: 20px;
-    cursor: pointer;
-    z-index: 1101;
-    transition: var(--transition);
-}
-
-.modal-imagem-close:hover {
-    background: rgba(0, 0, 0, 0.9);
-}
-
-.modal-imagem-nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    border: none;
-    width: 50px;
-    height: 50px;
-    font-size: 24px;
-    cursor: pointer;
-    z-index: 1101;
-    transition: var(--transition);
-    border-radius: 50%;
-}
-
-.modal-imagem-nav:hover {
-    background: rgba(0, 0, 0, 0.9);
-}
-
-.modal-imagem-prev {
-    left: 20px;
-}
-
-.modal-imagem-next {
-    right: 20px;
-}
-
-.modal-imagem-container {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-#modal-imagem-img {
-    max-width: 100%;
-    max-height: 85%;
-    object-fit: contain;
-    border-radius: var(--border-radius);
-}
-
-.modal-imagem-info {
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 20px;
-    margin-top: 20px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background-color: var(--background-color);
     font-size: 0.9rem;
 }
 
-/* Galeria de Imagens na Evolução */
-.galeria-imagens {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 10px;
-    margin: 15px 0;
+/* Espaçamento entre seções do dashboard */
+.dashboard-section + .dashboard-section {
+    margin-top: 40px;
+    padding-top: 25px;
+    border-top: 1px solid var(--border-color);
 }
 
-.galeria-item {
-    position: relative;
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    cursor: pointer;
-    transition: var(--transition);
+/* Animação suave para a transição entre seções */
+.dashboard-section {
+    animation: fadeInUp 0.4s ease-out;
 }
 
-.galeria-item:hover {
-    transform: scale(1.05);
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.galeria-item img {
-    width: 100%;
-    height: 80px;
-    object-fit: cover;
-    display: block;
-}
-
-/* Estados de Carregamento e Erro */
-.carregando-info,
-.erro-info,
-.info-msg {
+/* Melhoria nos contadores */
+.contador-badge {
+    transition: all 0.3s ease;
+    min-width: 30px;
     text-align: center;
-    padding: 20px;
-    color: var(--text-secondary);
-    font-style: italic;
 }
 
-.erro-info {
-    color: var(--danger-color);
+.contador-badge:empty::after {
+    content: "0";
 }
 
-/* Responsividade */
+/* Estados dos pacientes no grid */
+.patients-grid .paciente-item {
+    transition: all 0.3s ease;
+    transform: translateY(0);
+}
+
+.patients-grid .paciente-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsividade para telas menores */
 @media (max-width: 768px) {
-    .modal-content {
-        width: 95%;
-        margin: 5% auto;
-        max-height: 90vh;
-    }
-    
-    .modal-body {
-        padding: 20px;
-    }
-    
-    .upload-area {
-        padding: 30px 15px;
-    }
-    
-    .upload-icon {
-        font-size: 2.5rem;
-    }
-    
-    .preview-container {
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 10px;
-    }
-    
-    .evolucao-header {
+    .section-header {
         flex-direction: column;
         align-items: flex-start;
+        gap: 15px;
     }
     
-    .modal-actions {
-        flex-direction: column;
+    .section-actions {
+        width: 100%;
+        justify-content: flex-start;
     }
     
-    .modal-actions .btn {
+    .section-actions .form-control {
+        min-width: auto;
         width: 100%;
     }
     
-    .modal-imagem-nav {
-        width: 40px;
-        height: 40px;
-        font-size: 18px;
+    .dashboard-section + .dashboard-section {
+        margin-top: 30px;
+        padding-top: 20px;
     }
     
-    .modal-imagem-close {
-        width: 35px;
-        height: 35px;
-        font-size: 16px;
-    }
-    
-    .galeria-imagens {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    .section-subtitle h3 {
+        flex-direction: column;
+        align-items: flex-start;
         gap: 8px;
     }
     
-    .galeria-item img {
-        height: 70px;
-    }
-}
-
-@media (max-width: 480px) {
-    .modal-content {
-        width: 98%;
-        margin: 1% auto;
-    }
-    
-    .modal-header {
-        padding: 15px;
-    }
-    
-    .modal-header h2 {
-        font-size: 1.2rem;
-    }
-    
-    .modal-body {
-        padding: 15px;
-    }
-    
-    .upload-area {
-        padding: 25px 10px;
-    }
-    
-    .upload-text {
-        font-size: 1rem;
-    }
-    
-    .preview-container {
-        grid-template-columns: repeat(2, 1fr);
+    .contador-badge {
+        align-self: flex-start;
+        margin-left: 0;
     }
 } 

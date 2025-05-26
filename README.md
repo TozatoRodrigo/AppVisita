@@ -59,6 +59,50 @@ O **AppVisita** é um sistema web desenvolvido para facilitar o gerenciamento de
 - **Carregamento lazy**: Otimização para histórico extenso
 - **Error handling**: Tratamento robusto de falhas
 
+## 📊 Product Management
+
+### 🎯 Estratégia de Produto
+
+O AppVisita segue uma estratégia de crescimento estruturada com foco no mercado brasileiro de gestão médica hospitalar, utilizando metodologia MoSCoW para priorização de funcionalidades.
+
+**Documentação Estratégica**:
+- 📋 **[Product Backlog](docs/PRODUCT_BACKLOG.md)** - Roadmap completo 2025-2027
+- 📊 **[Product Strategy](docs/PRODUCT_STRATEGY.md)** - Análise de mercado e positioning
+- 💼 **[Executive Summary](docs/EXECUTIVE_SUMMARY.md)** - Resumo executivo para investidores
+
+### 🚀 Roadmap de Alto Nível
+
+#### 2025 Q1-Q2: Consolidação
+- ✅ Sistema de notificações em tempo real
+- ✅ Relatórios e dashboards avançados
+- 🔄 App mobile nativo (iOS/Android)
+- ✅ Sistema de backup e auditoria
+
+#### 2025 Q3-Q4: Expansão
+- 🔄 API REST completa
+- 🔄 Sistema de telemedicina
+- 🔄 Multi-tenancy para grandes redes
+- 🔄 IA para sugestões clínicas
+
+#### 2026-2027: Inovação
+- 🔄 Plataforma de ecosystem médico
+- 🔄 IA avançada e machine learning
+- 🔄 Realidade aumentada para medicina
+- 🔄 Interoperabilidade total (FHIR)
+
+### 💰 Market Opportunity
+
+- **TAM**: US$ 31.5B (Mercado global EMR)
+- **SAM**: R$ 540M (4.500 hospitais privados Brasil)
+- **SOM**: R$ 27M (Meta 5% market share em 3 anos)
+
+### 📈 Métricas de Negócio
+
+- **North Star Metric**: Reduzir tempo de documentação de 15 para 5 minutos
+- **ARR Target 2027**: R$ 35M
+- **Market Share Target**: 10% (Brasil)
+- **Customer LTV/CAC**: >5:1
+
 ## 🚀 Demonstração
 
 ### Interface Principal
@@ -268,7 +312,14 @@ AppVisita/
 ├── app-diagnostico.js         # Módulo de diagnóstico
 ├── CHANGELOG.md               # Histórico de mudanças
 ├── TESTE_EQUIPES.md           # Guia de testes
-└── README.md                  # Este arquivo
+├── README.md                  # Este arquivo
+└── docs/                      # Documentação completa
+    ├── PRODUCT_BACKLOG.md     # Roadmap de produto
+    ├── PRODUCT_STRATEGY.md    # Estratégia de mercado
+    ├── EXECUTIVE_SUMMARY.md   # Resumo executivo
+    ├── USER_MANUAL.md         # Manual do usuário
+    ├── ARCHITECTURE.md        # Documentação técnica
+    └── features/              # Especificações de funcionalidades
 ```
 
 ### 📂 Organização dos Módulos
@@ -333,17 +384,17 @@ AppVisita/
 
 ## 📋 Roadmap
 
-### Versão Atual (1.2.4)
+### Versão Atual (2.2.0)
 - ✅ Sistema base completo
 - ✅ Upload de imagens funcionando
 - ✅ Gestão de equipes operacional
 - ✅ Interface responsiva
 
 ### Próximas Versões
-- 🔄 **v1.3.0**: Relatórios e estatísticas avançadas
-- 🔄 **v1.4.0**: Sistema de notificações
-- 🔄 **v1.5.0**: API REST para integrações
-- 🔄 **v2.0.0**: App móvel nativo
+- 🔄 **v2.3.0**: Sistema de notificações em tempo real
+- 🔄 **v2.4.0**: App mobile nativo iOS/Android
+- 🔄 **v2.5.0**: API REST para integrações
+- 🔄 **v3.0.0**: Telemedicina e IA médica
 
 ## 📄 Licença
 
