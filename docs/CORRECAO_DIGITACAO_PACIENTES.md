@@ -1,44 +1,69 @@
-# Correção: Problema de Digitação no Campo Nome do Paciente
+# Correção - Problema de Digitação no Campo Nome do Paciente
 
-## Problema Identificado
-- **Data:** 26/05/2025
-- **Sintoma:** Usuário não conseguia digitar no campo "Nome do Paciente" na funcionalidade de adicionar novo paciente
-- **Causa:** Event listener `keydown` na função `inicializarSugestoesPacientes()` estava interceptando todas as teclas, incluindo as de digitação normal
+## Problema Reportado
+O usuário não conseguia digitar no campo "nome do paciente" na funcionalidade de adicionar novo paciente.
 
-## Solução Implementada
+## Diagnóstico Realizado
 
-### 1. Identificação da Causa
-```javascript
-// PROBLEMA: Event listener keydown muito agressivo
-nomePacienteInput.addEventListener('keydown', function(e) {
-  // Interceptava TODAS as teclas, mesmo quando sugestões não estavam visíveis
-  const items = sugestoesContainer.querySelectorAll('.sugestao-item');
-  // ... código que bloqueava digitação normal
-});
-```
+### Primeira Investigação
+- **Data**: Primeiro relato
+- **Causa Identificada**: Event listener `keydown` na função `inicializarSugestoesPacientes()` interceptando todas as teclas
+- **Problema**: O código interceptava teclas mesmo quando sugestões não estavam visíveis, bloqueando digitação normal
 
-### 2. Correção Aplicada
-- **Removido:** Event listener `keydown` problemático
-- **Mantido:** Apenas event listener `input` para busca de sugestões
-- **Resultado:** Digitação normal restaurada, busca de pacientes ainda funcional
+### Segunda Investigação  
+- **Data**: Segundo relato (problema persistiu)
+- **Causa Identificada**: Event listeners globais de `keydown` para navegação de modais de imagem
+- **Localização**: 
+  - Linha 2201: `document.addEventListener('keydown', ...)` no `inicializarModalImagem()`
+  - Linha 2419: `document.addEventListener('keydown', ...)` no `abrirImagemModal()`
 
-### 3. Código Corrigido
-```javascript
-// SOLUÇÃO: Apenas event listener de input, sem keydown
-nomePacienteInput.addEventListener('input', function(e) {
-  const termo = this.value.trim();
-  
-  if (termo.length < 3) {
-    sugestoesContainer.style.display = 'none';
-    return;
-  }
-  
-  // Buscar sugestões com debounce
-  timeoutBusca = setTimeout(async () => {
-    await buscarPacientesParaSugestao(termo, sugestoesContainer);
-  }, 300);
-});
-```
+## Correções Aplicadas
+
+### Primeira Correção
+1. **Desabilitação Temporária**: Comentada a chamada `inicializarSugestoesPacientes()` na linha 61
+2. **Correção da Função**: Reescrita da função `inicializarSugestoesPacientes()`:
+   - Removido event listener `keydown` problemático  
+   - Mantido apenas event listener `input` para busca
+   - Preservadas funcionalidades de debounce e fechamento por clique
+
+### Segunda Correção
+1. **Identificação de Event Listeners Globais**: Encontrados dois listeners `keydown` globais interferindo
+2. **Desabilitação dos Event Listeners Problemáticos**:
+   ```javascript
+   // Linha 2201 - Comentado
+   // document.addEventListener('keydown', (e) => { ... });
+   
+   // Linha 2419 - Comentado  
+   // document.addEventListener('keydown', function modalKeyHandler(e) { ... });
+   ```
+3. **Reativação da Função de Sugestões**: Descomentada a chamada na linha 61
+
+## Estado Final do Sistema
+
+### ✅ Funcionalidades Restauradas
+- Digitação normal no campo nome do paciente
+- Sistema de busca de pacientes para reinternação (3+ caracteres)
+- Sugestões visuais e preenchimento automático
+- Upload e visualização de imagens nas evoluções
+
+### ❌ Funcionalidades Temporariamente Desabilitadas
+- Navegação por teclado nos modais de imagem (setas esquerda/direita, ESC)
+
+## Impacto das Alterações
+- **Problema Resolvido**: Campo nome do paciente aceita digitação normalmente
+- **Funcionalidade Preservada**: Sistema de busca e reinternação mantido
+- **Perda Mínima**: Apenas navegação por teclado em modais de imagem desabilitada
+
+## Arquivos Modificados
+- `app-pacientes.js`: 
+  - Linha 61: Reativada chamada `inicializarSugestoesPacientes()`
+  - Linhas 2201-2216: Event listener de keydown comentado
+  - Linhas 2419-2434: Event listener de keydown comentado
+
+## Lições Aprendidas
+1. **Event Listeners Globais**: Podem causar interferências inesperadas
+2. **Diagnóstico Sistemático**: Necessário verificar todos os listeners de eventos
+3. **Isolamento de Problemas**: Desabilitar temporariamente funcionalidades para identificar causa raiz
 
 ## Funcionalidades Mantidas
 ✅ Digitação normal no campo nome  
@@ -77,9 +102,6 @@ nomePacienteInput.addEventListener('keydown', function(e) {
 3. ✅ Digitar normalmente - deve funcionar
 4. ✅ Digitar 3+ caracteres - deve mostrar sugestões
 5. ✅ Clicar em sugestão - deve preencher campos
-
-## Arquivos Modificados
-- `app-pacientes.js` (linhas 61, 1066-1160)
 
 ## Commit
 ```bash

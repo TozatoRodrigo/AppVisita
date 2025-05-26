@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Inicializar sistema de sugestão de pacientes
-    inicializarSugestoesPacientes(); // REATIVADO - versão corrigida
+    inicializarSugestoesPacientes(); // REATIVADO APÓS CORREÇÃO DOS EVENT LISTENERS
     
     // Configurar formulário de adicionar paciente
     if (formAdicionarPaciente) {
@@ -2199,22 +2199,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Navegação por teclado
-    document.addEventListener('keydown', (e) => {
-      if (modalImagem.style.display === 'block') {
-        if (e.key === 'ArrowLeft') {
-          console.log("🖼️ Tecla seta esquerda pressionada");
-          navegarImagem(-1);
-        }
-        if (e.key === 'ArrowRight') {
-          console.log("🖼️ Tecla seta direita pressionada");
-          navegarImagem(1);
-        }
-        if (e.key === 'Escape') {
-          console.log("🖼️ Tecla ESC pressionada, fechando modal");
-          modalImagem.style.display = 'none';
-        }
-      }
-    });
+    // document.addEventListener('keydown', function modalKeyHandler(e) {
+    //   if (document.getElementById('modal-imagem-dinamico')) {
+    //     if (e.key === 'Escape') {
+    //       console.log("🖼️ Fechando modal via ESC");
+    //       modal.remove();
+    //       document.removeEventListener('keydown', modalKeyHandler);
+    //     } else if (e.key === 'ArrowLeft' && indiceAtual > 0) {
+    //       indiceAtual--;
+    //       atualizarImagem();
+    //       console.log("🖼️ Navegando via seta esquerda para:", indiceAtual);
+    //     } else if (e.key === 'ArrowRight' && indiceAtual < imagens.length - 1) {
+    //       indiceAtual++;
+    //       atualizarImagem();
+    //       console.log("🖼️ Navegando via seta direita para:", indiceAtual);
+    //     }
+    //   }
+    // });
     
     console.log("🖼️ Modal de imagem inicializado com sucesso!");
   }
