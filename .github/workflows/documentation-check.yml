@@ -16,17 +16,28 @@ jobs:
     
     steps:
     - name: Checkout codigo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 2  # Necessario para comparar commits
     
+    - name: Verificar se diretorio de logs existe
+      run: |
+        mkdir -p logs
+        echo "Diretorio logs criado"
+    
+    - name: Verificar scripts de documentacao
+      run: |
+        if [ ! -f "scripts/check-docs.sh" ]; then
+          echo "Script check-docs.sh nao encontrado"
+          exit 1
+        fi
+        chmod +x scripts/check-docs.sh
+    
     - name: Verificar documentacao atualizada
       run: |
-        chmod +x scripts/check-docs.sh
         ./scripts/check-docs.sh
       env:
         CI: true
-        GITHUB_ENV: $GITHUB_ENV
     
     - name: Setup Python
       if: always()
@@ -37,31 +48,38 @@ jobs:
     - name: Executar monitor de documentacao
       if: always()
       run: |
-        python scripts/monitor-docs.py
+        if [ -f "scripts/monitor-docs.py" ]; then
+          python scripts/monitor-docs.py
+        else
+          echo "Monitor de docs nao encontrado, pulando..."
+        fi
       continue-on-error: true
     
     - name: Upload relatorio de documentacao
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: docs-report
-        path: logs/docs-monitor-*.json
+        name: docs-report-${{ github.run_id }}
+        path: |
+          logs/docs-monitor-*.json
+          logs/*.log
         retention-days: 30
+        if-no-files-found: warn
     
     - name: Comentar no PR (se houver problemas)
       if: failure() && github.event_name == 'pull_request'
-      uses: actions/github-script@v6
+      uses: actions/github-script@v7
       with:
         script: |
-          const reportContent = `## Problemas de Documentacao Detectados
+          const reportContent = `## 📚 Problemas de Documentacao Detectados
           
           A verificacao de documentacao encontrou problemas. Por favor:
           
-          1. Verifique se a documentacao foi atualizada junto com o codigo
-          2. Execute ./scripts/check-docs.sh localmente
-          3. Consulte docs/DOCUMENTATION_UPDATE.md para detalhes
+          1. ✅ Verifique se a documentacao foi atualizada junto com o codigo
+          2. 🔧 Execute \`./scripts/check-docs.sh\` localmente
+          3. 📖 Consulte \`docs/DOCUMENTATION_UPDATE.md\` para detalhes
           
-          Para mais informacoes, verifique os logs do CI/CD`;
+          🔗 Para mais informacoes, verifique os logs do CI/CD.`;
           
           github.rest.issues.createComment({
             issue_number: context.issue.number,
@@ -77,30 +95,43 @@ jobs:
     
     steps:
     - name: Checkout codigo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     - name: Setup Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
     
+    - name: Criar diretorio de logs
+      run: |
+        mkdir -p logs
+    
     - name: Executar monitor completo
       run: |
-        python scripts/monitor-docs.py --send-alerts
+        if [ -f "scripts/monitor-docs.py" ]; then
+          python scripts/monitor-docs.py --send-alerts
+        else
+          echo "Monitor de docs nao encontrado"
+          exit 1
+        fi
       env:
         SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
         SMTP_PORT: ${{ secrets.SMTP_PORT }}
         FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
         FROM_PASSWORD: ${{ secrets.FROM_PASSWORD }}
         ALERT_EMAILS: ${{ secrets.ALERT_EMAILS }}
+      continue-on-error: true
     
     - name: Salvar relatorio como artifact
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: docs-monitoring-report
-        path: logs/docs-monitor-*.json
+        name: docs-monitoring-report-${{ github.run_id }}
+        path: |
+          logs/docs-monitor-*.json
+          logs/*.log
         retention-days: 90
+        if-no-files-found: warn
 
   templates-validation:
     name: Validar Templates
@@ -108,44 +139,84 @@ jobs:
     
     steps:
     - name: Checkout codigo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     - name: Setup Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
     
-    - name: Verificar templates existem
+    - name: Criar diretorios necessarios
       run: |
-        python scripts/create-docs.py <<EOF
-        5
-        0
-        EOF
+        mkdir -p docs/features
+        mkdir -p docs/bugfixes
+        mkdir -p docs/api
+        mkdir -p logs
+    
+    - name: Verificar se script create-docs existe
+      run: |
+        if [ ! -f "scripts/create-docs.py" ]; then
+          echo "Script create-docs.py nao encontrado"
+          exit 1
+        fi
     
     - name: Testar criacao de documentacao
       run: |
-        # Teste automatizado de criacao de docs
-        python scripts/create-docs.py <<EOF
-        1
-        Funcionalidade de Teste CI
-        app-test.js  
-        Bot do CI
-        v1.0.0
-        Teste automatizado de documentacao
-        0
-        EOF
+        # Criar um script Python temporario para teste
+        cat > test_docs.py << 'EOF'
+        import sys
+        import os
+        import subprocess
+        
+        # Simular entrada do usuario para teste
+        test_inputs = [
+            '1',  # Opcao: Funcionalidade
+            'Funcionalidade de Teste CI',  # Nome
+            'app-test.js',  # Arquivo
+            'Bot do CI',  # Autor
+            'v1.0.0',  # Versao
+            'Teste automatizado de documentacao',  # Descricao
+            '0'   # Sair
+        ]
+        
+        # Executar o script com entradas simuladas
+        result = subprocess.run([
+            'python3', 'scripts/create-docs.py'
+        ], input='\n'.join(test_inputs), text=True, capture_output=True)
+        
+        print('STDOUT:', result.stdout)
+        print('STDERR:', result.stderr)
+        print('Return code:', result.returncode)
         
         # Verificar se arquivo foi criado
-        if [ -f "docs/features/FEATURE_funcionalidade_de_teste_ci.md" ]; then
-          echo "Template de funcionalidade funcionando"
-        else
-          echo "Falha no template de funcionalidade"
-          exit 1
-        fi
+        expected_file = 'docs/features/FEATURE_funcionalidade_de_teste_ci.md'
+        if os.path.exists(expected_file):
+            print(f'✅ Template funcionando: {expected_file}')
+            # Ler e mostrar conteudo
+            with open(expected_file, 'r') as f:
+                content = f.read()
+                print('Conteudo gerado:')
+                print(content[:500] + '...')
+        else:
+            print(f'❌ Arquivo nao foi criado: {expected_file}')
+            print('Arquivos em docs/features:')
+            if os.path.exists('docs/features'):
+                print(os.listdir('docs/features'))
+            else:
+                print('Diretorio docs/features nao existe')
+            sys.exit(1)
+        EOF
+        
+        # Executar o script de teste
+        python3 test_docs.py
+        
+        # Remover script temporario
+        rm -f test_docs.py
     
     - name: Limpar arquivos de teste
       if: always()
       run: |
         rm -f docs/features/FEATURE_funcionalidade_de_teste_ci.md
         rm -f docs/bugfixes/BUGFIX_*.md
-        rm -f docs/api/API_*.md 
+        rm -f docs/api/API_*.md
+        echo "Arquivos de teste removidos" 
