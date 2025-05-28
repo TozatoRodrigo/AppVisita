@@ -2,7 +2,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const port = 8080;
+const port = 3000;
 
 // Mapeamento de extensões de arquivo para tipos MIME
 const mimeTypes = {

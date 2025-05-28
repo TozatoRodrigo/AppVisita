@@ -1,0 +1,144 @@
+name: 🚀 Deploy AppVisita
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    name: 🧪 Testes
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout código
+      uses: actions/checkout@v3
+      
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: 📋 Instalar dependências
+      run: npm ci
+      
+    - name: 🔍 Lint código
+      run: npm run lint
+      continue-on-error: true
+      
+    - name: 🧪 Executar testes
+      run: npm test
+      continue-on-error: true
+
+  build:
+    name: 🏗️ Build
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: 📥 Checkout código
+      uses: actions/checkout@v3
+      
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: 📋 Instalar dependências
+      run: npm ci
+      
+    - name: 🏗️ Build aplicação
+      run: npm run build
+      continue-on-error: true
+      
+    - name: 📤 Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-files
+        path: dist/
+
+  deploy:
+    name: 🚀 Deploy para Firebase
+    runs-on: ubuntu-latest
+    needs: [test, build]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+    - name: 📥 Checkout código
+      uses: actions/checkout@v3
+      
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: 📋 Instalar dependências
+      run: npm ci
+      
+    - name: 🔥 Deploy para Firebase Hosting
+      uses: FirebaseExtended/action-hosting-deploy@v0
+      with:
+        repoToken: '${{ secrets.GITHUB_TOKEN }}'
+        firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+        projectId: '${{ secrets.FIREBASE_PROJECT_ID }}'
+        channelId: live
+        
+  security:
+    name: 🔒 Verificações de Segurança
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout código
+      uses: actions/checkout@v3
+      
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: 🔍 Audit de segurança
+      run: npm audit --audit-level moderate
+      continue-on-error: true
+
+  lighthouse:
+    name: 🏮 Lighthouse CI
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+    - name: 📥 Checkout código
+      uses: actions/checkout@v3
+      
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: 🏮 Executar Lighthouse CI
+      run: |
+        npm install -g @lhci/cli@0.12.x
+        lhci autorun
+      env:
+        LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+  notify:
+    name: 📢 Notificações
+    runs-on: ubuntu-latest
+    needs: [deploy, lighthouse]
+    if: always()
+    
+    steps:
+    - name: 📢 Notificar sucesso
+      if: ${{ needs.deploy.result == 'success' }}
+      run: |
+        echo "✅ Deploy realizado com sucesso!"
+        echo "🌐 Aplicação disponível em: https://seu-projeto.web.app"
+        
+    - name: 📢 Notificar falha
+      if: ${{ needs.deploy.result == 'failure' }}
+      run: |
+        echo "❌ Deploy falhou!"
+        echo "🔍 Verifique os logs para mais detalhes." 

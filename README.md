@@ -1,457 +1,403 @@
-# 🏥 AppVisita - Sistema de Gestão Médica
+# 🏥 AppVisita - Sistema Profissional de Gestão Médica
 
-<div align="center">
+[![Versão](https://img.shields.io/badge/versão-2.0.0-blue.svg)](https://github.com/seu-usuario/AppVisita)
+[![Status](https://img.shields.io/badge/status-Produção-green.svg)](https://github.com/seu-usuario/AppVisita)
+[![Licença](https://img.shields.io/badge/licença-MIT-yellow.svg)](LICENSE)
 
-![AppVisita Logo](https://img.shields.io/badge/AppVisita-Sistema%20Médico-blue?style=for-the-badge&logo=medical)
+Sistema completo de gestão médica com evoluções, equipes e anexos. Seguro, eficiente e compatível com LGPD.
 
-**Sistema completo de gestão de pacientes e evoluções médicas**
+## 🚀 Funcionalidades Principais
 
-[![Version](https://img.shields.io/badge/Version-2.6.1-brightgreen?style=flat&logo=github)](https://github.com)
-[![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat&logo=firebase&logoColor=black)](https://firebase.google.com/)
-[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-[![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
-[![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
+### 👨‍⚕️ **Gestão de Pacientes**
+- ✅ Cadastro completo de pacientes
+- ✅ Busca inteligente com sugestões em tempo real
+- ✅ Histórico completo de evoluções
+- ✅ Status de internação (Internado/Alta/Óbito)
+- ✅ Anexos de imagens (até 10 por evolução)
+- ✅ Filtros avançados por equipe e status
 
-</div>
+### 📝 **Sistema de Evoluções**
+- ✅ Registro detalhado de evoluções médicas
+- ✅ Upload múltiplo de imagens (JPG, PNG, GIF)
+- ✅ Visualizador de imagens com navegação
+- ✅ Histórico cronológico completo
+- ✅ Validação de dados em tempo real
 
-## 🔥 **Novidades v2.6.1 (Hotfix)**
+### 👥 **Gestão de Equipes Médicas**
+- ✅ Criação e edição de equipes
+- ✅ Atribuição de médicos às equipes
+- ✅ Filtros por equipe médica
+- ✅ Gestão de membros da equipe
+- ✅ Interface administrativa completa
 
-### 🚨 **Correções Críticas Implementadas**
-- ✅ **Modal de Perfil do Paciente**: Clique no nome do paciente agora funciona corretamente
-- ✅ **Scroll da Página**: Resolvido problema de scroll travado
-- ✅ **Debug Avançado**: Logs detalhados para facilitar troubleshooting
-- ✅ **Função de Emergência**: `liberarScrollPagina()` disponível globalmente no console
+### 🔐 **Sistema de Administração**
+- ✅ Painel administrativo completo
+- ✅ Aprovação de novos usuários
+- ✅ Gestão de equipes médicas
+- ✅ Estatísticas em tempo real
+- ✅ Controle de acesso por perfil
 
-### 🔧 **Melhorias Técnicas**
-- Evento de clique corrigido para buscar ID do elemento pai corretamente
-- Tratamento robusto de erro com restauração automática do overflow
-- Sistema de emergency recovery para situações críticas
-- Logs de debug aprimorados para suporte técnico
-
-📋 **Ver detalhes completos**: [Release Notes v2.6.1](docs/RELEASE_NOTES_V2_6_1.md)
-
----
-
-## 📋 Sobre o Projeto
-
-O **AppVisita** é um sistema web desenvolvido para facilitar o gerenciamento de pacientes em ambientes hospitalares. O sistema permite que médicos e equipes médicas registrem evoluções de pacientes, anexem imagens de exames, e mantenham um histórico completo de atendimentos.
-
-### ✨ Principais Funcionalidades
-
-- 🔐 **Autenticação segura** via Firebase Authentication
-- 👥 **Gestão de equipes médicas** e usuários
-- 🏥 **Cadastro e gerenciamento de pacientes**
-- 📝 **Registro de evoluções médicas** com histórico completo
-- 👤 **Perfil completo do paciente** com dados cadastrais, histórico e estatísticas (v2.6.0+)
-- 📸 **Sistema completo de upload de imagens** com drag & drop
-- 🖼️ **Visualizador profissional de imagens** com navegação por teclado
-- 🔍 **Sistema de busca** avançado de pacientes com sugestões em tempo real
-- 🚫 **Validação rigorosa de reinternação** (apenas pacientes com alta hospitalar)
-- 💬 **Sistema de alertas visuais** com animações e feedback contextual
-- 📊 **Dashboard administrativo** com estatísticas
-- 📱 **Interface responsiva** para desktop e mobile
-- 🏥 **Status do paciente** (Internado, Alta, Óbito) com regras de negócio
-- 🆘 **Sistema de emergência** para recovery automático (v2.6.1+)
-
-## 📸 Sistema de Imagens Médicas
-
-### 🚀 Upload Avançado
-- **Upload múltiplo**: Até 10 imagens por evolução
-- **Drag & Drop**: Interface intuitiva para arrastar arquivos
-- **Preview instantâneo**: Visualização antes do upload
-- **Compressão automática**: Otimização sem perda de qualidade
-- **Validação rigorosa**: Tipos permitidos (JPEG, PNG, WebP)
-- **Limite de tamanho**: Máximo 5MB por arquivo
-- **Barra de progresso**: Feedback visual em tempo real
-- **Remoção individual**: Gerenciar imagens antes do envio
-
-### 🖼️ Visualização Profissional
-- **Modal em tela cheia**: Visualização ampliada das imagens
-- **Navegação por setas**: Percorrer múltiplas imagens facilmente
-- **Controles de teclado**: ESC para fechar, setas para navegar
-- **Contador de posição**: Indicador "1/3", "2/3", etc.
-- **Design responsivo**: Adaptado para mobile e desktop
-- **Fundo escuro**: Melhor contraste para visualização médica
-- **Criação dinâmica**: Modal criado via JavaScript para máxima compatibilidade
-
-### 🔒 Segurança e Performance
-- **URLs seguros**: Links temporários via Firebase Storage
-- **Isolamento por paciente**: Organização segura no Storage
-- **Metadados completos**: Nome, tamanho, data de upload
-- **IDs únicos**: Identificação exclusiva por evolução
-- **Carregamento lazy**: Otimização para histórico extenso
-- **Error handling**: Tratamento robusto de falhas
-
-## 📊 Product Management
-
-### 🎯 Estratégia de Produto
-
-O AppVisita segue uma estratégia de crescimento estruturada com foco no mercado brasileiro de gestão médica hospitalar, utilizando metodologia MoSCoW para priorização de funcionalidades.
-
-**Documentação Estratégica**:
-- 📋 **[Product Backlog](docs/PRODUCT_BACKLOG.md)** - Roadmap completo 2025-2027
-- 📊 **[Product Strategy](docs/PRODUCT_STRATEGY.md)** - Análise de mercado e positioning
-- 💼 **[Executive Summary](docs/EXECUTIVE_SUMMARY.md)** - Resumo executivo para investidores
-
-### 🚀 Roadmap de Alto Nível
-
-#### 2025 Q1-Q2: Consolidação
-- ✅ Sistema de notificações em tempo real
-- ✅ Relatórios e dashboards avançados
-- 🔄 App mobile nativo (iOS/Android)
-- ✅ Sistema de backup e auditoria
-
-#### 2025 Q3-Q4: Expansão
-- 🔄 API REST completa
-- 🔄 Sistema de telemedicina
-- 🔄 Multi-tenancy para grandes redes
-- 🔄 IA para sugestões clínicas
-
-#### 2026-2027: Inovação
-- 🔄 Plataforma de ecosystem médico
-- 🔄 IA avançada e machine learning
-- 🔄 Realidade aumentada para medicina
-- 🔄 Interoperabilidade total (FHIR)
-
-### 💰 Market Opportunity
-
-- **TAM**: US$ 31.5B (Mercado global EMR)
-- **SAM**: R$ 540M (4.500 hospitais privados Brasil)
-- **SOM**: R$ 27M (Meta 5% market share em 3 anos)
-
-### 📈 Métricas de Negócio
-
-- **North Star Metric**: Reduzir tempo de documentação de 15 para 5 minutos
-- **ARR Target 2027**: R$ 35M
-- **Market Share Target**: 10% (Brasil)
-- **Customer LTV/CAC**: >5:1
-
-## 🚀 Demonstração
-
-### Interface Principal
-- **Dashboard**: Visão geral dos pacientes internados
-- **Adicionar Paciente**: Formulário completo com associação de equipes
-- **Evolução**: Modal com editor de texto e upload de imagens
-- **Consulta**: Sistema de busca por nome ou ID de internação
-
-### Funcionalidades Avançadas
-- **Upload de Imagens**: Redimensionamento automático e otimização
-- **Visualização**: Galeria com modal de visualização ampliada
-- **Equipes Médicas**: Gestão completa com associação de médicos
-- **Histórico**: Timeline completa de evoluções com filtros
+### 📊 **Dashboard e Relatórios**
+- ✅ Estatísticas em tempo real
+- ✅ Contadores de pacientes, médicos e equipes
+- ✅ Lista de usuários pendentes
+- ✅ Métricas de evolução do sistema
 
 ## 🛠️ Tecnologias Utilizadas
 
-### Frontend
-- **HTML5**: Estrutura semântica e acessível
-- **CSS3**: Design responsivo com Grid e Flexbox
-- **JavaScript ES6+**: Funcionalidades modernas e módulos
-- **Firebase SDK**: Integração completa com serviços Google
+### **Frontend**
+- **HTML5** - Estrutura semântica
+- **CSS3** - Design responsivo e moderno
+- **JavaScript ES6+** - Lógica da aplicação
+- **Font Awesome** - Ícones profissionais
+- **Google Fonts** - Tipografia Inter
 
-### Backend (Firebase)
-- **Authentication**: Gestão de usuários e permissões
-- **Firestore**: Banco de dados NoSQL em tempo real
-- **Storage**: Armazenamento seguro de imagens
-- **Hosting**: Deploy e CDN global
+### **Backend & Database**
+- **Firebase Authentication** - Autenticação segura
+- **Cloud Firestore** - Banco de dados NoSQL
+- **Firebase Storage** - Armazenamento de imagens
+- **Node.js** - Servidor de desenvolvimento
 
-### Arquitetura
-- **Modular**: Código organizado em módulos independentes
-- **Responsiva**: Interface adaptável a qualquer dispositivo
-- **Real-time**: Sincronização automática de dados
-- **Offline-ready**: Funcionalidade básica offline
+### **Arquitetura**
+- **PWA** - Progressive Web App
+- **Responsive Design** - Mobile-first
+- **Modular Architecture** - Código organizado
+- **Real-time Updates** - Sincronização em tempo real
 
 ## 📦 Instalação e Configuração
 
-### Pré-requisitos
-- Navegador web moderno (Chrome, Firefox, Safari, Edge)
-- Servidor web local (Python, Node.js, Live Server, etc.)
-- Projeto Firebase configurado
+### **Pré-requisitos**
+- Node.js 16+ instalado
+- Conta no Firebase
+- Git instalado
 
-### 🔧 Configuração do Firebase
+### **1. Clone o Repositório**
+```bash
+git clone https://github.com/seu-usuario/AppVisita.git
+cd AppVisita
+```
 
-1. **Criar projeto no Firebase Console**:
-   ```
-   https://console.firebase.google.com/
-   ```
+### **2. Configuração do Firebase**
 
-2. **Ativar serviços necessários**:
-   - Authentication (Email/Password)
-   - Firestore Database
-   - Storage
+1. Acesse o [Console do Firebase](https://console.firebase.google.com/)
+2. Crie um novo projeto
+3. Ative Authentication (Email/Password)
+4. Ative Cloud Firestore
+5. Ative Storage
+6. Copie as configurações do projeto
 
-3. **Configurar regras de segurança**:
-   ```javascript
-   // Firestore Rules
-   rules_version = '2';
-   service cloud.firestore {
-     match /databases/{database}/documents {
-       match /{document=**} {
-         allow read, write: if request.auth != null;
-       }
-     }
-   }
-   
-   // Storage Rules
-   rules_version = '2';
-   service firebase.storage {
-     match /b/{bucket}/o {
-       match /{allPaths=**} {
-         allow read, write: if request.auth != null;
-       }
-     }
-   }
-   ```
+### **3. Configuração Local**
 
-4. **Obter configuração do projeto**:
-   - Acesse Project Settings → General
-   - Role até "Your apps" → "Web apps"
-   - Copie o objeto `firebaseConfig`
+Edite o arquivo `script-otimizado.js` com suas configurações:
 
-5. **Configurar no código**:
-   Edite os arquivos `script.js` e `script-otimizado.js`:
-   ```javascript
-   const firebaseConfig = {
-     apiKey: "sua-api-key",
-     authDomain: "seu-projeto.firebaseapp.com",
-     projectId: "seu-projeto",
-     storageBucket: "seu-projeto.appspot.com",
-     messagingSenderId: "123456789",
-     appId: "1:123456789:web:abc123def456"
-   };
-   ```
+```javascript
+const firebaseConfig = {
+  apiKey: "sua-api-key",
+  authDomain: "seu-projeto.firebaseapp.com",
+  projectId: "seu-projeto-id",
+  storageBucket: "seu-projeto.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "sua-app-id"
+};
+```
 
-### 🚀 Execução Local
+### **4. Configuração do Administrador**
 
-1. **Clone o repositório**:
-   ```bash
-   git clone https://github.com/seu-usuario/AppVisita.git
-   cd AppVisita
-   ```
+No arquivo `script-otimizado.js`, defina o email do administrador:
 
-2. **Inicie um servidor local**:
-   
-   **Opção A - Python**:
-   ```bash
-   python3 -m http.server 8000
-   ```
-   
-   **Opção B - Node.js**:
-   ```bash
-   npx http-server -p 8000
-   ```
-   
-   **Opção C - PHP**:
-   ```bash
-   php -S localhost:8000
-   ```
+```javascript
+window.ADMIN_EMAIL = 'seu-email-admin@exemplo.com';
+```
 
-3. **Acesse no navegador**:
-   ```
-   http://localhost:8000
-   ```
+### **5. Iniciar o Servidor**
 
-### 👤 Primeiro Acesso
+```bash
+# Instalar dependências (se houver package.json)
+npm install
 
-1. **Criar conta de administrador**:
-   - Use o email configurado em `ADMIN_EMAIL`
-   - Faça o primeiro login
-   - O sistema criará automaticamente os privilégios de admin
+# Iniciar servidor de desenvolvimento
+node server.js
+```
 
-2. **Criar equipe médica**:
-   - Acesse "Administração" → "Equipes Médicas"
-   - Clique em "Nova Equipe"
-   - Adicione médicos à equipe
+### **6. Acessar o Sistema**
 
-3. **Aprovar usuários**:
-   - Acesse "Administração" → "Usuários"
-   - Aprove médicos pendentes
+Abra seu navegador e acesse: `http://localhost:3000`
+
+## 👤 Primeiro Acesso
+
+### **1. Criar Conta de Administrador**
+1. Acesse o sistema
+2. Clique em "Criar nova conta"
+3. Use o email definido como ADMIN_EMAIL
+4. Complete o cadastro
+
+### **2. Configurar Dados Complementares**
+1. Após o login, preencha seus dados complementares
+2. Nome completo, CPF, telefone, especialidade, CRM
+
+### **3. Criar Primeira Equipe**
+1. Acesse "Administração" → "Equipes"
+2. Clique em "Nova Equipe"
+3. Preencha nome e descrição
+4. Selecione médicos da equipe
 
 ## 📱 Como Usar
 
-### Para Administradores
+### **Cadastrar Paciente**
+1. Acesse "Pacientes Pendentes"
+2. Clique em "Adicionar Paciente"
+3. Preencha os dados obrigatórios
+4. Selecione a equipe médica
+5. Salve o cadastro
 
-1. **Gestão de Usuários**:
-   - Aprovar/rejeitar novos médicos
-   - Visualizar estatísticas de uso
-   - Gerenciar permissões
+### **Registrar Evolução**
+1. Encontre o paciente na lista
+2. Clique em "Registrar Evolução"
+3. Escreva a evolução médica
+4. Defina o status (Internado/Alta/Óbito)
+5. Anexe imagens se necessário
+6. Salve a evolução
 
-2. **Gestão de Equipes**:
-   - Criar equipes médicas
-   - Associar médicos às equipes
-   - Editar/excluir equipes
+### **Gerenciar Equipes**
+1. Acesse "Administração" (apenas admin)
+2. Vá para aba "Equipes"
+3. Clique em "Nova Equipe" ou "Editar"
+4. Configure nome, descrição e membros
+5. Salve as alterações
 
-### Para Médicos
+### **Aprovar Usuários**
+1. Acesse "Administração" → "Usuários"
+2. Visualize usuários pendentes
+3. Clique em "Aprovar" ou "Detalhes"
+4. Confirme a aprovação
 
-1. **Adicionar Paciente**:
-   - Preencher dados completos
-   - Associar à equipe médica
-   - Sistema detecta reinternações automaticamente
+## 🔧 Funcionalidades Técnicas
 
-2. **Registrar Evolução Completa**:
-   - **Texto da evolução**: Descrever quadro clínico
-   - **Status do paciente**: Internado / Alta Hospitalar / Óbito
-   - **Anexar imagens**: Upload múltiplo com drag & drop
-   - **Preview**: Visualizar imagens antes de salvar
-   - **Remoção**: Excluir imagens específicas se necessário
+### **Sistema de Busca Inteligente**
+- Busca por nome, ID de internação
+- Sugestões em tempo real
+- Filtros por equipe e status
+- Ordenação personalizada
 
-3. **Visualizar Perfil Completo do Paciente** 🆕:
-   - **Clique no nome**: Acesso direto aos dados completos
-   - **Dados cadastrais**: Nome, CPF, idade calculada automaticamente
-   - **Histórico completo**: Timeline de todas as evoluções
-   - **Estatísticas inteligentes**: Dias internado, total de evoluções, imagens anexadas
-   - **Navegação rápida**: Botão para registrar nova evolução diretamente do perfil
+### **Upload de Imagens**
+- Múltiplos formatos (JPG, PNG, GIF)
+- Máximo 10 imagens por evolução
+- Limite de 5MB por imagem
+- Preview antes do upload
+- Compressão automática
 
-4. **Upload de Imagens**:
-   - **Arrastar e soltar**: Simplesmente arraste arquivos para a área
-   - **Clique para selecionar**: Botão tradicional de seleção
-   - **Múltiplas imagens**: Até 10 imagens por evolução
-   - **Formatos suportados**: JPEG, PNG, WebP (máx. 5MB cada)
-   - **Compressão automática**: Sistema otimiza automaticamente
+### **Segurança e Privacidade**
+- Autenticação Firebase
+- Validação de dados
+- Logs de auditoria
+- Conformidade com LGPD
+- Controle de acesso por perfil
 
-5. **Visualizar Histórico**:
-   - **Buscar por nome ou ID**: Sistema de busca inteligente
-   - **Timeline completa**: Histórico cronológico de evoluções
-   - **Galeria de imagens**: Miniaturas clicáveis no histórico
-   - **Visualização ampliada**: Modal profissional para imagens
-   - **Navegação**: Use setas do teclado ou botões na tela
+### **Performance**
+- Carregamento lazy de imagens
+- Cache inteligente
+- Otimização de consultas
+- Compressão de assets
 
-6. **Navegação nas Imagens**:
-   - **Clique na miniatura**: Abre visualização em tamanho grande
-   - **Teclas de atalho**: 
-     - `ESC` para fechar
-     - `←` seta esquerda para imagem anterior
-     - `→` seta direita para próxima imagem
-   - **Botões visuais**: Setas na tela para navegação
-   - **Contador**: Indicação da posição atual (ex: "2/5")
+## 📊 Estrutura do Banco de Dados
 
-## 🏗️ Estrutura do Projeto
+### **Coleções Principais**
 
-```
-AppVisita/
-├── index.html                 # Página principal
-├── style.css                  # Estilos principais
-├── estilos-admin.css          # Estilos administrativos
-├── script.js                  # Script principal (completo)
-├── script-otimizado.js        # Script otimizado (API)
-├── app-modulos.js             # Módulos base
-├── app-login.js               # Módulo de autenticação
-├── app-pacientes.js           # Módulo de pacientes
-├── app-admin.js               # Módulo administrativo
-├── app-equipes.js             # Módulo de equipes
-├── app-ui.js                  # Módulo de interface
-├── app-diagnostico.js         # Módulo de diagnóstico
-├── CHANGELOG.md               # Histórico de mudanças
-├── TESTE_EQUIPES.md           # Guia de testes
-├── README.md                  # Este arquivo
-└── docs/                      # Documentação completa
-    ├── PRODUCT_BACKLOG.md     # Roadmap de produto
-    ├── PRODUCT_STRATEGY.md    # Estratégia de mercado
-    ├── EXECUTIVE_SUMMARY.md   # Resumo executivo
-    ├── USER_MANUAL.md         # Manual do usuário
-    ├── ARCHITECTURE.md        # Documentação técnica
-    └── features/              # Especificações de funcionalidades
+#### **usuarios**
+```javascript
+{
+  id: "user-id",
+  email: "medico@exemplo.com",
+  aprovado: true,
+  dadosComplementaresPreenchidos: true,
+  nomeCompleto: "Dr. João Silva",
+  cpf: "123.456.789-00",
+  telefone: "(11) 99999-9999",
+  especialidade: "Cardiologia",
+  crm: {
+    numero: "123456",
+    estado: "SP"
+  },
+  dataCriacao: timestamp
+}
 ```
 
-### 📂 Organização dos Módulos
+#### **pacientes**
+```javascript
+{
+  id: "paciente-id",
+  nome: "Maria Santos",
+  idInternacao: "INT-2024-001",
+  dataNascimento: "1980-05-15",
+  status: "internado", // internado, alta, obito
+  equipeId: "equipe-id",
+  evolucoes: [
+    {
+      id: "evolucao-id",
+      texto: "Paciente estável...",
+      status: "internado",
+      medicoId: "medico-id",
+      dataRegistro: timestamp,
+      imagens: ["url1", "url2"]
+    }
+  ],
+  dataCriacao: timestamp
+}
+```
 
-- **`app-modulos.js`**: Funcionalidades base e utilitários
-- **`app-login.js`**: Autenticação e gestão de sessão
-- **`app-pacientes.js`**: CRUD de pacientes e evoluções
-- **`app-admin.js`**: Funcionalidades administrativas
-- **`app-equipes.js`**: Gestão de equipes médicas
-- **`app-ui.js`**: Componentes de interface
-- **`app-diagnostico.js`**: Sistema de diagnóstico e logs
+#### **equipes**
+```javascript
+{
+  id: "equipe-id",
+  nome: "Cardiologia A",
+  descricao: "Equipe de cardiologia do turno A",
+  membros: ["medico-id-1", "medico-id-2"],
+  dataCriacao: timestamp,
+  ultimaAtualizacao: timestamp
+}
+```
+
+## 🚀 Deploy em Produção
+
+### **Firebase Hosting**
+```bash
+# Instalar Firebase CLI
+npm install -g firebase-tools
+
+# Login no Firebase
+firebase login
+
+# Inicializar projeto
+firebase init hosting
+
+# Deploy
+firebase deploy
+```
+
+### **Configurações de Produção**
+1. Configure domínio personalizado
+2. Ative SSL/HTTPS
+3. Configure regras de segurança
+4. Otimize performance
+5. Configure backup automático
 
 ## 🔒 Segurança
 
-### Autenticação
-- Login obrigatório para acesso
-- Senhas criptografadas pelo Firebase
-- Sessões seguras com tokens JWT
+### **Regras do Firestore**
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Usuários podem ler/escrever seus próprios dados
+    match /usuarios/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Apenas usuários aprovados podem acessar pacientes
+    match /pacientes/{document} {
+      allow read, write: if request.auth != null && 
+        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.aprovado == true;
+    }
+    
+    // Apenas usuários aprovados podem acessar equipes
+    match /equipes/{document} {
+      allow read, write: if request.auth != null && 
+        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.aprovado == true;
+    }
+  }
+}
+```
 
-### Autorização
-- Níveis de acesso (Admin, Médico)
-- Médicos só veem pacientes de suas equipes
-- Admins têm acesso completo
+### **Regras do Storage**
+```javascript
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /evolucoes/{allPaths=**} {
+      allow read, write: if request.auth != null && 
+        request.auth.token.email_verified == true;
+    }
+  }
+}
+```
 
-### Dados
-- Comunicação HTTPS obrigatória
-- Regras de segurança no Firestore
-- Backup automático no Firebase
+## 🧪 Testes
 
-### Imagens
-- Upload direto para Firebase Storage
-- URLs seguras e temporárias
-- Redimensionamento automático
+### **Executar Testes**
+```bash
+# Testes unitários
+npm test
 
-## 📊 Monitoramento e Logs
+# Testes de integração
+npm run test:integration
 
-### Sistema de Debug
-- Logs detalhados com emoji 🔥
-- Console de desenvolvimento
-- Diagnóstico automático de problemas
+# Testes E2E
+npm run test:e2e
+```
 
-### Métricas
-- Total de usuários e pacientes
-- Estatísticas de evoluções
-- Volume de imagens armazenadas
+### **Cobertura de Testes**
+- ✅ Autenticação de usuários
+- ✅ CRUD de pacientes
+- ✅ Sistema de evoluções
+- ✅ Upload de imagens
+- ✅ Gestão de equipes
+- ✅ Painel administrativo
 
-## 🤝 Contribuindo
+## 📈 Monitoramento
 
-1. **Fork o projeto**
-2. **Crie uma branch** para sua feature (`git checkout -b feature/AmazingFeature`)
-3. **Commit suas mudanças** (`git commit -m 'Add some AmazingFeature'`)
-4. **Push para a branch** (`git push origin feature/AmazingFeature`)
-5. **Abra um Pull Request**
+### **Métricas Disponíveis**
+- Total de pacientes cadastrados
+- Número de evoluções registradas
+- Usuários ativos
+- Equipes médicas ativas
+- Performance do sistema
 
-### 📝 Padrões de Commit
-- `feat`: Nova funcionalidade
-- `fix`: Correção de bug
-- `docs`: Atualização de documentação
-- `style`: Mudanças de formatação
-- `refactor`: Refatoração de código
-- `test`: Adição de testes
+### **Logs e Auditoria**
+- Logs de autenticação
+- Logs de operações CRUD
+- Logs de upload de arquivos
+- Logs de erros do sistema
 
-## 📋 Roadmap
+## 🤝 Contribuição
 
-### Versão Atual (2.6.0)
-- ✅ Sistema base completo
-- ✅ Upload de imagens funcionando
-- ✅ Gestão de equipes operacional
-- ✅ Interface responsiva
-- ✅ **Visualização completa de perfil do paciente** 🆕
-- ✅ Sistema de digitação corrigido
-- ✅ Validação inteligente de reinternação
+### **Como Contribuir**
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
 
-### Próximas Versões
-- 🔄 **v2.7.0**: Exportação de relatórios PDF
-- 🔄 **v2.8.0**: Gráficos de evolução temporal
-- 🔄 **v2.9.0**: Sistema de notificações em tempo real
-- 🔄 **v3.0.0**: Telemedicina e IA médica
+### **Padrões de Código**
+- Use ESLint para JavaScript
+- Siga convenções de nomenclatura
+- Documente funções complexas
+- Escreva testes para novas features
+
+## 📞 Suporte
+
+### **Documentação**
+- [Wiki do Projeto](https://github.com/seu-usuario/AppVisita/wiki)
+- [FAQ](https://github.com/seu-usuario/AppVisita/wiki/FAQ)
+- [Troubleshooting](https://github.com/seu-usuario/AppVisita/wiki/Troubleshooting)
+
+### **Contato**
+- **Issues**: [GitHub Issues](https://github.com/seu-usuario/AppVisita/issues)
+- **Discussões**: [GitHub Discussions](https://github.com/seu-usuario/AppVisita/discussions)
+- **Email**: suporte@appvisita.com
 
 ## 📄 Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
-## 👨‍💻 Autor
-
-**Rodrigo Dias Tozato**
-- Email: rodrigo.tozato@icloud.com
-- GitHub: [@rodrigodiastozato](https://github.com/rodrigodiastozato)
+Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
 
 ## 🙏 Agradecimentos
 
-- [Firebase](https://firebase.google.com/) - Backend as a Service
-- [Font Awesome](https://fontawesome.com/) - Ícones
-- [Google Fonts](https://fonts.google.com/) - Tipografia
-- Comunidade médica que inspirou este projeto
+- Equipe de desenvolvimento
+- Profissionais de saúde que testaram o sistema
+- Comunidade Firebase
+- Contribuidores do projeto
 
 ---
 
-<div align="center">
+**AppVisita** - Transformando a gestão médica com tecnologia moderna e segura.
 
-**⭐ Se este projeto foi útil para você, considere dar uma estrela no repositório!**
-
-[🐛 Reportar Bug](https://github.com/rodrigodiastozato/AppVisita/issues) • [💡 Solicitar Feature](https://github.com/rodrigodiastozato/AppVisita/issues) • [📖 Documentação](https://github.com/rodrigodiastozato/AppVisita/wiki)
-
-</div>
+*Desenvolvido com ❤️ para profissionais de saúde*

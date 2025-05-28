@@ -355,47 +355,28 @@ const FirebaseService = {
       try {
         console.log("Executando obterTodas() para equipes");
         
-        // Usar uma consulta mais robusta com ordenação e sem equipes excluídas
-        const query = db.collection('equipes')
-          .where('excluido', '!=', true)  // Não trazer equipes marcadas como excluídas
-          .orderBy('excluido', 'asc')     // Necessário quando usamos where com !=
-          .orderBy('nome', 'asc');        // Ordenar por nome
-          
-        console.log("Executando consulta de equipes com filtros e ordenação");
-        const equipesSnapshot = await query.get();
+        // Usar consulta simples sem filtros complexos para evitar erro de índice
+        console.log("Executando consulta simples de equipes");
+        const equipesSnapshot = await db.collection('equipes').get();
         
-        // Tratar caso a consulta falhe com erro de índice
-        const equipes = equipesSnapshot.docs.map(doc => ({ 
-          id: doc.id, 
-          ...doc.data() 
-        }));
+        // Filtrar manualmente as equipes excluídas e ordenar
+        const equipes = equipesSnapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .filter(equipe => {
+            // Filtrar equipes não excluídas
+            const naoExcluida = !(equipe.excluido === true || equipe.status === 'excluido');
+            return naoExcluida;
+          })
+          .sort((a, b) => {
+            // Ordenar por nome
+            const nomeA = (a.nome || '').toLowerCase();
+            const nomeB = (b.nome || '').toLowerCase();
+            return nomeA.localeCompare(nomeB);
+          });
         
-        console.log(`${equipes.length} equipes ativas encontradas`);
+        console.log(`${equipes.length} equipes ativas encontradas (consulta simples)`);
         return equipes;
       } catch (error) {
-        // Se falhar com erro de índice (comum com consultas compostas)
-        if (error.code === 'failed-precondition') {
-          console.warn("Erro de índice. Tentando consulta simples sem filtro de excluídos.", error);
-          
-          // Tentar novamente sem o filtro de excluídos
-          try {
-            const snapshotSimples = await db.collection('equipes')
-              .orderBy('nome', 'asc')
-              .get();
-              
-            // Filtrar manualmente as equipes excluídas
-            const equipes = snapshotSimples.docs
-              .map(doc => ({ id: doc.id, ...doc.data() }))
-              .filter(equipe => equipe.excluido !== true && equipe.status !== 'excluido');
-              
-            console.log(`${equipes.length} equipes ativas encontradas (filtro manual)`);
-            return equipes;
-          } catch (fallbackError) {
-            console.error("Erro na consulta de fallback:", fallbackError);
-            return [];
-          }
-        }
-        
         console.error("Erro ao carregar equipes:", error);
         return [];
       }

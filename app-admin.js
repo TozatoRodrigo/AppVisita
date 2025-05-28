@@ -8,9 +8,24 @@ document.addEventListener('DOMContentLoaded', () => {
       todasEquipes: []
     },
     
+    // Controle de estado para evitar múltiplas execuções
+    estado: {
+      inicializado: false,
+      carregandoDados: false,
+      carregandoEquipes: false,
+      carregandoUsuarios: false,
+      carregandoEstatisticas: false
+    },
+    
     // Carregar dados administrativos
     async carregarDadosAdmin() {
+      if (this.estado.carregandoDados) {
+        console.log("🔥 Carregamento de dados já em andamento, ignorando nova solicitação");
+        return;
+      }
+      
       try {
+        this.estado.carregandoDados = true;
         console.log("🔥 CARREGANDO DADOS ADMINISTRATIVOS - DADOS REAIS DO FIREBASE");
         
         // Verificar se o Firebase está disponível antes de prosseguir
@@ -69,6 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error("🔥 Erro ao carregar dados administrativos:", error);
         AppVisita.Utils.exibirMensagem("Erro ao carregar dados administrativos");
         throw error;
+      } finally {
+        this.estado.carregandoDados = false;
       }
     },
     
@@ -134,50 +151,88 @@ document.addEventListener('DOMContentLoaded', () => {
     configurarBotoesAdmin() {
       console.log("🔥 Configurando botões administrativos reais");
       
-      // Configurar botão Nova Equipe
-      const btnNovaEquipe = document.getElementById('btn-nova-equipe');
-      if (btnNovaEquipe) {
-        console.log("🔥 Configurando botão Nova Equipe");
+      // Aguardar um pouco para garantir que o DOM esteja pronto
+      setTimeout(() => {
+        // Configurar botão Nova Equipe
+        const btnNovaEquipe = document.getElementById('btn-nova-equipe');
+        console.log("🔥 Procurando botão Nova Equipe:", btnNovaEquipe);
         
-        // Remover eventos antigos
-        const btnClone = btnNovaEquipe.cloneNode(true);
-        if (btnNovaEquipe.parentNode) {
-          btnNovaEquipe.parentNode.replaceChild(btnClone, btnNovaEquipe);
-        }
-        
-        // Adicionar novo evento
-        btnClone.addEventListener('click', () => {
-          console.log("🔥 Botão Nova Equipe clicado");
-          this.abrirModalNovaEquipe();
-        });
-      }
-      
-      // Adicionar botão para recarregar equipes
-      const containerBotoesEquipe = document.querySelector('.admin-header-actions');
-      if (containerBotoesEquipe) {
-        let btnRecarregar = document.getElementById('btn-recarregar-equipes');
-        
-        if (!btnRecarregar) {
-          btnRecarregar = document.createElement('button');
-          btnRecarregar.id = 'btn-recarregar-equipes';
-          btnRecarregar.className = 'btn btn-secondary';
-          btnRecarregar.innerHTML = '<i class="fas fa-sync-alt"></i> Recarregar Equipes';
-          containerBotoesEquipe.appendChild(btnRecarregar);
-        }
-        
-        btnRecarregar.addEventListener('click', async () => {
-          console.log("🔥 Botão recarregar equipes clicado");
-          try {
-            const esconderLoading = AppModulos.UI.mostrarLoading('Recarregando equipes...');
-            await this.carregarEquipes();
-            esconderLoading();
-            AppModulos.UI.mostrarNotificacao('Equipes recarregadas com sucesso!', 'sucesso');
-          } catch (error) {
-            console.error("🔥 Erro ao recarregar equipes:", error);
-            AppModulos.UI.mostrarNotificacao('Erro ao recarregar equipes.', 'erro');
+        if (btnNovaEquipe) {
+          console.log("🔥 Botão Nova Equipe encontrado, configurando evento");
+          
+          // Remover eventos antigos
+          const btnClone = btnNovaEquipe.cloneNode(true);
+          if (btnNovaEquipe.parentNode) {
+            btnNovaEquipe.parentNode.replaceChild(btnClone, btnNovaEquipe);
+            console.log("🔥 Botão Nova Equipe clonado e substituído");
           }
-        });
-      }
+          
+          // Adicionar novo evento
+          btnClone.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log("🔥 Botão Nova Equipe clicado - iniciando abertura do modal");
+            
+            try {
+              this.abrirModalNovaEquipe();
+            } catch (error) {
+              console.error("🔥 Erro ao abrir modal de nova equipe:", error);
+              alert("Erro ao abrir formulário de nova equipe: " + error.message);
+            }
+          });
+          
+          console.log("🔥 Evento do botão Nova Equipe configurado com sucesso");
+        } else {
+          console.error("🔥 Botão Nova Equipe não encontrado no DOM");
+          
+          // Tentar encontrar o botão em outros locais
+          const botoesNovaEquipe = document.querySelectorAll('[id*="nova-equipe"], [class*="nova-equipe"]');
+          console.log("🔥 Botões similares encontrados:", botoesNovaEquipe);
+          
+          // Verificar se a aba de equipes está ativa
+          const abaEquipes = document.getElementById('tab-equipes');
+          const conteudoEquipes = document.getElementById('tab-content-equipes');
+          console.log("🔥 Aba de equipes:", abaEquipes);
+          console.log("🔥 Conteúdo de equipes:", conteudoEquipes);
+          
+          if (conteudoEquipes) {
+            console.log("🔥 Conteúdo da aba equipes:", conteudoEquipes.innerHTML.substring(0, 200));
+          }
+        }
+        
+        // Adicionar botão para recarregar equipes
+        const containerBotoesEquipe = document.querySelector('.admin-header-actions');
+        console.log("🔥 Container de botões de equipe:", containerBotoesEquipe);
+        
+        if (containerBotoesEquipe) {
+          let btnRecarregar = document.getElementById('btn-recarregar-equipes');
+          
+          if (!btnRecarregar) {
+            btnRecarregar = document.createElement('button');
+            btnRecarregar.id = 'btn-recarregar-equipes';
+            btnRecarregar.className = 'btn btn-secondary';
+            btnRecarregar.innerHTML = '<i class="fas fa-sync-alt"></i> Recarregar Equipes';
+            containerBotoesEquipe.appendChild(btnRecarregar);
+            console.log("🔥 Botão recarregar equipes criado");
+          }
+          
+          btnRecarregar.addEventListener('click', async () => {
+            console.log("🔥 Botão recarregar equipes clicado");
+            try {
+              const esconderLoading = AppModulos.UI.mostrarLoading('Recarregando equipes...');
+              await this.carregarEquipes();
+              esconderLoading();
+              AppModulos.UI.mostrarNotificacao('Equipes recarregadas com sucesso!', 'sucesso');
+            } catch (error) {
+              console.error("🔥 Erro ao recarregar equipes:", error);
+              AppModulos.UI.mostrarNotificacao('Erro ao recarregar equipes.', 'erro');
+            }
+          });
+        } else {
+          console.error("🔥 Container de botões de equipe não encontrado");
+        }
+        
+      }, 500); // Aguardar 500ms para garantir que o DOM esteja pronto
     },
     
     // Configurar abas do painel administrativo
@@ -191,65 +246,98 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       const self = this;
+      let ultimaAbaClicada = null;
+      let timeoutAba = null;
       
       tabs.forEach(tab => {
-        tab.addEventListener('click', async () => {
-          // Remover classe active de todas as tabs
-          tabs.forEach(t => t.classList.remove('active'));
-          tabContents.forEach(c => c.classList.remove('active'));
+        // Remover eventos antigos
+        tab.removeEventListener('click', tab._adminClickHandler);
+        
+        // Criar novo handler com debounce
+        tab._adminClickHandler = async function(e) {
+          e.preventDefault();
+          e.stopPropagation();
           
-          // Adicionar classe active à tab clicada
-          tab.classList.add('active');
+          const abaId = this.id;
           
-          // Mostrar conteúdo correspondente
-          const targetId = tab.id.replace('tab-', 'admin-') + '-container';
-          const targetContent = document.getElementById(targetId);
-          if (targetContent) {
-            targetContent.classList.add('active');
+          // Evitar cliques múltiplos na mesma aba
+          if (ultimaAbaClicada === abaId) {
+            console.log(`🔥 Clique duplicado na aba ${abaId} ignorado`);
+            return;
           }
           
-          // Se a aba clicada for a de equipes, carregar equipes REAIS
-          if (tab.id === 'tab-equipes') {
-            console.log("🔥 Aba de equipes selecionada, carregando equipes REAIS...");
+          ultimaAbaClicada = abaId;
+          
+          // Limpar timeout anterior
+          if (timeoutAba) {
+            clearTimeout(timeoutAba);
+          }
+          
+          // Debounce para evitar múltiplas execuções
+          timeoutAba = setTimeout(async () => {
             try {
-              const esconderLoading = AppModulos.UI.mostrarLoading('Carregando equipes...');
-              await self.carregarEquipes();
-              esconderLoading();
+              // Remover classe active de todas as tabs
+              tabs.forEach(t => t.classList.remove('active'));
+              tabContents.forEach(c => c.classList.remove('active'));
+              
+              // Adicionar classe active à tab clicada
+              this.classList.add('active');
+              
+              // Mostrar conteúdo correspondente
+              const targetId = abaId.replace('tab-', 'tab-content-');
+              const targetContent = document.getElementById(targetId);
+              if (targetContent) {
+                targetContent.classList.add('active');
+              }
+              
+              // Carregar dados específicos da aba
+              if (abaId === 'tab-equipes') {
+                console.log("🔥 Aba de equipes selecionada, carregando equipes REAIS...");
+                try {
+                  await self.carregarEquipes();
+                } catch (error) {
+                  console.error("🔥 Erro ao carregar equipes na troca de aba:", error);
+                }
+              } else if (abaId === 'tab-estatisticas') {
+                console.log("🔥 Aba de estatísticas selecionada, carregando dados REAIS...");
+                try {
+                  await self.carregarEstatisticasReais();
+                } catch (error) {
+                  console.error("🔥 Erro ao carregar estatísticas na troca de aba:", error);
+                }
+              } else if (abaId === 'tab-usuarios') {
+                console.log("🔥 Aba de usuários selecionada, carregando usuários REAIS...");
+                try {
+                  await self.carregarUsuarios();
+                } catch (error) {
+                  console.error("🔥 Erro ao carregar usuários na troca de aba:", error);
+                }
+              }
             } catch (error) {
-              console.error("🔥 Erro ao carregar equipes na troca de aba:", error);
+              console.error("🔥 Erro ao processar clique na aba:", error);
+            } finally {
+              // Resetar controle após um tempo
+              setTimeout(() => {
+                ultimaAbaClicada = null;
+              }, 1000);
             }
-          }
-          
-          // Se a aba clicada for a de dashboard, carregar estatísticas REAIS
-          if (tab.id === 'tab-dashboard') {
-            console.log("🔥 Aba de dashboard selecionada, carregando estatísticas REAIS...");
-            try {
-              const esconderLoading = AppModulos.UI.mostrarLoading('Carregando estatísticas...');
-              await self.carregarEstatisticasReais();
-              esconderLoading();
-            } catch (error) {
-              console.error("🔥 Erro ao carregar estatísticas na troca de aba:", error);
-            }
-          }
-          
-          // Se a aba clicada for a de usuários, carregar usuários REAIS
-          if (tab.id === 'tab-usuarios') {
-            console.log("🔥 Aba de usuários selecionada, carregando usuários REAIS...");
-            try {
-              const esconderLoading = AppModulos.UI.mostrarLoading('Carregando usuários...');
-              await self.carregarUsuarios();
-              esconderLoading();
-            } catch (error) {
-              console.error("🔥 Erro ao carregar usuários na troca de aba:", error);
-            }
-          }
-        });
+          }, 300); // Debounce de 300ms
+        };
+        
+        // Adicionar novo evento
+        tab.addEventListener('click', tab._adminClickHandler);
       });
     },
     
     // Carregar usuários REAIS do Firebase
     async carregarUsuarios() {
+      if (this.estado.carregandoUsuarios) {
+        console.log("🔥 Carregamento de usuários já em andamento, ignorando nova solicitação");
+        return this.dados.usuarios;
+      }
+      
       try {
+        this.estado.carregandoUsuarios = true;
         console.log("🔥 CARREGANDO USUÁRIOS REAIS DO FIREBASE");
         
         // Verificar se o Firebase está inicializado
@@ -306,6 +394,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         throw error;
+      } finally {
+        this.estado.carregandoUsuarios = false;
       }
     },
     
@@ -780,7 +870,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Carregar equipes
     async carregarEquipes() {
+      if (this.estado.carregandoEquipes) {
+        console.log("🔥 Carregamento de equipes já em andamento, ignorando nova solicitação");
+        return this.dados.todasEquipes;
+      }
+      
       try {
+        this.estado.carregandoEquipes = true;
         console.log("🔥 Iniciando carregamento de equipes REAIS");
         
         const esconderLoading = AppModulos.UI.mostrarLoading('Carregando equipes...');
@@ -800,7 +896,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const totalEquipesAtivas = this.dados.todasEquipes.length;
           console.log(`🔥 ${totalEquipesAtivas} equipes ativas após filtrar excluídas`);
           
-          const contadorEquipes = document.querySelector('#total-equipes .stat-value');
+          const contadorEquipes = document.querySelector('#total-equipes .stat-number, #total-equipes');
           if (contadorEquipes) {
             contadorEquipes.textContent = totalEquipesAtivas;
           }
@@ -818,6 +914,8 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error("🔥 Erro ao carregar equipes:", error);
         AppModulos.UI.mostrarNotificacao('Erro ao carregar equipes. Tente novamente.', 'erro');
         return [];
+      } finally {
+        this.estado.carregandoEquipes = false;
       }
     },
     
@@ -1048,44 +1146,251 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Abrir modal para criar nova equipe
     async abrirModalNovaEquipe() {
-      console.log("🔥 Abrindo modal para criar nova equipe");
-      
-      const modalEquipe = document.getElementById('modal-equipe');
-      const formEquipe = document.getElementById('form-equipe');
-      const nomeEquipeInput = document.getElementById('nome-equipe');
-      const descricaoEquipeInput = document.getElementById('descricao-equipe');
-      const equipeIdInput = document.getElementById('equipe-id');
-      
-      if (!modalEquipe || !formEquipe) {
-        console.error("🔥 Elementos do modal de equipe não encontrados");
-        AppModulos.UI.mostrarNotificacao('Erro ao abrir formulário de equipe', 'erro');
-        return;
-      }
-      
-      formEquipe.reset();
-      
-      if (equipeIdInput) equipeIdInput.value = '';
-      if (nomeEquipeInput) nomeEquipeInput.value = '';
-      if (descricaoEquipeInput) descricaoEquipeInput.value = '';
-      
-      const modalTituloEquipe = document.getElementById('modal-titulo-equipe');
-      if (modalTituloEquipe) {
-        modalTituloEquipe.textContent = 'Nova Equipe';
-      }
+      console.log("🔥 INICIANDO abertura do modal para criar nova equipe");
       
       try {
-        const esconderLoading = AppModulos.UI.mostrarLoading('Carregando médicos disponíveis...');
+        // Verificar se AppModulos.UI está disponível
+        if (!window.AppModulos || !window.AppModulos.UI) {
+          console.error("🔥 AppModulos.UI não está disponível");
+          alert("Erro: Sistema de interface não está disponível. Recarregue a página.");
+          return;
+        }
         
-        await this.carregarMedicosNoModal();
+        console.log("🔥 AppModulos.UI disponível, procurando elementos do modal");
         
-        esconderLoading();
+        const modalEquipe = document.getElementById('modal-equipe');
+        const formEquipe = document.getElementById('form-equipe');
+        const nomeEquipeInput = document.getElementById('nome-equipe');
+        const descricaoEquipeInput = document.getElementById('descricao-equipe');
+        const equipeIdInput = document.getElementById('equipe-id');
         
-        modalEquipe.style.display = 'block';
+        console.log("🔥 Elementos encontrados:", {
+          modalEquipe: !!modalEquipe,
+          formEquipe: !!formEquipe,
+          nomeEquipeInput: !!nomeEquipeInput,
+          descricaoEquipeInput: !!descricaoEquipeInput,
+          equipeIdInput: !!equipeIdInput
+        });
+        
+        if (!modalEquipe || !formEquipe) {
+          console.error("🔥 Elementos essenciais do modal de equipe não encontrados");
+          console.log("🔥 Modal equipe:", modalEquipe);
+          console.log("🔥 Form equipe:", formEquipe);
+          
+          // Tentar encontrar elementos similares
+          const modaisEncontrados = document.querySelectorAll('[id*="modal"], [class*="modal"]');
+          console.log("🔥 Modais encontrados no DOM:", modaisEncontrados);
+          
+          AppModulos.UI.mostrarNotificacao('Erro: Formulário de equipe não encontrado. Recarregue a página.', 'erro');
+          return;
+        }
+        
+        console.log("🔥 Resetando formulário");
+        formEquipe.reset();
+        
+        if (equipeIdInput) equipeIdInput.value = '';
+        if (nomeEquipeInput) nomeEquipeInput.value = '';
+        if (descricaoEquipeInput) descricaoEquipeInput.value = '';
+        
+        const modalTituloEquipe = document.getElementById('modal-titulo-equipe');
+        if (modalTituloEquipe) {
+          modalTituloEquipe.textContent = 'Nova Equipe';
+          console.log("🔥 Título do modal definido");
+        }
+        
+        console.log("🔥 Iniciando carregamento de médicos disponíveis");
+        
+        try {
+          const esconderLoading = AppModulos.UI.mostrarLoading('Carregando médicos disponíveis...');
+          
+          await this.carregarMedicosNoModal();
+          
+          esconderLoading();
+          console.log("🔥 Médicos carregados com sucesso");
+          
+        } catch (errorMedicos) {
+          console.error("🔥 Erro ao carregar médicos:", errorMedicos);
+          AppModulos.UI.mostrarNotificacao('Erro ao carregar médicos disponíveis: ' + errorMedicos.message, 'erro');
+          return;
+        }
+        
+        console.log("🔥 Aplicando estilos específicos ao modal");
+        
+        // Remover qualquer CSS conflitante
+        modalEquipe.classList.remove('hidden', 'invisible', 'd-none');
+        modalEquipe.removeAttribute('hidden');
+        
+        // Forçar remoção de qualquer estilo inline que possa estar escondendo o modal
+        modalEquipe.style.removeProperty('visibility');
+        modalEquipe.style.removeProperty('opacity');
+        
+        // Aplicar estilos específicos para garantir que o modal funcione
+        modalEquipe.style.cssText = `
+          display: block !important;
+          position: fixed !important;
+          z-index: 99999 !important;
+          left: 0 !important;
+          top: 0 !important;
+          width: 100% !important;
+          height: 100% !important;
+          background-color: rgba(0,0,0,0.8) !important;
+          overflow: auto !important;
+          backdrop-filter: blur(2px) !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+        `;
+        
+        const modalContent = modalEquipe.querySelector('.modal-content');
+        if (modalContent) {
+          modalContent.style.cssText = `
+            background-color: #fefefe !important;
+            margin: 2% auto !important;
+            padding: 30px !important;
+            border: 1px solid #888 !important;
+            border-radius: 12px !important;
+            width: 95% !important;
+            max-width: 700px !important;
+            position: relative !important;
+            z-index: 100000 !important;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important;
+            max-height: 90vh !important;
+            overflow-y: auto !important;
+            animation: modalFadeIn 0.3s ease-out !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            display: block !important;
+          `;
+        }
+        
+        // Adicionar animação CSS se não existir
+        if (!document.getElementById('modal-animations')) {
+          const styleSheet = document.createElement('style');
+          styleSheet.id = 'modal-animations';
+          styleSheet.textContent = `
+            @keyframes modalFadeIn {
+              from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+              }
+              to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+              }
+            }
+            
+            /* Forçar estilos do modal */
+            #modal-equipe {
+              display: block !important;
+              position: fixed !important;
+              z-index: 99999 !important;
+              visibility: visible !important;
+              opacity: 1 !important;
+            }
+            
+            #modal-equipe .modal-content {
+              display: block !important;
+              visibility: visible !important;
+              opacity: 1 !important;
+            }
+          `;
+          document.head.appendChild(styleSheet);
+        }
+        
+        // Garantir que o modal esteja no final do body para evitar problemas de z-index
+        if (modalEquipe.parentNode !== document.body) {
+          console.log("🔥 Movendo modal para o final do body");
+          document.body.appendChild(modalEquipe);
+        }
+        
+        // Forçar reflow para garantir que os estilos sejam aplicados
+        modalEquipe.offsetHeight;
+        
+        console.log("🔥 Configurando eventos de fechamento do modal");
+        
+        // Configurar eventos de fechamento
+        const closeButtons = modalEquipe.querySelectorAll('.close-button');
+        closeButtons.forEach(btn => {
+          btn.onclick = () => {
+            console.log("🔥 Botão fechar clicado");
+            modalEquipe.style.display = 'none';
+          };
+        });
+        
+        // Fechar ao clicar fora do modal
+        modalEquipe.onclick = (event) => {
+          if (event.target === modalEquipe) {
+            console.log("🔥 Clique fora do modal - fechando");
+            modalEquipe.style.display = 'none';
+          }
+        };
+        
+        // Verificar se o modal está visível
+        setTimeout(() => {
+          const estiloComputado = window.getComputedStyle(modalEquipe);
+          console.log("🔥 Modal visível?", estiloComputado.display !== 'none');
+          console.log("🔥 Z-index do modal:", estiloComputado.zIndex);
+          console.log("🔥 Posição do modal:", estiloComputado.position);
+          console.log("🔥 Opacidade do modal:", estiloComputado.opacity);
+          console.log("🔥 Background do modal:", estiloComputado.backgroundColor);
+          
+          // Verificar se o modal está realmente na frente
+          const elementoNoTopo = document.elementFromPoint(window.innerWidth / 2, window.innerHeight / 2);
+          console.log("🔥 Elemento no centro da tela:", elementoNoTopo);
+          
+          // Se o modal não estiver visível, forçar
+          if (estiloComputado.display === 'none' || estiloComputado.opacity === '0') {
+            console.log("🔥 FORÇANDO VISIBILIDADE DO MODAL");
+            modalEquipe.style.display = 'block';
+            modalEquipe.style.opacity = '1';
+            modalEquipe.style.visibility = 'visible';
+          }
+          
+          // Focar no primeiro input
+          if (nomeEquipeInput) {
+            nomeEquipeInput.focus();
+            console.log("🔥 Foco definido no campo nome");
+          }
+          
+          // Verificação adicional após 1 segundo
+          setTimeout(() => {
+            const estiloFinal = window.getComputedStyle(modalEquipe);
+            console.log("🔥 VERIFICAÇÃO FINAL - Modal visível?", estiloFinal.display !== 'none');
+            console.log("🔥 VERIFICAÇÃO FINAL - Z-index:", estiloFinal.zIndex);
+            console.log("🔥 VERIFICAÇÃO FINAL - Opacidade:", estiloFinal.opacity);
+            
+            if (estiloFinal.display === 'none') {
+              console.error("🔥 ERRO: Modal ainda não está visível após todas as correções!");
+              alert("ATENÇÃO: O modal não está aparecendo. Verifique o console para mais detalhes.");
+            } else {
+              console.log("🔥 ✅ SUCESSO: Modal está visível e funcionando!");
+            }
+          }, 1000);
+        }, 100);
         
         console.log("🔥 Modal de nova equipe aberto com sucesso");
+        
+        // Função de teste para verificar se o modal está funcionando
+        window.testarModal = function() {
+          console.log("🔥 TESTE: Verificando modal");
+          console.log("🔥 TESTE: Modal existe?", !!modalEquipe);
+          console.log("🔥 TESTE: Modal display:", modalEquipe.style.display);
+          console.log("🔥 TESTE: Modal z-index:", modalEquipe.style.zIndex);
+          
+          // Tentar mostrar um alert simples para verificar se há algum bloqueio
+          alert("Modal deveria estar visível agora. Você consegue vê-lo?");
+        };
+        
+        console.log("🔥 Função de teste criada: window.testarModal()");
+        
       } catch (error) {
-        console.error("🔥 Erro ao carregar médicos para o modal:", error);
-        AppModulos.UI.mostrarNotificacao('Erro ao carregar médicos disponíveis', 'erro');
+        console.error("🔥 ERRO GERAL ao abrir modal de nova equipe:", error);
+        console.error("🔥 Stack trace:", error.stack);
+        
+        if (window.AppModulos && window.AppModulos.UI) {
+          AppModulos.UI.mostrarNotificacao('Erro ao abrir formulário de equipe: ' + error.message, 'erro');
+        } else {
+          alert('Erro ao abrir formulário de equipe: ' + error.message);
+        }
       }
     },
     
@@ -1137,11 +1442,16 @@ document.addEventListener('DOMContentLoaded', () => {
     async carregarMedicosNoModal(membrosSelecionados = []) {
       try {
         const selecaoMedicos = document.getElementById('selecao-medicos');
-        if (!selecaoMedicos) return;
+        if (!selecaoMedicos) {
+          console.error("🔥 Elemento selecao-medicos não encontrado");
+          return;
+        }
         
+        console.log("🔥 Carregando médicos no modal...");
         selecaoMedicos.innerHTML = '<p class="carregando-info">Carregando médicos...</p>';
         
         const medicos = await this.carregarMedicosAprovados();
+        console.log(`🔥 ${medicos.length} médicos aprovados encontrados`);
         
         if (medicos.length === 0) {
           selecaoMedicos.innerHTML = '<p class="sem-medicos">Nenhum médico aprovado encontrado.</p>';
@@ -1150,46 +1460,117 @@ document.addEventListener('DOMContentLoaded', () => {
         
         selecaoMedicos.innerHTML = '';
         
-        medicos.forEach(medico => {
+        // Aplicar estilos ao container de seleção
+        selecaoMedicos.style.cssText = `
+          max-height: 300px;
+          overflow-y: auto;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          padding: 10px;
+          background: #f9f9f9;
+        `;
+        
+        medicos.forEach((medico, index) => {
           console.log(`🔥 Adicionando médico ao modal: ${medico.email} (ID: ${medico.id})`);
           
           const medicoItem = document.createElement('div');
           medicoItem.className = 'medico-item';
           medicoItem.dataset.id = medico.id;
           
-          if (membrosSelecionados.includes(medico.id)) {
+          const estaSelecionado = membrosSelecionados.includes(medico.id);
+          if (estaSelecionado) {
             medicoItem.classList.add('selecionado');
             console.log(`🔥 Médico ${medico.email} pré-selecionado`);
           }
           
+          // Aplicar estilos específicos ao item
+          medicoItem.style.cssText = `
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            margin: 8px 0;
+            border: 2px solid ${estaSelecionado ? '#28a745' : '#ddd'};
+            border-radius: 6px;
+            background: ${estaSelecionado ? '#e8f5e8' : '#fff'};
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+          `;
+          
           medicoItem.innerHTML = `
-            <span class="medico-email">${medico.email}</span>
-            <button class="btn-toggle-medico">
-              <i class="fas ${medicoItem.classList.contains('selecionado') ? 'fa-user-minus' : 'fa-user-plus'}"></i>
-              ${medicoItem.classList.contains('selecionado') ? 'Remover' : 'Adicionar'}
+            <span class="medico-email" style="font-weight: 500; color: #333;">${medico.email}</span>
+            <button type="button" class="btn-toggle-medico" style="
+              padding: 6px 12px;
+              border: none;
+              border-radius: 4px;
+              background: ${estaSelecionado ? '#dc3545' : '#28a745'};
+              color: white;
+              cursor: pointer;
+              font-size: 12px;
+              transition: background 0.3s ease;
+            ">
+              <i class="fas ${estaSelecionado ? 'fa-user-minus' : 'fa-user-plus'}"></i>
+              ${estaSelecionado ? 'Remover' : 'Adicionar'}
             </button>
           `;
           
-          medicoItem.addEventListener('click', () => {
+          // Evento de clique no item
+          const clickHandler = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
             console.log(`🔥 Clique no médico: ${medico.email} (ID: ${medico.id})`);
-            medicoItem.classList.toggle('selecionado');
-            const estaSelecionado = medicoItem.classList.contains('selecionado');
-            console.log(`🔥 Médico ${medico.email} ${estaSelecionado ? 'SELECIONADO' : 'DESMARCADO'}`);
+            
+            const jaEstaSelecionado = medicoItem.classList.contains('selecionado');
+            
+            if (jaEstaSelecionado) {
+              medicoItem.classList.remove('selecionado');
+              medicoItem.style.border = '2px solid #ddd';
+              medicoItem.style.background = '#fff';
+            } else {
+              medicoItem.classList.add('selecionado');
+              medicoItem.style.border = '2px solid #28a745';
+              medicoItem.style.background = '#e8f5e8';
+            }
+            
+            const novoEstado = medicoItem.classList.contains('selecionado');
+            console.log(`🔥 Médico ${medico.email} ${novoEstado ? 'SELECIONADO' : 'DESMARCADO'}`);
             
             const btn = medicoItem.querySelector('.btn-toggle-medico');
+            btn.style.background = novoEstado ? '#dc3545' : '#28a745';
             btn.innerHTML = `
-              <i class="fas ${estaSelecionado ? 'fa-user-minus' : 'fa-user-plus'}"></i>
-              ${estaSelecionado ? 'Remover' : 'Adicionar'}
+              <i class="fas ${novoEstado ? 'fa-user-minus' : 'fa-user-plus'}"></i>
+              ${novoEstado ? 'Remover' : 'Adicionar'}
             `;
+          };
+          
+          // Adicionar eventos
+          medicoItem.addEventListener('click', clickHandler);
+          
+          // Evento hover
+          medicoItem.addEventListener('mouseenter', () => {
+            if (!medicoItem.classList.contains('selecionado')) {
+              medicoItem.style.background = '#f0f0f0';
+            }
+          });
+          
+          medicoItem.addEventListener('mouseleave', () => {
+            if (!medicoItem.classList.contains('selecionado')) {
+              medicoItem.style.background = '#fff';
+            }
           });
           
           selecaoMedicos.appendChild(medicoItem);
         });
+        
+        console.log(`🔥 ${medicos.length} médicos adicionados ao modal com sucesso`);
+        
       } catch (error) {
         console.error("🔥 Erro ao carregar médicos:", error);
         const selecaoMedicos = document.getElementById('selecao-medicos');
         if (selecaoMedicos) {
-          selecaoMedicos.innerHTML = '<p class="erro-carregamento">Erro ao carregar médicos. Tente novamente.</p>';
+          selecaoMedicos.innerHTML = '<p class="erro-carregamento" style="color: red; padding: 10px;">Erro ao carregar médicos. Tente novamente.</p>';
         }
       }
     },
@@ -1356,7 +1737,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Carregar estatísticas reais do sistema
     async carregarEstatisticasReais() {
+      if (this.estado.carregandoEstatisticas) {
+        console.log("🔥 Carregamento de estatísticas já em andamento, ignorando nova solicitação");
+        return;
+      }
+      
       try {
+        this.estado.carregandoEstatisticas = true;
         console.log("🔥 CARREGANDO ESTATÍSTICAS REAIS DO FIREBASE");
         
         // Verificar se o Firebase está disponível
@@ -1454,6 +1841,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         throw error;
+      } finally {
+        this.estado.carregandoEstatisticas = false;
       }
     },
     
@@ -1461,37 +1850,35 @@ document.addEventListener('DOMContentLoaded', () => {
     atualizarInterfaceEstatisticas(estatisticas) {
       console.log("🔥 ATUALIZANDO INTERFACE COM ESTATÍSTICAS REAIS:", estatisticas);
       
-      // Atualizar cards de estatísticas no dashboard
-      const elementos = {
-        'total-pacientes': estatisticas.totalPacientes,
-        'total-medicos': estatisticas.totalMedicos,
-        'total-equipes': estatisticas.totalEquipes,
-        'total-evolucoes': estatisticas.totalEvolucoes
-      };
+      // Atualizar elementos de estatísticas com diferentes possíveis IDs
+      const elementos = [
+        { ids: ['total-pacientes', '#total-pacientes .stat-number'], valor: estatisticas.totalPacientes },
+        { ids: ['total-medicos', '#total-medicos .stat-number'], valor: estatisticas.totalMedicos },
+        { ids: ['total-equipes', '#total-equipes .stat-number'], valor: estatisticas.totalEquipes },
+        { ids: ['total-evolucoes', '#total-evolucoes .stat-number'], valor: estatisticas.totalEvolucoes }
+      ];
       
-      Object.entries(elementos).forEach(([id, valor]) => {
-        const elemento = document.getElementById(id);
-        if (elemento) {
-          elemento.textContent = valor;
-          console.log(`🔥 Atualizado ${id}: ${valor}`);
-        } else {
-          console.warn(`🔥 Elemento ${id} não encontrado no DOM`);
-        }
-      });
-      
-      // Também atualizar elementos alternativos (se existirem)
-      const elementosAlternativos = {
-        '#total-equipes .stat-value': estatisticas.totalEquipes,
-        '#total-pacientes .stat-value': estatisticas.totalPacientes,
-        '#total-medicos .stat-value': estatisticas.totalMedicos,
-        '#total-evolucoes .stat-value': estatisticas.totalEvolucoes
-      };
-      
-      Object.entries(elementosAlternativos).forEach(([seletor, valor]) => {
-        const elemento = document.querySelector(seletor);
-        if (elemento) {
-          elemento.textContent = valor;
-          console.log(`🔥 Atualizado elemento alternativo ${seletor}: ${valor}`);
+      elementos.forEach(({ ids, valor }) => {
+        let elementoEncontrado = false;
+        
+        ids.forEach(id => {
+          let elemento;
+          
+          if (id.startsWith('#')) {
+            elemento = document.querySelector(id);
+          } else {
+            elemento = document.getElementById(id);
+          }
+          
+          if (elemento) {
+            elemento.textContent = valor;
+            console.log(`🔥 Atualizado ${id}: ${valor}`);
+            elementoEncontrado = true;
+          }
+        });
+        
+        if (!elementoEncontrado) {
+          console.warn(`🔥 Nenhum elemento encontrado para os IDs: ${ids.join(', ')}`);
         }
       });
       
@@ -2227,4 +2614,40 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   window.AppModulos.Admin = AdminModulo;
+  
+  // Inicialização automática para administradores
+  document.addEventListener('firebase-ready', function() {
+    console.log("🔥 Firebase ready - verificando se deve inicializar Admin");
+    
+    // Aguardar um pouco para garantir que o login foi processado
+    setTimeout(() => {
+      if (window.isAdmin && window.currentUser) {
+        console.log("🔥 Usuário é admin - inicializando módulo Admin automaticamente");
+        try {
+          AdminModulo.carregarDadosAdmin();
+        } catch (error) {
+          console.error("🔥 Erro ao inicializar módulo Admin:", error);
+        }
+      }
+    }, 1000);
+  });
+  
+  // Fallback: verificar periodicamente se deve inicializar
+  let verificacaoAdmin = setInterval(() => {
+    if (window.isAdmin && window.currentUser && window.verificarFirebaseDisponivel && window.verificarFirebaseDisponivel()) {
+      console.log("🔥 Condições atendidas - inicializando Admin via fallback");
+      clearInterval(verificacaoAdmin);
+      
+      try {
+        AdminModulo.carregarDadosAdmin();
+      } catch (error) {
+        console.error("🔥 Erro ao inicializar Admin via fallback:", error);
+      }
+    }
+  }, 2000);
+  
+  // Limpar verificação após 30 segundos
+  setTimeout(() => {
+    clearInterval(verificacaoAdmin);
+  }, 30000);
 });
